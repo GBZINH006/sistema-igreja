@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cadastro de Membros</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --surface2: #1a2236;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #e2e8f0, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2rem 1rem 5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* INPUTS */
+  input[type=text], input[type=email], input[type=date],
+  input[type=number], input[type=password], select, textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-top: 4px;
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* RADIO */
+  .radio-group { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 6px; align-items: center; }
+  .radio-group label {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 0.9rem; color: var(--text);
+    font-weight: normal;
+  }
+  .radio-group input[type=radio] {
+    width: 16px; height: 16px; margin: 0;
+    accent-color: var(--accent);
+  }
+
+  /* LABELS */
+  .field-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 1rem;
+    margin-bottom: 2px;
+  }
+
+  /* SECTION CARD */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* GRID */
+  .form-row { display: grid; gap: 12px; }
+  .col-2 { grid-template-columns: 1fr 1fr; }
+  .col-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 600px) {
+    .col-2, .col-3 { grid-template-columns: 1fr; }
+  }
+
+  /* BUTTONS */
+  .btn {
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 0.8rem 1.4rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-success {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+  }
+  .btn-success:hover { filter: brightness(1.1); }
+
+  /* SAVE BTN */
+  .save-btn-wrap {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 50;
+    padding: 0 0 0.5rem;
+  }
+  .save-btn-wrap .btn {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    box-shadow: 0 8px 30px rgba(16,185,129,0.35);
+  }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 2rem; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* LOADING */
+  .loading {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SUCESSO TELA */
+  #tela-sucesso {
+    display: none;
+    min-height: 80vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+    animation: fadeUp 0.5s ease;
+  }
+  #tela-sucesso.show { display: flex; }
+  .sucesso-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .sucesso-titulo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--success), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+  .sucesso-sub { color: var(--muted); font-size: 0.9rem; max-width: 340px; margin-bottom: 2rem; line-height: 1.6; }
+  .btn-novo {
+    background: linear-gradient(135deg, var(--accent), #2563eb);
+    color: white;
+    padding: 0.9rem 2rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-novo:hover { filter: brightness(1.1); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="header-title">⛪ Ficha de Cadastro</span>
+  <span style="font-size:0.75rem; color:var(--muted);">Preencha todos os campos</span>
+</header>
+
+<!-- TELA SUCESSO -->
+<div id="tela-sucesso">
+  <div class="sucesso-icon">✅</div>
+  <div class="sucesso-titulo">Cadastro realizado!</div>
+  <div class="sucesso-sub">Seu cadastro foi enviado com sucesso. O pastor receberá suas informações em breve.</div>
+  <button class="btn-novo" onclick="novoMembro()">➕ Cadastrar outro membro</button>
+</div>
+
+<!-- FORMULÁRIO -->
+<div id="tela-form">
+<main>
+
+  <div class="section-card" style="margin-bottom:1.2rem;">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+      <div>
+        <div style="font-family:'Syne',sans-serif; font-size:1.1rem; font-weight:800;">Ficha de Cadastro</div>
+        <div style="font-size:0.8rem; color:var(--muted);">Preencha os dados do membro ou congregado</div>
+      </div>
+      <div class="radio-group">
+        <label><input type="radio" name="tipo_cadastro" value="Membro" checked> Membro</label>
+        <label><input type="radio" name="tipo_cadastro" value="Congregado"> Congregado</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- DADOS PESSOAIS -->
+  <div class="section-card">
+    <div class="section-title">👤 Dados Pessoais</div>
+    <label class="field-label">Nome Completo *</label>
+    <input type="text" id="nome" placeholder="Nome completo">
+    <div class="form-row col-2" style="margin-top:0;">
+      <div>
+        <label class="field-label">RG</label>
+        <input type="text" id="rg" placeholder="00.000.000-0">
+      </div>
+      <div>
+        <label class="field-label">CPF *</label>
+        <input type="text" id="cpf" maxlength="14" oninput="maskCPF(this)" placeholder="000.000.000-00">
+      </div>
+    </div>
+    <div class="form-row col-3">
+      <div>
+        <label class="field-label">Data de Nascimento</label>
+        <input type="date" id="dataNasc">
+      </div>
+      <div>
+        <label class="field-label">Idade</label>
+        <input type="number" id="idade" placeholder="0" min="0">
+      </div>
+      <div>
+        <label class="field-label">Sexo</label>
+        <div class="radio-group" style="margin-top:10px;">
+          <label><input type="radio" name="sexo" value="M" checked> M</label>
+          <label><input type="radio" name="sexo" value="F"> F</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-row col-3">
+      <div>
+        <label class="field-label">Tipo Sanguíneo</label>
+        <select id="tipo_sanguineo">
+          <option value="">—</option>
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option>
+          <option>O+</option><option>O-</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Escolaridade</label>
+        <select id="escolaridade">
+          <option value="">—</option>
+          <option>Fundamental Incompleto</option>
+          <option>Fundamental Completo</option>
+          <option>Médio Incompleto</option>
+          <option>Médio Completo</option>
+          <option>Superior Incompleto</option>
+          <option>Superior Completo</option>
+          <option>Pós-Graduação</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label">Estado Civil</label>
+        <select id="estadoCivil">
+          <option value="">—</option>
+          <option>Solteiro(a)</option>
+          <option>Casado(a)</option>
+          <option>Divorciado(a)</option>
+          <option>Viúvo(a)</option>
+          <option>União Estável</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Nome do Cônjuge</label>
+        <input type="text" id="conjuge_nome" placeholder="Nome">
+      </div>
+      <div>
+        <label class="field-label">Data do Casamento</label>
+        <input type="date" id="dataCasamento">
+      </div>
+    </div>
+  </div>
+
+  <!-- ENDEREÇO -->
+  <div class="section-card">
+    <div class="section-title">📍 Endereço e Contato</div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">CEP</label>
+        <input type="text" id="cep" maxlength="9" oninput="maskCEP(this)" placeholder="00000-000">
+      </div>
+      <div>
+        <label class="field-label">Bairro</label>
+        <input type="text" id="bairro" placeholder="Bairro">
+      </div>
+    </div>
+    <label class="field-label">Endereço (com número)</label>
+    <input type="text" id="endereco" placeholder="Rua, número, complemento">
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Cidade / UF</label>
+        <input type="text" id="cidade_estado" placeholder="Cidade - SC">
+      </div>
+      <div>
+        <label class="field-label">Fone Residencial</label>
+        <input type="text" id="fone_res" oninput="maskPhone(this)" placeholder="(48) 0000-0000">
+      </div>
+    </div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Fone Comercial</label>
+        <input type="text" id="fone_com" oninput="maskPhone(this)" placeholder="(48) 0000-0000">
+      </div>
+      <div>
+        <label class="field-label">Celular / WhatsApp *</label>
+        <input type="text" id="celular" oninput="maskPhone(this)" placeholder="(48) 00000-0000">
+      </div>
+    </div>
+    <label class="field-label">E-mail</label>
+    <input type="email" id="email" placeholder="email@exemplo.com">
+  </div>
+
+  <!-- PROFISSIONAL -->
+  <div class="section-card">
+    <div class="section-title">💼 Dados Profissionais</div>
+    <label class="field-label">Ocupação Atual</label>
+    <input type="text" id="ocupacao" placeholder="Ex: Professor, Comerciante…">
+    <label class="field-label">Local de Trabalho / Empresa</label>
+    <input type="text" id="empresa" placeholder="Nome da empresa">
+  </div>
+
+  <!-- IGREJA -->
+  <div class="section-card">
+    <div class="section-title">✝️ Dados da Igreja</div>
+    <label class="field-label">Forma de Recebimento na Igreja</label>
+    <select id="forma_recebimento">
+      <option value="">—</option>
+      <option>Batismo nas Águas</option>
+      <option>Transferência</option>
+      <option>Aclamação</option>
+      <option>Reconciliação</option>
+    </select>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Setor</label>
+        <input type="text" id="setor_igreja" placeholder="Setor">
+      </div>
+      <div>
+        <label class="field-label">Congregação</label>
+        <input type="text" id="congregacao_igreja" placeholder="Congregação">
+      </div>
+    </div>
+    <div class="form-row col-3">
+      <div>
+        <label class="field-label">Igreja Anterior</label>
+        <input type="text" id="igreja_anterior" placeholder="Nome">
+      </div>
+      <div>
+        <label class="field-label">Cidade Anterior</label>
+        <input type="text" id="igreja_cidade" placeholder="Cidade">
+      </div>
+      <div>
+        <label class="field-label">Pastor Anterior</label>
+        <input type="text" id="igreja_pastor" placeholder="Nome">
+      </div>
+    </div>
+    <div class="form-row col-3">
+      <div>
+        <label class="field-label">Data Batismo Águas</label>
+        <input type="date" id="data_batismo_aguas">
+      </div>
+      <div>
+        <label class="field-label">Data Batismo Espírito Santo</label>
+        <input type="date" id="data_batismo_es">
+      </div>
+      <div>
+        <label class="field-label">Data Aprovação</label>
+        <input type="date" id="data_aprovacao">
+      </div>
+    </div>
+  </div>
+
+  <!-- CARGOS -->
+  <div class="section-card">
+    <div class="section-title">🎖️ Cargo(s) / Função(ões)</div>
+    <label class="field-label">Cargo Principal</label>
+    <input type="text" id="cargo_principal" placeholder="Ex: Diácono, Presbítero…">
+    <label class="field-label">Outras Funções</label>
+    <textarea id="outras_funcoes" placeholder="Liste outras funções…"></textarea>
+  </div>
+
+  <!-- FAMÍLIA -->
+  <div class="section-card">
+    <div class="section-title">👨‍👩‍👧 Família</div>
+    <label class="field-label">Quantidade de Filhos</label>
+    <input type="number" id="qtd_filhos" min="0" placeholder="0" style="max-width:120px;">
+    <div style="margin-top:1rem; font-size:0.8rem; color:var(--muted); margin-bottom:0.5rem;">DEMAIS INTEGRANTES DA CASA</div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Nome 1</label>
+        <input type="text" id="nome_dep1" placeholder="Nome">
+      </div>
+      <div>
+        <label class="field-label">Parentesco 1</label>
+        <input type="text" id="parentesco_dep1" placeholder="Ex: Filho(a)">
+      </div>
+    </div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Nome 2</label>
+        <input type="text" id="nome_dep2" placeholder="Nome">
+      </div>
+      <div>
+        <label class="field-label">Parentesco 2</label>
+        <input type="text" id="parentesco_dep2" placeholder="Ex: Cônjuge">
+      </div>
+    </div>
+    <div class="form-row col-2">
+      <div>
+        <label class="field-label">Nome 3</label>
+        <input type="text" id="nome_dep3" placeholder="Nome">
+      </div>
+      <div>
+        <label class="field-label">Parentesco 3</label>
+        <input type="text" id="parentesco_dep3" placeholder="Ex: Pai/Mãe">
+      </div>
+    </div>
+  </div>
+
+  <!-- TALENTOS -->
+  <div class="section-card">
+    <div class="section-title">🌟 Talentos e Habilidades</div>
+    <label class="field-label">Talentos / Habilidades</label>
+    <textarea id="talentos" placeholder="Ex: Canto, tocar violão, pregação…"></textarea>
+    <div class="form-row col-2" style="margin-top:0.5rem;">
+      <div>
+        <label class="field-label">Tem computador em casa?</label>
+        <div class="radio-group" style="margin-top:8px;">
+          <label><input type="radio" name="tem_computador" value="Sim" checked> Sim</label>
+          <label><input type="radio" name="tem_computador" value="Não"> Não</label>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Tem acesso à internet?</label>
+        <div class="radio-group" style="margin-top:8px;">
+          <label><input type="radio" name="tem_internet" value="Sim" checked> Sim</label>
+          <label><input type="radio" name="tem_internet" value="Não"> Não</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALVAR -->
+  <div class="save-btn-wrap">
+    <button class="btn btn-success" id="btn-salvar" onclick="salvarMembro()">
+      💾 Enviar Cadastro
+    </button>
+  </div>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://vclqdzvir nafwplivlfc.supabase.co'.replace(' ','');
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+function toast(msg, dur=2800) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function maskCPF(i) {
+  let v = i.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  i.value = v;
+}
+function maskCEP(i) {
+  let v = i.value.replace(/\D/g,'');
+  v = v.replace(/^(\d{5})(\d)/,'$1-$2');
+  i.value = v;
+}
+function maskPhone(i) {
+  let v = i.value.replace(/\D/g,'');
+  v = v.replace(/^(\d{2})(\d)/g,'($1) $2');
+  v = v.replace(/(\d)(\d{4})$/,'$1-$2');
+  i.value = v;
+}
+
+function coletarDados() {
+  return {
+    tipo_cadastro: document.querySelector('input[name="tipo_cadastro"]:checked').value,
+    nome: document.getElementById('nome').value.trim(),
+    rg: document.getElementById('rg').value,
+    cpf: document.getElementById('cpf').value,
+    data_nasc: document.getElementById('dataNasc').value || null,
+    idade: parseInt(document.getElementById('idade').value) || null,
+    sexo: document.querySelector('input[name="sexo"]:checked').value,
+    tipo_sanguineo: document.getElementById('tipo_sanguineo').value,
+    escolaridade: document.getElementById('escolaridade').value,
+    estado_civil: document.getElementById('estadoCivil').value,
+    conjuge_nome: document.getElementById('conjuge_nome').value,
+    data_casamento: document.getElementById('dataCasamento').value || null,
+    cep: document.getElementById('cep').value,
+    bairro: document.getElementById('bairro').value,
+    endereco: document.getElementById('endereco').value,
+    cidade_estado: document.getElementById('cidade_estado').value,
+    fone_res: document.getElementById('fone_res').value,
+    fone_com: document.getElementById('fone_com').value,
+    celular: document.getElementById('celular').value,
+    email: document.getElementById('email').value,
+    ocupacao: document.getElementById('ocupacao').value,
+    empresa: document.getElementById('empresa').value,
+    forma_recebimento: document.getElementById('forma_recebimento').value,
+    setor_igreja: document.getElementById('setor_igreja').value,
+    congregacao_igreja: document.getElementById('congregacao_igreja').value,
+    igreja_anterior: document.getElementById('igreja_anterior').value,
+    igreja_cidade: document.getElementById('igreja_cidade').value,
+    igreja_pastor: document.getElementById('igreja_pastor').value,
+    data_batismo_aguas: document.getElementById('data_batismo_aguas').value || null,
+    data_batismo_es: document.getElementById('data_batismo_es').value || null,
+    data_aprovacao: document.getElementById('data_aprovacao').value || null,
+    cargo_principal: document.getElementById('cargo_principal').value,
+    outras_funcoes: document.getElementById('outras_funcoes').value,
+    qtd_filhos: parseInt(document.getElementById('qtd_filhos').value) || 0,
+    nome_dep1: document.getElementById('nome_dep1').value,
+    parentesco_dep1: document.getElementById('parentesco_dep1').value,
+    nome_dep2: document.getElementById('nome_dep2').value,
+    parentesco_dep2: document.getElementById('parentesco_dep2').value,
+    nome_dep3: document.getElementById('nome_dep3').value,
+    parentesco_dep3: document.getElementById('parentesco_dep3').value,
+    talentos: document.getElementById('talentos').value,
+    tem_computador: document.querySelector('input[name="tem_computador"]:checked').value,
+    tem_internet: document.querySelector('input[name="tem_internet"]:checked').value,
+  };
+}
+
+async function salvarMembro() {
+  const dados = coletarDados();
+
+  if (!dados.nome || !dados.cpf || !dados.celular) {
+    toast('⚠️ Preencha Nome, CPF e Celular!'); return;
+  }
+
+  const btn = document.getElementById('btn-salvar');
+  btn.innerHTML = '<span class="loading"></span> Enviando…';
+  btn.disabled = true;
+
+  const { error } = await db.from('membros').insert([dados]);
+
+  btn.innerHTML = '💾 Enviar Cadastro';
+  btn.disabled = false;
+
+  if (error) {
+    console.error(error);
+    toast('❌ Erro ao enviar. Verifique a conexão.'); return;
+  }
+
+  // Mostrar tela de sucesso
+  document.getElementById('tela-form').style.display = 'none';
+  document.getElementById('tela-sucesso').classList.add('show');
+  window.scrollTo(0, 0);
+}
+
+function novoMembro() {
+  document.getElementById('tela-sucesso').classList.remove('show');
+  document.getElementById('tela-form').style.display = 'block';
+  // Limpar campos
+  document.querySelectorAll('#tela-form input[type=text], #tela-form input[type=email], #tela-form input[type=number], #tela-form input[type=date], #tela-form textarea, #tela-form select').forEach(el => el.value = '');
+  document.querySelector('input[name="tipo_cadastro"][value="Membro"]').checked = true;
+  document.querySelector('input[name="sexo"][value="M"]').checked = true;
+  document.querySelector('input[name="tem_computador"][value="Sim"]').checked = true;
+  document.querySelector('input[name="tem_internet"][value="Sim"]').checked = true;
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
