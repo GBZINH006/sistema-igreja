@@ -1,290 +1,997 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<title>Em Atualização</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cadastro de Membros — Igreja Pão da Vida</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --bg:#070b16;
-  --card:#111827;
-  --border:#1e293b;
-  --accent:#3b82f6;
-  --accent2:#06b6d4;
-  --text:#e2e8f0;
-  --muted:#94a3b8;
-}
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-body{
-  min-height:100vh;
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--bg);
-  font-family:'DM Sans', sans-serif;
-  color:var(--text);
-  position:relative;
-}
-
-/* FUNDO */
-.bg{
-  position:absolute;
-  inset:0;
-  overflow:hidden;
-}
-
-.blur{
-  position:absolute;
-  border-radius:50%;
-  filter:blur(100px);
-  opacity:.35;
-  animation:float 8s ease-in-out infinite;
-}
-
-.blur1{
-  width:350px;
-  height:350px;
-  background:#3b82f6;
-  top:-100px;
-  left:-100px;
-}
-
-.blur2{
-  width:300px;
-  height:300px;
-  background:#06b6d4;
-  bottom:-120px;
-  right:-80px;
-  animation-delay:2s;
-}
-
-.blur3{
-  width:200px;
-  height:200px;
-  background:#2563eb;
-  top:40%;
-  left:60%;
-  animation-delay:4s;
-}
-
-@keyframes float{
-  0%,100%{
-    transform:translateY(0px) translateX(0px);
-  }
-  50%{
-    transform:translateY(-20px) translateX(10px);
-  }
-}
-
-/* CARD */
-.container{
-  position:relative;
-  z-index:2;
-  width:90%;
-  max-width:600px;
-  padding:3rem 2rem;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(17,24,39,.75);
-  backdrop-filter:blur(18px);
-  border-radius:28px;
-  text-align:center;
-  box-shadow:
-    0 20px 60px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.04);
-  animation:fadeUp 1s ease;
-}
-
-@keyframes fadeUp{
-  from{
-    opacity:0;
-    transform:translateY(30px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-
-/* ICON */
-.icon{
-  font-size:5rem;
-  margin-bottom:1rem;
-  animation:bounce 2s infinite;
-  display:inline-block;
-}
-
-@keyframes bounce{
-  0%,100%{
-    transform:translateY(0);
-  }
-  50%{
-    transform:translateY(-12px);
-  }
-}
-
-/* TITULO */
-.title{
-  font-family:'Syne', sans-serif;
-  font-size:2.3rem;
-  font-weight:800;
-  margin-bottom:1rem;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-/* TEXTO */
-.text{
-  color:var(--muted);
-  line-height:1.8;
-  font-size:1rem;
-  margin-bottom:2rem;
-}
-
-/* STATUS */
-.status{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:.8rem 1.2rem;
-  border-radius:999px;
-  background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.06);
-  color:var(--text);
-  font-size:.9rem;
-}
-
-.dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:#f59e0b;
-  animation:pulse 1.4s infinite;
-}
-
-@keyframes pulse{
-  0%{
-    transform:scale(1);
-    opacity:1;
-  }
-  50%{
-    transform:scale(1.5);
-    opacity:.5;
-  }
-  100%{
-    transform:scale(1);
-    opacity:1;
-  }
-}
-
-/* PARTICULAS */
-.particle{
-  position:absolute;
-  width:4px;
-  height:4px;
-  border-radius:50%;
-  background:white;
-  opacity:.2;
-  animation:particleMove linear infinite;
-}
-
-@keyframes particleMove{
-  from{
-    transform:translateY(100vh);
-  }
-  to{
-    transform:translateY(-100vh);
-  }
-}
-
-@media(max-width:600px){
-
-  .container{
-    padding:2.5rem 1.5rem;
+  :root {
+    --cream: #faf7f2;
+    --warm: #f5efe6;
+    --gold: #c9a84c;
+    --gold2: #e8c96d;
+    --deep: #1a1208;
+    --brown: #3d2b1f;
+    --text: #2c1f14;
+    --muted: #8a7060;
+    --border: #e0d4c0;
+    --surface: #ffffff;
+    --accent: #7c3d12;
+    --green: #2d6a4f;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(60,30,10,0.10);
   }
 
-  .title{
-    font-size:1.8rem;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
   }
 
-  .text{
-    font-size:.95rem;
+  /* BG TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(124,61,18,0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
   }
 
-  .icon{
-    font-size:4rem;
+  /* HERO HEADER */
+  .hero {
+    background: linear-gradient(135deg, var(--deep) 0%, var(--brown) 60%, #5c3210 100%);
+    padding: 3rem 1.5rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.02) 0px,
+      rgba(255,255,255,0.02) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 60px;
+    background: var(--cream);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+  .hero-cross {
+    font-size: 2.5rem;
+    margin-bottom: 0.8rem;
+    display: block;
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 900;
+    color: var(--gold2);
+    line-height: 1.15;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  }
+  .hero p {
+    color: rgba(255,255,255,0.65);
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+  .hero-address {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.8rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 30px;
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--accent));
+    border-radius: 10px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* TIPO CADASTRO */
+  .tipo-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow);
+  }
+  .tipo-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    background: transparent;
+    border-radius: 9px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .tipo-btn.active {
+    background: linear-gradient(135deg, var(--brown), var(--accent));
+    color: white;
+    box-shadow: 0 4px 16px rgba(60,30,10,0.25);
+  }
+
+  /* SECTION CARD */
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s;
+  }
+  .section-card:focus-within {
+    border-color: var(--gold);
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--brown);
+    margin-bottom: 1rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid var(--warm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title .icon-wrap {
+    width: 28px; height: 28px;
+    background: var(--warm);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+
+  /* LABELS */
+  .field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 1rem;
+    margin-bottom: 3px;
+  }
+  .field-label .req { color: var(--accent); margin-left: 2px; }
+
+  /* INPUTS */
+  input[type=text], input[type=email], input[type=date],
+  input[type=number], select, textarea {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    background: var(--warm);
+    border: 1.5px solid transparent;
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.92rem;
+    outline: none;
+    transition: all 0.2s;
+    margin-top: 2px;
+  }
+  input::placeholder, textarea::placeholder { color: #b8a898; }
+  input:focus, select:focus, textarea:focus {
+    background: var(--surface);
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  }
+  select { cursor: pointer; }
+  select option { background: var(--surface); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* RADIO PILLS */
+  .radio-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+  .radio-pill input[type=radio] { display: none; }
+  .radio-pill label {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--warm);
+    user-select: none;
+  }
+  .radio-pill input[type=radio]:checked + label {
+    background: var(--brown);
+    border-color: var(--brown);
     color: white;
   }
 
-}
+  /* GRID */
+  .form-row { display: grid; gap: 10px; }
+  .col-2 { grid-template-columns: 1fr 1fr; }
+  .col-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 560px) {
+    .col-2, .col-3 { grid-template-columns: 1fr; }
+  }
+
+  /* FAMILY MEMBER ROW */
+  .dep-row {
+    display: grid;
+    grid-template-columns: 1fr 140px;
+    gap: 8px;
+    align-items: end;
+    margin-top: 8px;
+    padding: 10px;
+    background: var(--warm);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .dep-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+  }
+  .dep-row input { margin-top: 0; }
+
+  /* SUBMIT */
+  .submit-wrap {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(to top, var(--cream) 70%, transparent);
+    padding: 1.5rem 1rem 1.2rem;
+    z-index: 40;
+  }
+  .submit-wrap .inner {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--green), #1b4332);
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 8px 28px rgba(45,106,79,0.35);
+    transition: all 0.25s;
+    letter-spacing: 0.3px;
+  }
+  .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0) scale(0.99); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* LOADING SPINNER */
+  .spin {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* SUCCESS SCREEN */
+  #tela-sucesso {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 2rem;
+  }
+  #tela-sucesso.show { display: flex; }
+  .success-icon {
+    width: 90px; height: 90px;
+    background: linear-gradient(135deg, var(--green), #1b4332);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 30px rgba(45,106,79,0.3);
+    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  #tela-sucesso h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+  #tela-sucesso p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 340px; }
+  .btn-novo {
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--brown);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--brown);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-novo:hover { background: var(--brown); color: white; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 5rem; left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--brown);
+    color: white;
+    padding: 0.7rem 1.4rem;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    z-index: 999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(60,30,10,0.25);
+    pointer-events: none;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* FIELD VALIDATION */
+  input.invalid, select.invalid {
+    border-color: #e74c3c !important;
+    background: #fff5f5 !important;
+  }
+
+  .hint {
+    font-size: 0.73rem;
+    color: var(--muted);
+    margin-top: 3px;
+    padding-left: 2px;
+  }
 </style>
 </head>
 <body>
 
-<div class="bg">
-  <div class="blur blur1"></div>
-  <div class="blur blur2"></div>
-  <div class="blur blur3"></div>
+<!-- TELA SUCESSO -->
+<div id="tela-sucesso">
+  <div class="success-icon">✝</div>
+  <h2>Bem-vindo à família!</h2>
+  <p>Seu cadastro foi recebido com sucesso. Que Deus abençoe sua jornada conosco.</p>
+  <button class="btn-novo" onclick="novoCadastro()">+ Novo Cadastro</button>
 </div>
 
-<div class="container">
+<!-- FORMULÁRIO -->
+<div id="app">
 
-  <img src="images-removebg-preview.png" alt="" class="icon">
-
-  <h1 class="title">
-    Estamos em atualização
-  </h1>
-
-  <p class="text">
-    Nosso sistema de cadastro está temporariamente indisponível.<br><br>
-
-    Estamos realizando melhorias para deixar tudo mais rápido, moderno e seguro ⚡<br><br>
-
-    Volte novamente mais tarde 😉
-  </p>
-
-  <div class="status">
-    <span class="dot"></span>
-    Atualização em andamento...
+  <!-- HERO -->
+  <div class="hero">
+    <span class="hero-cross">✝</span>
+    <h1>Ficha de Cadastro<br>de Membros</h1>
+    <p>Igreja AD BELA-VISTA — 2026</p>
+    <div class="hero-address">📍 Rua Frei Lauro, 44 · Ponte do Imaruim · Palhoça - SC</div>
   </div>
 
-</div>
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <span class="progress-label" id="progress-label">0% preenchido</span>
+  </div>
+
+  <main>
+
+    <!-- TIPO -->
+    <div class="tipo-toggle">
+      <button class="tipo-btn active" id="btn-membro" onclick="setTipo('Membro')">
+        🏛️ Membro
+      </button>
+      <button class="tipo-btn" id="btn-congregado" onclick="setTipo('Congregado')">
+        🙏 Congregado
+      </button>
+    </div>
+    <input type="hidden" id="tipo_cadastro" value="Membro">
+
+    <!-- DADOS PESSOAIS -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">👤</div>
+        Dados Pessoais
+      </div>
+
+      <label class="field-label">Nome Completo <span class="req">*</span></label>
+      <input type="text" id="nome" placeholder="Seu nome completo" autocomplete="name">
+
+      <div class="form-row col-2">
+        <div>
+          <label class="field-label">RG</label>
+          <input type="text" id="rg" placeholder="00.000.000-0">
+        </div>
+        <div>
+          <label class="field-label">CPF <span class="req">*</span></label>
+          <input type="text" id="cpf" maxlength="14" oninput="maskCPF(this)" placeholder="000.000.000-00" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="form-row col-3">
+        <div>
+          <label class="field-label">Nascimento</label>
+          <input type="date" id="dataNasc" onchange="calcIdade()">
+        </div>
+        <div>
+          <label class="field-label">Idade</label>
+          <input type="number" id="idade" placeholder="—" min="0" max="120" readonly style="cursor:default;">
+          <div class="hint">Calculada automaticamente</div>
+        </div>
+        <div>
+          <label class="field-label">Sexo</label>
+          <div class="radio-pills" style="margin-top:10px;">
+            <div class="radio-pill">
+              <input type="radio" name="sexo" id="sexo-m" value="M" checked>
+              <label for="sexo-m">♂ Masc.</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" name="sexo" id="sexo-f" value="F">
+              <label for="sexo-f">♀ Fem.</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row col-3">
+        <div>
+          <label class="field-label">Tipo Sanguíneo</label>
+          <select id="tipo_sanguineo">
+            <option value="">— Selecione</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+            <option>O+</option><option>O-</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Escolaridade</label>
+          <select id="escolaridade">
+            <option value="">— Selecione</option>
+            <option>Fundamental Incompleto</option>
+            <option>Fundamental Completo</option>
+            <option>Médio Incompleto</option>
+            <option>Médio Completo</option>
+            <option>Superior Incompleto</option>
+            <option>Superior Completo</option>
+            <option>Pós-Graduação</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Estado Civil</label>
+          <select id="estadoCivil" onchange="toggleConjuge()">
+            <option value="">— Selecione</option>
+            <option>Solteiro(a)</option>
+            <option>Casado(a)</option>
+            <option>Divorciado(a)</option>
+            <option>Viúvo(a)</option>
+            <option>União Estável</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="campo-conjuge" style="display:none;">
+        <div class="form-row col-2">
+          <div>
+            <label class="field-label">Nome do Cônjuge</label>
+            <input type="text" id="conjuge_nome" placeholder="Nome completo">
+          </div>
+          <div>
+            <label class="field-label">Data do Casamento</label>
+            <input type="date" id="dataCasamento">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENDEREÇO -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">📍</div>
+        Endereço e Contato
+      </div>
+
+      <div class="form-row col-2">
+        <div>
+          <label class="field-label">CEP</label>
+          <input type="text" id="cep" maxlength="9" oninput="maskCEP(this)" placeholder="00000-000" inputmode="numeric">
+        </div>
+        <div>
+          <label class="field-label">Bairro</label>
+          <input type="text" id="bairro" placeholder="Bairro">
+        </div>
+      </div>
+
+      <label class="field-label">Endereço completo</label>
+      <input type="text" id="endereco" placeholder="Rua, número, complemento">
+
+      <div class="form-row col-2">
+        <div>
+          <label class="field-label">Cidade / UF</label>
+          <input type="text" id="cidade_estado" placeholder="Ex: Palhoça - SC">
+        </div>
+        <div>
+          <label class="field-label">Fone Residencial</label>
+          <input type="text" id="fone_res" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel">
+        </div>
+      </div>
+
+      <div class="form-row col-2">
+        <div>
+          <label class="field-label">Fone Comercial</label>
+          <input type="text" id="fone_com" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel">
+        </div>
+        <div>
+          <label class="field-label">Celular / WhatsApp <span class="req">*</span></label>
+          <input type="text" id="celular" oninput="maskPhone(this)" placeholder="(48) 00000-0000" inputmode="tel">
+        </div>
+      </div>
+
+      <label class="field-label">E-mail</label>
+      <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
+    </div>
+
+    <!-- PROFISSIONAL -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">💼</div>
+        Dados Profissionais
+      </div>
+      <label class="field-label">Ocupação Atual</label>
+      <input type="text" id="ocupacao" placeholder="Ex: Professor, Comerciante…">
+      <label class="field-label">Local de Trabalho</label>
+      <input type="text" id="empresa" placeholder="Nome da empresa ou instituição">
+    </div>
+
+    <!-- IGREJA -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">✝️</div>
+        Dados da Igreja
+      </div>
+
+      <label class="field-label">Forma de Recebimento</label>
+      <select id="forma_recebimento">
+        <option value="">— Selecione</option>
+        <option>Batismo nas Águas</option>
+        <option>Transferência</option>
+        <option>Aclamação</option>
+        <option>Reconciliação</option>
+      </select>
+
+      <div class="form-row col-2">
+        <div>
+          <label class="field-label">Setor</label>
+          <input type="text" id="setor_igreja" placeholder="Setor">
+        </div>
+        <div>
+          <label class="field-label">Congregação</label>
+          <input type="text" id="congregacao_igreja" placeholder="Congregação">
+        </div>
+      </div>
+
+      <div class="form-row col-3">
+        <div>
+          <label class="field-label">Igreja Anterior</label>
+          <input type="text" id="igreja_anterior" placeholder="Nome">
+        </div>
+        <div>
+          <label class="field-label">Cidade</label>
+          <input type="text" id="igreja_cidade" placeholder="Cidade">
+        </div>
+        <div>
+          <label class="field-label">Pastor Anterior</label>
+          <input type="text" id="igreja_pastor" placeholder="Nome">
+        </div>
+      </div>
+
+      <div class="form-row col-3">
+        <div>
+          <label class="field-label">Batismo nas Águas</label>
+          <input type="date" id="data_batismo_aguas">
+        </div>
+        <div>
+          <label class="field-label">Batismo Espírito Santo</label>
+          <input type="date" id="data_batismo_es">
+        </div>
+        <div>
+          <label class="field-label">Data Aprovação</label>
+          <input type="date" id="data_aprovacao">
+        </div>
+      </div>
+    </div>
+
+    <!-- CARGOS -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">🎖️</div>
+        Cargo e Funções
+      </div>
+      <label class="field-label">Cargo Principal</label>
+      <input type="text" id="cargo_principal" placeholder="Ex: Diácono, Presbítero, Líder…">
+      <label class="field-label">Outras Funções</label>
+      <textarea id="outras_funcoes" placeholder="Descreva outras funções exercidas na igreja…"></textarea>
+    </div>
+
+    <!-- FAMÍLIA -->
+    <div class="section-card">
+      <div class="section-title">
+        <div class="icon-wrap">👨‍👩‍👧</div>
+        Família
+      </div>
+
+      <label class="field-label">Quantidade de Filhos</label>
+      <input type="number" id="qtd_filhos" min="0" max="30" placeholder="0" inputmode="numeric" style="max-width:100px;">
+
+      <div style="margin-top:1.2rem; font-size:0.75rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
+        Demais integrantes da casa
+      </div>
+
+      <div class="dep-row">
+        <div>
+          <div class="dep-num">Integrante 1</div>
+          <input type="text" id="nome_dep1" placeholder="Nome completo">
+        </div>
+        <div>
+          <div class="dep-num">Parentesco</div>
+          <input type="text" id="parentesco_dep1" placeholder="Ex: Filho(a)">
+        </div>
+      </div>
+      <div class="dep-row">
+        <div>
+          <div class="dep-num">Integrante 2</div>
+          <input type="text" id="nome_dep2" placeholder="Nome completo">
+        </div>
+        <div>
+          <div class="dep-num">Parentesco</div>
+          <input type="text" id="parentesco_dep2" placeholder="Ex: Mãe">
+        </div>
+      </div>
+      <div class="dep-row">
+        <div>
+          <div class="dep-num">Integrante 3</div>
+          <input type="text" id="nome_dep3" placeholder="Nome completo">
+        </div>
+        <div>
+          <div class="dep-num">Parentesco</div>
+          <input type="text" id="parentesco_dep3" placeholder="Ex: Pai">
+        </div>
+      </div>
+    </div>
+
+    <!-- TALENTOS -->
+    <div class="section-card" style="margin-bottom: 5rem;">
+      <div class="section-title">
+        <div class="icon-wrap">🌟</div>
+        Talentos e Recursos
+      </div>
+
+      <label class="field-label">Talentos e Habilidades</label>
+      <textarea id="talentos" placeholder="Ex: Canto, violão, pregação, ensino, administração…"></textarea>
+
+      <div class="form-row col-2" style="margin-top:0.8rem;">
+        <div>
+          <label class="field-label">Tem computador em casa?</label>
+          <div class="radio-pills" style="margin-top:8px;">
+            <div class="radio-pill">
+              <input type="radio" name="tem_computador" id="comp-sim" value="Sim" checked>
+              <label for="comp-sim">✓ Sim</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" name="tem_computador" id="comp-nao" value="Não">
+              <label for="comp-nao">✗ Não</label>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Acesso à internet?</label>
+          <div class="radio-pills" style="margin-top:8px;">
+            <div class="radio-pill">
+              <input type="radio" name="tem_internet" id="inet-sim" value="Sim" checked>
+              <label for="inet-sim">✓ Sim</label>
+            </div>
+            <div class="radio-pill">
+              <input type="radio" name="tem_internet" id="inet-nao" value="Não">
+              <label for="inet-nao">✗ Não</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SUBMIT FIXO -->
+  <div class="submit-wrap">
+    <div class="inner">
+      <button class="btn-submit" id="btn-salvar" onclick="salvarMembro()">
+        ✝ Enviar Cadastro
+      </button>
+    </div>
+  </div>
+
+</div><!-- fim app -->
+
+<!-- TOAST -->
+<div id="toast"></div>
 
 <script>
-/* PARTICULAS */
-for(let i = 0; i < 35; i++){
+// ─── CONFIG SUPABASE ───────────────────────────────────
+// Apenas a anon key é exposta aqui — ela é pública por design do Supabase.
+// A segurança real é garantida via Row Level Security (RLS) no painel do Supabase:
+// habilite RLS na tabela "membros" e crie uma policy que permita apenas INSERT (sem SELECT/UPDATE/DELETE)
+// para o papel "anon". Assim ninguém consegue ler ou alterar dados pelo front-end de cadastro.
+const SB_URL = 'https://vclqdzvircnafwplivlfc.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
+const { createClient } = supabase;
+const db = createClient(SB_URL, SB_KEY);
 
-  const particle = document.createElement('div')
+// ─── TIPO CADASTRO ─────────────────────────────────────
+function setTipo(tipo) {
+  document.getElementById('tipo_cadastro').value = tipo;
+  document.getElementById('btn-membro').classList.toggle('active', tipo === 'Membro');
+  document.getElementById('btn-congregado').classList.toggle('active', tipo === 'Congregado');
+}
 
-  particle.classList.add('particle')
+// ─── CÔNJUGE CONDICIONAL ───────────────────────────────
+function toggleConjuge() {
+  const ec = document.getElementById('estadoCivil').value;
+  const show = ['Casado(a)', 'União Estável'].includes(ec);
+  document.getElementById('campo-conjuge').style.display = show ? 'block' : 'none';
+}
 
-  particle.style.left = Math.random() * 100 + 'vw'
+// ─── CALCULAR IDADE ────────────────────────────────────
+function calcIdade() {
+  const val = document.getElementById('dataNasc').value;
+  if (!val) { document.getElementById('idade').value = ''; return; }
+  const hoje = new Date();
+  const nasc = new Date(val);
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  document.getElementById('idade').value = idade >= 0 ? idade : '';
+}
 
-  particle.style.animationDuration =
-    (Math.random() * 10 + 5) + 's'
+// ─── MÁSCARAS ──────────────────────────────────────────
+function maskCPF(i) {
+  let v = i.value.replace(/\D/g,'');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2');
+  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  i.value = v;
+}
+function maskCEP(i) {
+  let v = i.value.replace(/\D/g,'');
+  v = v.replace(/^(\d{5})(\d)/,'$1-$2');
+  i.value = v;
+}
+function maskPhone(i) {
+  let v = i.value.replace(/\D/g,'');
+  if (v.length <= 10) {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  } else {
+    v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
+  }
+  i.value = v;
+}
 
-  particle.style.opacity =
-    Math.random()
+// ─── PROGRESS BAR ─────────────────────────────────────
+function calcProgress() {
+  const campos = ['nome','cpf','celular','dataNasc','endereco','setor_igreja'];
+  let filled = campos.filter(id => document.getElementById(id)?.value?.trim()).length;
+  const pct = Math.round((filled / campos.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = pct + '% preenchido';
+}
+document.addEventListener('input', calcProgress);
+document.addEventListener('change', calcProgress);
 
-  particle.style.width =
-    particle.style.height =
-    (Math.random() * 4 + 2) + 'px'
+// ─── TOAST ─────────────────────────────────────────────
+function toast(msg, dur=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
 
-  document.body.appendChild(particle)
+// ─── COLETAR DADOS ─────────────────────────────────────
+function coletarDados() {
+  return {
+    tipo_cadastro: document.getElementById('tipo_cadastro').value,
+    nome: document.getElementById('nome').value.trim(),
+    rg: document.getElementById('rg').value.trim(),
+    cpf: document.getElementById('cpf').value.trim(),
+    data_nasc: document.getElementById('dataNasc').value || null,
+    idade: parseInt(document.getElementById('idade').value) || null,
+    sexo: document.querySelector('input[name="sexo"]:checked')?.value || 'M',
+    tipo_sanguineo: document.getElementById('tipo_sanguineo').value,
+    escolaridade: document.getElementById('escolaridade').value,
+    estado_civil: document.getElementById('estadoCivil').value,
+    conjuge_nome: document.getElementById('conjuge_nome').value.trim(),
+    data_casamento: document.getElementById('dataCasamento').value || null,
+    cep: document.getElementById('cep').value.trim(),
+    bairro: document.getElementById('bairro').value.trim(),
+    endereco: document.getElementById('endereco').value.trim(),
+    cidade_estado: document.getElementById('cidade_estado').value.trim(),
+    fone_res: document.getElementById('fone_res').value.trim(),
+    fone_com: document.getElementById('fone_com').value.trim(),
+    celular: document.getElementById('celular').value.trim(),
+    email: document.getElementById('email').value.trim(),
+    ocupacao: document.getElementById('ocupacao').value.trim(),
+    empresa: document.getElementById('empresa').value.trim(),
+    forma_recebimento: document.getElementById('forma_recebimento').value,
+    setor_igreja: document.getElementById('setor_igreja').value.trim(),
+    congregacao_igreja: document.getElementById('congregacao_igreja').value.trim(),
+    igreja_anterior: document.getElementById('igreja_anterior').value.trim(),
+    igreja_cidade: document.getElementById('igreja_cidade').value.trim(),
+    igreja_pastor: document.getElementById('igreja_pastor').value.trim(),
+    data_batismo_aguas: document.getElementById('data_batismo_aguas').value || null,
+    data_batismo_es: document.getElementById('data_batismo_es').value || null,
+    data_aprovacao: document.getElementById('data_aprovacao').value || null,
+    cargo_principal: document.getElementById('cargo_principal').value.trim(),
+    outras_funcoes: document.getElementById('outras_funcoes').value.trim(),
+    qtd_filhos: parseInt(document.getElementById('qtd_filhos').value) || 0,
+    nome_dep1: document.getElementById('nome_dep1').value.trim(),
+    parentesco_dep1: document.getElementById('parentesco_dep1').value.trim(),
+    nome_dep2: document.getElementById('nome_dep2').value.trim(),
+    parentesco_dep2: document.getElementById('parentesco_dep2').value.trim(),
+    nome_dep3: document.getElementById('nome_dep3').value.trim(),
+    parentesco_dep3: document.getElementById('parentesco_dep3').value.trim(),
+    talentos: document.getElementById('talentos').value.trim(),
+    tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
+    tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
+  };
+}
 
+// ─── VALIDAR ───────────────────────────────────────────
+function validar(dados) {
+  let ok = true;
+  const required = {
+    nome: document.getElementById('nome'),
+    cpf: document.getElementById('cpf'),
+    celular: document.getElementById('celular'),
+  };
+  Object.entries(required).forEach(([k, el]) => {
+    if (!dados[k]) { el.classList.add('invalid'); ok = false; }
+    else el.classList.remove('invalid');
+  });
+  return ok;
+}
+
+// ─── SALVAR ────────────────────────────────────────────
+async function salvarMembro() {
+  const dados = coletarDados();
+  if (!validar(dados)) {
+    toast('⚠️ Preencha Nome, CPF e Celular');
+    document.querySelector('.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+  const btn = document.getElementById('btn-salvar');
+  btn.innerHTML = '<span class="spin"></span> Enviando…';
+  btn.disabled = true;
+  try {
+    const { error } = await db.from('membros').insert([dados]);
+    if (error) throw error;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('tela-sucesso').classList.add('show');
+  } catch(e) {
+    console.error(e);
+    toast('❌ Erro ao enviar. Tente novamente.');
+    btn.innerHTML = '✝ Enviar Cadastro';
+    btn.disabled = false;
+  }
+}
+
+// ─── NOVO CADASTRO ─────────────────────────────────────
+function novoCadastro() {
+  document.getElementById('tela-sucesso').classList.remove('show');
+  document.getElementById('app').style.display = 'block';
+  // limpar todos os campos
+  document.querySelectorAll('input[type=text], input[type=email], input[type=number], input[type=date], textarea, select')
+    .forEach(el => el.value = '');
+  document.getElementById('tipo_cadastro').value = 'Membro';
+  document.getElementById('btn-membro').classList.add('active');
+  document.getElementById('btn-congregado').classList.remove('active');
+  document.querySelector('input[name="sexo"][value="M"]').checked = true;
+  document.querySelector('input[name="tem_computador"][value="Sim"]').checked = true;
+  document.querySelector('input[name="tem_internet"][value="Sim"]').checked = true;
+  document.getElementById('campo-conjuge').style.display = 'none';
+  document.getElementById('btn-salvar').innerHTML = '✝ Enviar Cadastro';
+  document.getElementById('btn-salvar').disabled = false;
+  calcProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
-
 </body>
 </html>
