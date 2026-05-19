@@ -1,617 +1,1912 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Painel do Pastor — AD Bela-Vista</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<style>
-  :root {
-    --bg:#0a0f1e; --surface:#111827; --surface2:#1a2236; --border:#1e2d45;
-    --accent:#3b82f6; --accent2:#06b6d4;
-    --gold:#c9a84c; --gold2:#e8c96d;
-    --text:#e2e8f0; --muted:#64748b; --success:#10b981; --danger:#ef4444; --radius:14px;
-    --brown:#3d2b1f; --deep:#1a1208;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
-  body::before{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%);pointer-events:none;z-index:0;}
-  body::after{content:'';position:fixed;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(59,130,246,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Painel do Pastor — AD Bela-Vista</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0f1e;
+      --surface: #111827;
+      --surface2: #1a2236;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --accent2: #06b6d4;
+      --gold: #c9a84c;
+      --gold2: #e8c96d;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 14px;
+      --brown: #3d2b1f;
+      --deep: #1a1208;
+    }
 
-  .tela{display:none;} .tela.ativa{display:block;}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-  /* ── LOGIN ─────────────────────────────────────────── */
-  #tela-carregando{min-height:100vh;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;}
-  #tela-carregando.ativa{display:flex;}
-  .spinner-grande{width:40px;height:40px;border:3px solid rgba(201,168,76,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;}
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
 
-  #tela-login{min-height:100vh;display:none;align-items:center;justify-content:center;padding:1rem;position:relative;z-index:1;
-    background: linear-gradient(135deg, var(--deep) 0%, #0a0f1e 60%, #0d1a2e 100%);}
-  #tela-login.ativa{display:flex;}
-  #tela-login::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,0.01) 0px,rgba(255,255,255,0.01) 1px,transparent 1px,transparent 20px);pointer-events:none;}
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  .login-box{
-    background:rgba(17,24,39,0.95);
-    border:1px solid rgba(201,168,76,0.2);
-    border-radius:24px;
-    padding:3rem 2.5rem;
-    width:100%; max-width:420px;
-    text-align:center;
-    box-shadow:0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.05);
-    animation:fadeUp 0.5s ease;
-    position:relative;overflow:hidden;
-  }
-  .login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--accent2));}
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-  .login-logo{display:block;margin:0 auto 1rem;height:70px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(201,168,76,0.3));}
-  .login-logo-placeholder{font-size:3rem;display:block;margin-bottom:0.8rem;animation:float 4s ease-in-out infinite;}
-  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+    .tela {
+      display: none;
+    }
 
-  .login-box h1{
-    font-family:'Playfair Display',serif;
-    font-size:1.5rem;font-weight:900;
-    background:linear-gradient(135deg,var(--gold2),var(--gold));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    margin-bottom:0.2rem;
-  }
-  .login-church{font-family:'DM Sans',sans-serif;color:rgba(255,255,255,0.5);font-size:0.78rem;font-weight:300;letter-spacing:1px;margin-bottom:1.8rem;}
+    .tela.ativa {
+      display: block;
+    }
 
-  .login-field{text-align:left;margin-bottom:1rem;}
-  .login-field label{display:block;font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
-  .login-field input{
-    width:100%;padding:0.85rem 1.1rem;
-    background:rgba(26,34,54,0.8);border:1px solid var(--border);border-radius:10px;
-    color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.95rem;outline:none;
-    transition:border-color 0.2s,box-shadow 0.2s;
-  }
-  .login-field input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,0.15);}
-  .login-field input::placeholder{color:var(--muted);}
+    /* ── LOGIN ─────────────────────────────────────────── */
+    #tela-carregando {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem;
+    }
 
-  .login-erro{display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;font-size:0.82rem;padding:0.6rem 1rem;border-radius:8px;margin-bottom:1rem;text-align:left;}
-  .login-erro.show{display:block;}
+    #tela-carregando.ativa {
+      display: flex;
+    }
 
-  .btn-login{
-    width:100%;padding:0.95rem;
-    background:linear-gradient(135deg,var(--gold),#a07830);
-    color:var(--deep);border:none;border-radius:10px;
-    font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;
-    cursor:pointer;transition:all 0.2s;
-    box-shadow:0 4px 20px rgba(201,168,76,0.3);
-    letter-spacing:0.3px;
-  }
-  .btn-login:hover{filter:brightness(1.1);transform:translateY(-1px);}
-  .btn-login:active{transform:scale(0.98);}
-  .btn-login:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
-  .login-badge{display:inline-flex;align-items:center;gap:5px;margin-top:1.2rem;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);color:rgba(201,168,76,0.7);font-size:0.7rem;padding:4px 12px;border-radius:20px;font-weight:600;letter-spacing:0.5px;}
+    .spinner-grande {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(201, 168, 76, 0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
 
-  /* ── NOTIFICAÇÕES ──────────────────────────────────── */
-  #notif-stack{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;display:flex;flex-direction:column-reverse;gap:10px;max-width:340px;}
-  .notif-card{background:var(--surface);border:1px solid rgba(16,185,129,0.4);border-left:4px solid var(--success);border-radius:14px;padding:1rem 1.2rem;box-shadow:0 8px 40px rgba(0,0,0,0.5);animation:slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;}
-  .notif-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--success),var(--accent2));animation:progress 6s linear forwards;}
-  @keyframes progress{from{width:100%;}to{width:0%;}}
-  @keyframes slideIn{from{opacity:0;transform:translateX(60px) scale(0.92);}to{opacity:1;transform:translateX(0) scale(1);}}
-  .notif-saindo{animation:slideOut 0.3s ease forwards!important;}
-  @keyframes slideOut{to{opacity:0;transform:translateX(60px) scale(0.92);}}
-  .notif-topo{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-  .notif-pulse{width:10px;height:10px;border-radius:50%;background:var(--success);flex-shrink:0;animation:pulse 1.5s ease infinite;}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.6);}50%{box-shadow:0 0 0 6px rgba(16,185,129,0);}}
-  .notif-label{font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--success);flex:1;}
-  .notif-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.85rem;padding:0 2px;line-height:1;transition:color 0.2s;}
-  .notif-close:hover{color:var(--text);}
-  .notif-nome{font-family:'Syne',sans-serif;font-size:0.95rem;font-weight:800;color:var(--text);margin-bottom:3px;}
-  .notif-meta{font-size:0.76rem;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;}
-  .notif-meta span{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1px 7px;}
-  .notif-acoes{display:flex;gap:6px;margin-top:10px;}
-  .notif-btn{font-size:0.72rem;font-family:'Syne',sans-serif;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px;}
-  .notif-btn:hover{border-color:var(--accent);}
-  .notif-btn.verde{background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#6ee7b7;}
-  .notif-btn.verde:hover{background:rgba(16,185,129,0.22);}
+    #tela-login {
+      min-height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(135deg, var(--deep) 0%, #0a0f1e 60%, #0d1a2e 100%);
+    }
 
-  #sino-wrap{position:relative;cursor:pointer;}
-  #sino-badge{display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:white;font-size:0.6rem;font-weight:700;width:16px;height:16px;border-radius:50%;align-items:center;justify-content:center;font-family:'Syne',sans-serif;}
-  #sino-badge.visivel{display:flex;}
+    #tela-login.ativa {
+      display: flex;
+    }
 
-  /* ── HEADER ────────────────────────────────────────── */
-  header{
-    background:linear-gradient(135deg, var(--deep) 0%, #111827 100%);
-    border-bottom:1px solid rgba(201,168,76,0.15);
-    padding:0.8rem 1.5rem;
-    display:flex;align-items:center;justify-content:space-between;
-    position:sticky;top:0;z-index:100;gap:1rem;
-  }
-  .header-left{display:flex;align-items:center;gap:12px;}
-  .header-logo{height:36px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(201,168,76,0.3));}
-  .header-logo-placeholder{font-size:1.8rem;line-height:1;}
-  .header-info{}
-  .header-title{
-    font-family:'Playfair Display',serif;
-    font-size:0.95rem;font-weight:700;
-    background:linear-gradient(135deg,var(--gold2),var(--gold));
-    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-    display:block;line-height:1.2;
-  }
-  .header-sub{font-size:0.65rem;color:rgba(255,255,255,0.35);letter-spacing:1px;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
-  .header-badge{background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.25);color:var(--gold2);font-size:0.62rem;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:6px;text-transform:uppercase;font-family:'Syne',sans-serif;}
-  .realtime-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;flex-shrink:0;}
-  .header-user{font-size:0.72rem;color:var(--muted);}
+    #tela-login::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 20px);
+      pointer-events: none;
+    }
 
-  main{max-width:1000px;margin:0 auto;padding:2rem 1rem;position:relative;z-index:1;}
+    .login-box {
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      border-radius: 24px;
+      padding: 3rem 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(201, 168, 76, 0.05);
+      animation: fadeUp 0.5s ease;
+      position: relative;
+      overflow: hidden;
+    }
 
-  /* ── STATS ─────────────────────────────────────────── */
-  .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.2rem;}
-  @media(max-width:700px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
-  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;text-align:center;position:relative;overflow:hidden;}
-  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-  .stat-card.azul::before{background:var(--accent);}
-  .stat-card.ciano::before{background:var(--accent2);}
-  .stat-card.ouro::before{background:var(--gold);}
-  .stat-card.verde::before{background:var(--success);}
-  .stat-card.roxo::before{background:#a855f7;}
-  .stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;line-height:1;margin-bottom:3px;transition:transform 0.3s ease;}
-  .stat-num.bump{animation:bump 0.4s ease;}
-  @keyframes bump{50%{transform:scale(1.3);}}
-  .stat-card.azul .stat-num{color:var(--accent);}
-  .stat-card.ciano .stat-num{color:var(--accent2);}
-  .stat-card.ouro .stat-num{color:var(--gold2);}
-  .stat-card.verde .stat-num{color:var(--success);}
-  .stat-card.roxo .stat-num{color:#a855f7;}
-  .stat-lbl{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2), var(--accent2));
+    }
 
-  /* ── ANIVERSARIANTES ───────────────────────────────── */
-  .aniv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.2rem;overflow:hidden;}
-  .aniv-header{padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border);}
-  .aniv-header:hover{background:rgba(201,168,76,0.03);}
-  .aniv-title{font-family:'Playfair Display',serif;font-size:0.88rem;font-weight:700;color:var(--gold2);display:flex;align-items:center;gap:8px;}
-  .aniv-body{padding:0.8rem 1.2rem;max-height:280px;overflow-y:auto;}
-  .aniv-body.fechado{display:none;}
-  .aniv-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
-  .aniv-item:last-child{border-bottom:none;}
-  .aniv-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;}
-  .aniv-avatar-placeholder{width:36px;height:36px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-  .aniv-info{flex:1;}
-  .aniv-nome{font-size:0.88rem;font-weight:600;}
-  .aniv-sub{font-size:0.72rem;color:var(--muted);}
-  .hoje-badge{background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:700;}
+    .login-logo {
+      display: block;
+      margin: 0 auto 1rem;
+      height: 70px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 16px rgba(201, 168, 76, 0.3));
+    }
 
-  /* ── TOOLBAR ───────────────────────────────────────── */
-  .toolbar{display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center;}
-  .search-wrap{position:relative;flex:1;min-width:200px;}
-  .search-wrap input{width:100%;padding:0.7rem 1rem 0.7rem 2.5rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
-  .search-wrap input:focus{border-color:var(--gold);}
-  .search-wrap input::placeholder{color:var(--muted);}
-  .search-icon{position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
-  select.filtro{padding:0.7rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;cursor:pointer;}
-  select.filtro option{background:var(--surface2);}
+    .login-logo-placeholder {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.8rem;
+      animation: float 4s ease-in-out infinite;
+    }
 
-  /* ── BOTÕES ────────────────────────────────────────── */
-  .btn{cursor:pointer;border:none;border-radius:10px;padding:0.7rem 1.2rem;font-family:'Syne',sans-serif;font-weight:700;font-size:0.82rem;letter-spacing:0.5px;transition:all 0.2s;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
-  .btn:active{transform:scale(0.97);}
-  .btn-primary{background:linear-gradient(135deg,var(--accent),#2563eb);color:white;}
-  .btn-primary:hover{filter:brightness(1.15);}
-  .btn-danger{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#fca5a5;}
-  .btn-danger:hover{background:rgba(239,68,68,0.2);}
-  .btn-ghost{background:var(--surface2);border:1px solid var(--border);color:var(--text);}
-  .btn-ghost:hover{border-color:var(--gold);}
-  .btn-gold{background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold2);}
-  .btn-gold:hover{background:rgba(201,168,76,0.22);}
-  .btn-green{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
-  .btn-green:hover{background:rgba(16,185,129,0.25);}
-  .btn-sm{padding:5px 11px;font-size:0.72rem;border-radius:7px;}
+    @keyframes float {
 
-  /* ── TABELA ────────────────────────────────────────── */
-  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,0.2);}
-  table{width:100%;border-collapse:collapse;}
-  thead{background:var(--surface2);}
-  th{padding:12px 14px;text-align:left;font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
-  td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:0.86rem;vertical-align:middle;}
-  tr:last-child td{border-bottom:none;}
-  tbody tr{transition:background 0.15s;}
-  tbody tr:hover{background:rgba(201,168,76,0.04);}
-  tr.novo-destaque{animation:destacar 2.5s ease;}
-  @keyframes destacar{0%,20%{background:rgba(16,185,129,0.12);}100%{background:transparent;}}
+      0%,
+      100% {
+        transform: translateY(0);
+      }
 
-  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;}
-  .badge-membro{background:rgba(59,130,246,0.18);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);}
-  .badge-congregado{background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);}
-  .badge-ativo{background:rgba(16,185,129,0.18);color:#6ee7b7;border:1px solid rgba(16,185,129,0.3);}
-  .badge-inativo{background:rgba(100,116,139,0.18);color:#94a3b8;border:1px solid rgba(100,116,139,0.3);}
-  .badge-transferido{background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);}
-  .badge-falecido{background:rgba(239,68,68,0.12);color:#fca5a5;border:1px solid rgba(239,68,68,0.25);}
-  .td-actions{display:flex;gap:5px;flex-wrap:wrap;}
+      50% {
+        transform: translateY(-6px);
+      }
+    }
 
-  .paginacao{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:1.2rem;flex-wrap:wrap;}
-  .paginacao span{font-size:0.82rem;color:var(--muted);}
-  .empty{text-align:center;padding:3.5rem 1rem;color:var(--muted);}
-  .empty .e-icon{font-size:3rem;margin-bottom:1rem;opacity:0.3;}
+    .login-box h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.2rem;
+    }
 
-  #toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid rgba(201,168,76,0.2);color:var(--text);padding:0.8rem 1.5rem;border-radius:30px;font-size:0.85rem;box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;}
-  #toast.show{transform:translateX(-50%) translateY(0);}
+    .login-church {
+      font-family: 'DM Sans', sans-serif;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.78rem;
+      font-weight: 300;
+      letter-spacing: 1px;
+      margin-bottom: 1.8rem;
+    }
 
-  .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+    .login-field {
+      text-align: left;
+      margin-bottom: 1rem;
+    }
 
-  /* ── MODAIS ────────────────────────────────────────── */
-  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.78);backdrop-filter:blur(4px);z-index:200;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto;}
-  .overlay.open{display:flex;}
-  .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:1.8rem;width:100%;max-width:660px;animation:fadeUp 0.3s ease;box-shadow:0 30px 80px rgba(0,0,0,0.5);position:relative;margin:auto;}
-  .modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:18px 18px 0 0;background:linear-gradient(90deg,var(--gold),var(--gold2),var(--accent2));}
-  .modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem;gap:1rem;}
-  .modal-nome{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--text);line-height:1.3;}
-  .modal-section{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:0.8rem;}
-  .modal-section-title{font-family:'Syne',sans-serif;font-size:0.65rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);margin-bottom:0.8rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-  .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;}
-  @media(max-width:480px){.modal-grid{grid-template-columns:1fr;}}
-  .modal-field strong{display:block;font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;margin-bottom:2px;}
-  .modal-field span{font-size:0.88rem;color:var(--text);}
-  .foto-modal-grande{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--gold);margin-right:1rem;flex-shrink:0;}
+    .login-field label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
 
-  /* ── EDIÇÃO ────────────────────────────────────────── */
-  .edit-input{width:100%;padding:0.65rem 0.9rem;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.87rem;outline:none;transition:border-color 0.2s;margin-top:3px;}
-  .edit-input:focus{border-color:var(--gold);}
-  .edit-input::placeholder{color:var(--muted);}
-  .edit-label{display:block;font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-top:0.8rem;margin-bottom:2px;}
-  .edit-row{display:grid;gap:10px;}
-  .edit-col2{grid-template-columns:1fr 1fr;}
-  .edit-col3{grid-template-columns:1fr 1fr 1fr;}
-  @media(max-width:560px){.edit-col2,.edit-col3{grid-template-columns:1fr;}}
-  .edit-radio{display:flex;gap:1rem;margin-top:6px;align-items:center;}
-  .edit-radio label{display:flex;align-items:center;gap:5px;font-size:0.88rem;cursor:pointer;}
-  .edit-radio input[type=radio]{width:15px;height:15px;margin:0;accent-color:var(--gold);}
-  .edit-section{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:0.8rem;}
-  .edit-section-title{font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold2);margin-bottom:0.8rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
-  .foto-edit-area{border:2px dashed var(--border);border-radius:12px;padding:1rem;text-align:center;background:var(--surface2);margin-top:4px;}
-  .foto-edit-area.tem-foto{border-color:var(--success);border-style:solid;}
-  .foto-edit-preview{width:70px;height:70px;border-radius:50%;object-fit:cover;margin:0 auto 0.5rem;display:block;border:2px solid var(--gold);}
-  .doc-edit-preview{width:100%;max-height:90px;object-fit:contain;border-radius:6px;margin:0.4rem 0;display:block;}
-  .foto-edit-btns{display:flex;gap:6px;justify-content:center;margin-top:0.6rem;}
-  .btn-foto-edit{cursor:pointer;border:1px solid var(--border);border-radius:7px;padding:4px 11px;background:var(--surface);color:var(--text);font-size:0.75rem;transition:all 0.2s;}
-  .btn-foto-edit:hover{border-color:var(--gold);}
+    .login-field input {
+      width: 100%;
+      padding: 0.85rem 1.1rem;
+      background: rgba(26, 34, 54, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
 
-  @media print{body>*:not(#layout-impressao){display:none!important;}#layout-impressao{display:block!important;position:absolute;left:0;top:0;width:210mm;padding:10mm;font-size:10px;color:black;background:white;box-sizing:border-box;}.pdf-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:10px;}.pdf-section{border:1px solid #333;padding:6px 8px;margin-bottom:6px;border-radius:4px;}.pdf-section-title{font-weight:bold;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#555;margin-bottom:4px;}.pdf-field{margin-bottom:3px;}}
-</style>
+    .login-field input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.15);
+    }
+
+    .login-field input::placeholder {
+      color: var(--muted);
+    }
+
+    .login-erro {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      font-size: 0.82rem;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+
+    .login-erro.show {
+      display: block;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, var(--gold), #a07830);
+      color: var(--deep);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+      letter-spacing: 0.3px;
+    }
+
+    .btn-login:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-login:active {
+      transform: scale(0.98);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 1.2rem;
+      background: rgba(201, 168, 76, 0.08);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      color: rgba(201, 168, 76, 0.7);
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── NOTIFICAÇÕES ──────────────────────────────────── */
+    #notif-stack {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      max-width: 340px;
+    }
+
+    .notif-card {
+      background: var(--surface);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-left: 4px solid var(--success);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+      animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .notif-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--success), var(--accent2));
+      animation: progress 6s linear forwards;
+    }
+
+    @keyframes progress {
+      from {
+        width: 100%;
+      }
+
+      to {
+        width: 0%;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateX(60px) scale(0.92);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+    }
+
+    .notif-saindo {
+      animation: slideOut 0.3s ease forwards !important;
+    }
+
+    @keyframes slideOut {
+      to {
+        opacity: 0;
+        transform: translateX(60px) scale(0.92);
+      }
+    }
+
+    .notif-topo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .notif-pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+      animation: pulse 1.5s ease infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+      }
+    }
+
+    .notif-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--success);
+      flex: 1;
+    }
+
+    .notif-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 0 2px;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .notif-close:hover {
+      color: var(--text);
+    }
+
+    .notif-nome {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .notif-meta {
+      font-size: 0.76rem;
+      color: var(--muted);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .notif-meta span {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 7px;
+    }
+
+    .notif-acoes {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .notif-btn {
+      font-size: 0.72rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .notif-btn:hover {
+      border-color: var(--accent);
+    }
+
+    .notif-btn.verde {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .notif-btn.verde:hover {
+      background: rgba(16, 185, 129, 0.22);
+    }
+
+    #sino-wrap {
+      position: relative;
+      cursor: pointer;
+    }
+
+    #sino-badge {
+      display: none;
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--danger);
+      color: white;
+      font-size: 0.6rem;
+      font-weight: 700;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+    }
+
+    #sino-badge.visivel {
+      display: flex;
+    }
+
+    /* ── HEADER ────────────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--deep) 0%, #111827 100%);
+      border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      height: 36px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(201, 168, 76, 0.3));
+    }
+
+    .header-logo-placeholder {
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+
+    .header-info {}
+
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--gold2), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      line-height: 1.2;
+    }
+
+    .header-sub {
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .header-badge {
+      background: rgba(201, 168, 76, 0.12);
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      color: var(--gold2);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .realtime-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+
+    .header-user {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── STATS ─────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 1.2rem;
+    }
+
+    @media(max-width:700px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+    }
+
+    .stat-card.azul::before {
+      background: var(--accent);
+    }
+
+    .stat-card.ciano::before {
+      background: var(--accent2);
+    }
+
+    .stat-card.ouro::before {
+      background: var(--gold);
+    }
+
+    .stat-card.verde::before {
+      background: var(--success);
+    }
+
+    .stat-card.roxo::before {
+      background: #a855f7;
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 3px;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-num.bump {
+      animation: bump 0.4s ease;
+    }
+
+    @keyframes bump {
+      50% {
+        transform: scale(1.3);
+      }
+    }
+
+    .stat-card.azul .stat-num {
+      color: var(--accent);
+    }
+
+    .stat-card.ciano .stat-num {
+      color: var(--accent2);
+    }
+
+    .stat-card.ouro .stat-num {
+      color: var(--gold2);
+    }
+
+    .stat-card.verde .stat-num {
+      color: var(--success);
+    }
+
+    .stat-card.roxo .stat-num {
+      color: #a855f7;
+    }
+
+    .stat-lbl {
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    /* ── ANIVERSARIANTES ───────────────────────────────── */
+    .aniv-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.2rem;
+      overflow: hidden;
+    }
+
+    .aniv-header {
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .aniv-header:hover {
+      background: rgba(201, 168, 76, 0.03);
+    }
+
+    .aniv-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--gold2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .aniv-body {
+      padding: 0.8rem 1.2rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .aniv-body.fechado {
+      display: none;
+    }
+
+    .aniv-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .aniv-item:last-child {
+      border-bottom: none;
+    }
+
+    .aniv-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .aniv-avatar-placeholder {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(201, 168, 76, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .aniv-info {
+      flex: 1;
+    }
+
+    .aniv-nome {
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .aniv-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .hoje-badge {
+      background: rgba(201, 168, 76, 0.18);
+      color: var(--gold2);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* ── TOOLBAR ───────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 0.7rem 1rem 0.7rem 2.5rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--gold);
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    select.filtro {
+      padding: 0.7rem 1rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    select.filtro option {
+      background: var(--surface2);
+    }
+
+    /* ── BOTÕES ────────────────────────────────────────── */
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 1.2rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.15);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-ghost {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--gold);
+    }
+
+    .btn-gold {
+      background: rgba(201, 168, 76, 0.12);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      color: var(--gold2);
+    }
+
+    .btn-gold:hover {
+      background: rgba(201, 168, 76, 0.22);
+    }
+
+    .btn-green {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .btn-green:hover {
+      background: rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-sm {
+      padding: 5px 11px;
+      font-size: 0.72rem;
+      border-radius: 7px;
+    }
+
+    /* ── TABELA ────────────────────────────────────────── */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--surface2);
+    }
+
+    th {
+      padding: 12px 14px;
+      text-align: left;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.86rem;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover {
+      background: rgba(201, 168, 76, 0.04);
+    }
+
+    tr.novo-destaque {
+      animation: destacar 2.5s ease;
+    }
+
+    @keyframes destacar {
+
+      0%,
+      20% {
+        background: rgba(16, 185, 129, 0.12);
+      }
+
+      100% {
+        background: transparent;
+      }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .badge-membro {
+      background: rgba(59, 130, 246, 0.18);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-congregado {
+      background: rgba(201, 168, 76, 0.18);
+      color: var(--gold2);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+    }
+
+    .badge-ativo {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-inativo {
+      background: rgba(100, 116, 139, 0.18);
+      color: #94a3b8;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+
+    .badge-transferido {
+      background: rgba(201, 168, 76, 0.18);
+      color: var(--gold2);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+    }
+
+    .badge-falecido {
+      background: rgba(239, 68, 68, 0.12);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .td-actions {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .paginacao {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .paginacao span {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .empty {
+      text-align: center;
+      padding: 3.5rem 1rem;
+      color: var(--muted);
+    }
+
+    .empty .e-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid rgba(201, 168, 76, 0.2);
+      color: var(--text);
+      padding: 0.8rem 1.5rem;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+      z-index: 999;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shake {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      20% {
+        transform: translateX(-8px);
+      }
+
+      40% {
+        transform: translateX(8px);
+      }
+
+      60% {
+        transform: translateX(-5px);
+      }
+
+      80% {
+        transform: translateX(5px);
+      }
+    }
+
+    /* ── MODAIS ────────────────────────────────────────── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.8rem;
+      width: 100%;
+      max-width: 660px;
+      animation: fadeUp 0.3s ease;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+      position: relative;
+      margin: auto;
+    }
+
+    .modal::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      border-radius: 18px 18px 0 0;
+      background: linear-gradient(90deg, var(--gold), var(--gold2), var(--accent2));
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+      gap: 1rem;
+    }
+
+    .modal-nome {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .modal-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .modal-section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold2);
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+
+    @media(max-width:480px) {
+      .modal-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .modal-field strong {
+      display: block;
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .modal-field span {
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .foto-modal-grande {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--gold);
+      margin-right: 1rem;
+      flex-shrink: 0;
+    }
+
+    /* ── EDIÇÃO ────────────────────────────────────────── */
+    .edit-input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.87rem;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-top: 3px;
+    }
+
+    .edit-input:focus {
+      border-color: var(--gold);
+    }
+
+    .edit-input::placeholder {
+      color: var(--muted);
+    }
+
+    .edit-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 0.8rem;
+      margin-bottom: 2px;
+    }
+
+    .edit-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .edit-col2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .edit-col3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    @media(max-width:560px) {
+
+      .edit-col2,
+      .edit-col3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .edit-radio {
+      display: flex;
+      gap: 1rem;
+      margin-top: 6px;
+      align-items: center;
+    }
+
+    .edit-radio label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    .edit-radio input[type=radio] {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: var(--gold);
+    }
+
+    .edit-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .edit-section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold2);
+      margin-bottom: 0.8rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .foto-edit-area {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      background: var(--surface2);
+      margin-top: 4px;
+    }
+
+    .foto-edit-area.tem-foto {
+      border-color: var(--success);
+      border-style: solid;
+    }
+
+    .foto-edit-preview {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 0.5rem;
+      display: block;
+      border: 2px solid var(--gold);
+    }
+
+    .doc-edit-preview {
+      width: 100%;
+      max-height: 90px;
+      object-fit: contain;
+      border-radius: 6px;
+      margin: 0.4rem 0;
+      display: block;
+    }
+
+    .foto-edit-btns {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 0.6rem;
+    }
+
+    .btn-foto-edit {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 4px 11px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .btn-foto-edit:hover {
+      border-color: var(--gold);
+    }
+
+    @media print {
+      body>*:not(#layout-impressao) {
+        display: none !important;
+      }
+
+      #layout-impressao {
+        display: block !important;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        padding: 10mm;
+        font-size: 10px;
+        color: black;
+        background: white;
+        box-sizing: border-box;
+      }
+
+      .pdf-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+        margin-bottom: 10px;
+      }
+
+      .pdf-section {
+        border: 1px solid #333;
+        padding: 6px 8px;
+        margin-bottom: 6px;
+        border-radius: 4px;
+      }
+
+      .pdf-section-title {
+        font-weight: bold;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #555;
+        margin-bottom: 4px;
+      }
+
+      .pdf-field {
+        margin-bottom: 3px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<!-- CARREGANDO -->
-<div id="tela-carregando" class="ativa">
-  <div class="spinner-grande"></div>
-  <span style="color:var(--muted);font-size:0.82rem;margin-top:0.5rem;">Verificando acesso…</span>
-</div>
-
-<!-- LOGIN -->
-<div id="tela-login" class="tela">
-  <div class="login-box">
-    <!-- Troca "login-logo-placeholder" pela logo real quando tiver o arquivo -->
-    <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista" class="login-logo"
-      onerror="this.style.display='none';document.getElementById('login-icon-fb').style.display='block'">
-    <span id="login-icon-fb" class="login-logo-placeholder" style="display:none;">⛪</span>
-
-    <h1>Painel do Pastor</h1>
-    <div class="login-church">Igreja AD Bela-Vista · Área Restrita</div>
-
-    <div id="login-erro" class="login-erro"></div>
-
-    <div class="login-field">
-      <label>E-mail</label>
-      <input type="email" id="login-email" placeholder="pastor@adbela-vista.com" autocomplete="email">
-    </div>
-    <div class="login-field">
-      <label>Senha</label>
-      <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
-    </div>
-
-    <button class="btn-login" id="btn-entrar" onclick="fazerLogin()">✝ Entrar no Painel</button>
-    <div class="login-badge">🔒 Acesso seguro · Senha criptografada</div>
+  <!-- CARREGANDO -->
+  <div id="tela-carregando" class="ativa">
+    <div class="spinner-grande"></div>
+    <span style="color:var(--muted);font-size:0.82rem;margin-top:0.5rem;">Verificando acesso…</span>
   </div>
-</div>
 
-<!-- PAINEL -->
-<div id="tela-principal" class="tela">
+  <!-- LOGIN -->
+  <div id="tela-login" class="tela">
+    <div class="login-box">
+      <!-- Troca "login-logo-placeholder" pela logo real quando tiver o arquivo -->
+      <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista" class="login-logo"
+        onerror="this.style.display='none';document.getElementById('login-icon-fb').style.display='block'">
+      <span id="login-icon-fb" class="login-logo-placeholder" style="display:none;">⛪</span>
 
-  <header>
-    <div class="header-left">
-      <img src="images-removebg-preview.png" alt="Logo" class="header-logo"
-        onerror="this.style.display='none';document.getElementById('header-icon-fb').style.display='block'">
-      <span id="header-icon-fb" class="header-logo-placeholder" style="display:none;">⛪</span>
-      <div class="header-info">
-        <span class="header-title">Gestão de Membros</span>
-        <span class="header-sub">AD Bela-Vista · Palhoça - SC</span>
+      <h1>Painel do Pastor</h1>
+      <div class="login-church">Igreja AD Bela-Vista · Área Restrita</div>
+
+      <div id="login-erro" class="login-erro"></div>
+
+      <div class="login-field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="pastor@adbela-vista.com" autocomplete="email">
       </div>
-      <span class="header-badge">Pastor</span>
-      <span class="realtime-dot" title="Tempo real ativo"></span>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <span class="header-user" id="header-email"></span>
-      <div id="sino-wrap" onclick="abrirHistoricoNotif()" title="Notificações">
-        <button class="btn btn-ghost btn-sm">🔔</button>
-        <span id="sino-badge">0</span>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="btn btn-gold btn-sm" onclick="exportarPDF()">📄 PDF</button>
-      <button class="btn btn-ghost btn-sm" onclick="carregarLista()">🔄</button>
-      <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
-    </div>
-  </header>
 
-  <main>
-    <div class="stats-grid">
-      <div class="stat-card azul"><div class="stat-num" id="stat-total">—</div><div class="stat-lbl">Total</div></div>
-      <div class="stat-card ciano"><div class="stat-num" id="stat-membros">—</div><div class="stat-lbl">Membros</div></div>
-      <div class="stat-card ouro"><div class="stat-num" id="stat-congregados">—</div><div class="stat-lbl">Congregados</div></div>
-      <div class="stat-card verde"><div class="stat-num" id="stat-ativos">—</div><div class="stat-lbl">Ativos</div></div>
-      <div class="stat-card roxo"><div class="stat-num" id="stat-mes">—</div><div class="stat-lbl">Este mês</div></div>
+      <button class="btn-login" id="btn-entrar" onclick="fazerLogin()">✝ Entrar no Painel</button>
+      <div class="login-badge">🔒 Acesso seguro · Senha criptografada</div>
     </div>
+  </div>
 
-    <div class="aniv-card">
-      <div class="aniv-header" onclick="toggleAniv()">
-        <div class="aniv-title">🎂 Aniversariantes do mês <span id="aniv-count" style="background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:700;display:none;font-family:'Syne',sans-serif;"></span></div>
-        <span id="aniv-chevron" style="color:var(--muted);">▼</span>
-      </div>
-      <div class="aniv-body" id="aniv-body"><div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Carregando…</div></div>
-    </div>
+  <!-- PAINEL -->
+  <div id="tela-principal" class="tela">
 
-    <div class="toolbar">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderLista()">
-      </div>
-      <select class="filtro" id="filtro-tipo" onchange="renderLista()">
-        <option value="">Todos os tipos</option><option value="Membro">Membros</option><option value="Congregado">Congregados</option>
-      </select>
-      <select class="filtro" id="filtro-status" onchange="renderLista()">
-        <option value="">Todos os status</option><option value="Ativo">Ativos</option><option value="Inativo">Inativos</option><option value="Transferido">Transferidos</option><option value="Falecido">Falecidos</option>
-      </select>
-      <select class="filtro" id="filtro-setor" onchange="renderLista()">
-        <option value="">Todos os setores</option>
-      </select>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Membro</th><th>Tipo</th><th>Status</th><th>Celular</th><th>Setor</th><th>Ações</th></tr></thead>
-        <tbody id="corpo-lista"></tbody>
-      </table>
-    </div>
-    <div class="paginacao" id="paginacao"></div>
-  </main>
-</div>
-
-<!-- MODAL DETALHES -->
-<div class="overlay" id="modal-overlay" onclick="fecharOverlayClick(event,'modal-overlay')">
-  <div class="modal" id="modal-conteudo"></div>
-</div>
-
-<!-- MODAL EDIÇÃO -->
-<div class="overlay" id="edit-overlay" onclick="fecharOverlayClick(event,'edit-overlay')">
-  <div class="modal" style="max-width:720px;">
-    <div class="modal-header">
-      <div class="modal-nome">✏️ Editar Cadastro</div>
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('edit-overlay').classList.remove('open')">✕ Fechar</button>
-    </div>
-    <input type="hidden" id="edit-id">
-    <div class="edit-section">
-      <div class="edit-section-title">📸 Fotos</div>
-      <div class="edit-row edit-col2">
-        <div>
-          <label class="edit-label">Foto do Membro</label>
-          <div class="foto-edit-area" id="edit-area-foto">
-            <img id="edit-preview-foto" class="foto-edit-preview" style="display:none;">
-            <div id="edit-placeholder-foto" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">👤 Sem foto</div>
-            <div class="foto-edit-btns">
-              <button type="button" class="btn-foto-edit" onclick="document.getElementById('edit-input-foto').click()">📁 Arquivo</button>
-              <button type="button" class="btn-foto-edit" onclick="document.getElementById('edit-input-cam').click()">📷 Câmera</button>
-            </div>
-            <input type="file" id="edit-input-foto" accept="image/*" style="display:none" onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
-            <input type="file" id="edit-input-cam" accept="image/*" capture="environment" style="display:none" onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
-          </div>
+    <header>
+      <div class="header-left">
+        <img src="images-removebg-preview.png" alt="Logo" class="header-logo"
+          onerror="this.style.display='none';document.getElementById('header-icon-fb').style.display='block'">
+        <span id="header-icon-fb" class="header-logo-placeholder" style="display:none;">⛪</span>
+        <div class="header-info">
+          <span class="header-title">Gestão de Membros</span>
+          <span class="header-sub">AD Bela-Vista · Palhoça - SC</span>
         </div>
-        <div>
-          <label class="edit-label">Foto do Documento</label>
-          <div class="foto-edit-area" id="edit-area-doc">
-            <img id="edit-preview-doc" class="doc-edit-preview" style="display:none;">
-            <div id="edit-placeholder-doc" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">🪪 Sem documento</div>
-            <div class="foto-edit-btns">
-              <button type="button" class="btn-foto-edit" onclick="document.getElementById('edit-input-doc').click()">📁 Arquivo</button>
-              <button type="button" class="btn-foto-edit" onclick="document.getElementById('edit-input-doc-cam').click()">📷 Câmera</button>
-            </div>
-            <input type="file" id="edit-input-doc" accept="image/*" style="display:none" onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
-            <input type="file" id="edit-input-doc-cam" accept="image/*" capture="environment" style="display:none" onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
-          </div>
+        <span class="header-badge">Pastor</span>
+        <span class="realtime-dot" title="Tempo real ativo"></span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="header-user" id="header-email"></span>
+        <div id="sino-wrap" onclick="abrirHistoricoNotif()" title="Notificações">
+          <button class="btn btn-ghost btn-sm">🔔</button>
+          <span id="sino-badge">0</span>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="exportarPDF()">📄 PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="carregarLista()">🔄</button>
+        <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="stats-grid">
+        <div class="stat-card azul">
+          <div class="stat-num" id="stat-total">—</div>
+          <div class="stat-lbl">Total</div>
+        </div>
+        <div class="stat-card ciano">
+          <div class="stat-num" id="stat-membros">—</div>
+          <div class="stat-lbl">Membros</div>
+        </div>
+        <div class="stat-card ouro">
+          <div class="stat-num" id="stat-congregados">—</div>
+          <div class="stat-lbl">Congregados</div>
+        </div>
+        <div class="stat-card verde">
+          <div class="stat-num" id="stat-ativos">—</div>
+          <div class="stat-lbl">Ativos</div>
+        </div>
+        <div class="stat-card roxo">
+          <div class="stat-num" id="stat-mes">—</div>
+          <div class="stat-lbl">Este mês</div>
         </div>
       </div>
-    </div>
-    <div class="edit-section">
-      <div class="edit-section-title">👤 Dados Pessoais</div>
-      <label class="edit-label">Tipo</label>
-      <div class="edit-radio"><label><input type="radio" name="edit-tipo" value="Membro"> Membro</label><label><input type="radio" name="edit-tipo" value="Congregado"> Congregado</label></div>
-      <label class="edit-label">Status</label>
-      <select id="edit-status" class="edit-input"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option><option value="Transferido">Transferido</option><option value="Falecido">Falecido</option></select>
-      <label class="edit-label">Nome Completo *</label>
-      <input type="text" id="edit-nome" class="edit-input" placeholder="Nome completo">
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">RG</label><input type="text" id="edit-rg" class="edit-input"></div>
-        <div><label class="edit-label">CPF</label><input type="text" id="edit-cpf" class="edit-input" maxlength="14" oninput="maskCPF(this)"></div>
+
+      <div class="aniv-card">
+        <div class="aniv-header" onclick="toggleAniv()">
+          <div class="aniv-title">🎂 Aniversariantes do mês <span id="aniv-count"
+              style="background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:700;display:none;font-family:'Syne',sans-serif;"></span>
+          </div>
+          <span id="aniv-chevron" style="color:var(--muted);">▼</span>
+        </div>
+        <div class="aniv-body" id="aniv-body">
+          <div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Carregando…</div>
+        </div>
       </div>
-      <div class="edit-row edit-col3">
-        <div><label class="edit-label">Nascimento</label><input type="date" id="edit-nasc" class="edit-input"></div>
-        <div><label class="edit-label">Idade</label><input type="number" id="edit-idade" class="edit-input" min="0"></div>
-        <div><label class="edit-label">Sexo</label><div class="edit-radio" style="margin-top:8px;"><label><input type="radio" name="edit-sexo" value="M"> M</label><label><input type="radio" name="edit-sexo" value="F"> F</label></div></div>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderLista()">
+        </div>
+        <select class="filtro" id="filtro-tipo" onchange="renderLista()">
+          <option value="">Todos os tipos</option>
+          <option value="Membro">Membros</option>
+          <option value="Congregado">Congregados</option>
+        </select>
+        <select class="filtro" id="filtro-status" onchange="renderLista()">
+          <option value="">Todos os status</option>
+          <option value="Ativo">Ativos</option>
+          <option value="Inativo">Inativos</option>
+          <option value="Transferido">Transferidos</option>
+          <option value="Falecido">Falecidos</option>
+        </select>
+        <select class="filtro" id="filtro-setor" onchange="renderLista()">
+          <option value="">Todos os setores</option>
+        </select>
       </div>
-      <div class="edit-row edit-col3">
-        <div><label class="edit-label">Tipo Sanguíneo</label><select id="edit-sangue" class="edit-input"><option value="">—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
-        <div><label class="edit-label">Escolaridade</label><select id="edit-esc" class="edit-input"><option value="">—</option><option>Fundamental Incompleto</option><option>Fundamental Completo</option><option>Médio Incompleto</option><option>Médio Completo</option><option>Superior Incompleto</option><option>Superior Completo</option><option>Pós-Graduação</option></select></div>
-        <div><label class="edit-label">Estado Civil</label><select id="edit-civil" class="edit-input"><option value="">—</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option><option>União Estável</option></select></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Membro</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Celular</th>
+              <th>Setor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-lista"></tbody>
+        </table>
       </div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Cônjuge</label><input type="text" id="edit-conjuge" class="edit-input"></div>
-        <div><label class="edit-label">Data Casamento</label><input type="date" id="edit-casamento" class="edit-input"></div>
+      <div class="paginacao" id="paginacao"></div>
+    </main>
+  </div>
+
+  <!-- MODAL DETALHES -->
+  <div class="overlay" id="modal-overlay" onclick="fecharOverlayClick(event,'modal-overlay')">
+    <div class="modal" id="modal-conteudo"></div>
+  </div>
+
+  <!-- MODAL EDIÇÃO -->
+  <div class="overlay" id="edit-overlay" onclick="fecharOverlayClick(event,'edit-overlay')">
+    <div class="modal" style="max-width:720px;">
+      <div class="modal-header">
+        <div class="modal-nome">✏️ Editar Cadastro</div>
+        <button class="btn btn-ghost btn-sm"
+          onclick="document.getElementById('edit-overlay').classList.remove('open')">✕ Fechar</button>
       </div>
-    </div>
-    <div class="edit-section">
-      <div class="edit-section-title">📍 Endereço e Contato</div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">CEP</label><input type="text" id="edit-cep" class="edit-input" maxlength="9" oninput="maskCEP(this)"></div>
-        <div><label class="edit-label">Bairro</label><input type="text" id="edit-bairro" class="edit-input"></div>
+      <input type="hidden" id="edit-id">
+      <div class="edit-section">
+        <div class="edit-section-title">📸 Fotos</div>
+        <div class="edit-row edit-col2">
+          <div>
+            <label class="edit-label">Foto do Membro</label>
+            <div class="foto-edit-area" id="edit-area-foto">
+              <img id="edit-preview-foto" class="foto-edit-preview" style="display:none;">
+              <div id="edit-placeholder-foto" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">👤 Sem foto
+              </div>
+              <div class="foto-edit-btns">
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-foto').click()">📁 Arquivo</button>
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-cam').click()">📷 Câmera</button>
+              </div>
+              <input type="file" id="edit-input-foto" accept="image/*" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
+              <input type="file" id="edit-input-cam" accept="image/*" capture="environment" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
+            </div>
+          </div>
+          <div>
+            <label class="edit-label">Foto do Documento</label>
+            <div class="foto-edit-area" id="edit-area-doc">
+              <img id="edit-preview-doc" class="doc-edit-preview" style="display:none;">
+              <div id="edit-placeholder-doc" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">🪪 Sem
+                documento</div>
+              <div class="foto-edit-btns">
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-doc').click()">📁 Arquivo</button>
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-doc-cam').click()">📷 Câmera</button>
+              </div>
+              <input type="file" id="edit-input-doc" accept="image/*" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
+              <input type="file" id="edit-input-doc-cam" accept="image/*" capture="environment" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
+            </div>
+          </div>
+        </div>
       </div>
-      <label class="edit-label">Endereço</label><input type="text" id="edit-endereco" class="edit-input">
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Cidade / UF</label><input type="text" id="edit-cidade" class="edit-input"></div>
-        <div><label class="edit-label">Fone Residencial</label><input type="text" id="edit-fone-res" class="edit-input" oninput="maskPhone(this)"></div>
+      <div class="edit-section">
+        <div class="edit-section-title">👤 Dados Pessoais</div>
+        <label class="edit-label">Tipo</label>
+        <div class="edit-radio"><label><input type="radio" name="edit-tipo" value="Membro"> Membro</label><label><input
+              type="radio" name="edit-tipo" value="Congregado"> Congregado</label></div>
+        <label class="edit-label">Status</label>
+        <select id="edit-status" class="edit-input">
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+          <option value="Transferido">Transferido</option>
+          <option value="Falecido">Falecido</option>
+        </select>
+        <label class="edit-label">Nome Completo *</label>
+        <input type="text" id="edit-nome" class="edit-input" placeholder="Nome completo">
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">RG</label><input type="text" id="edit-rg" class="edit-input"></div>
+          <div><label class="edit-label">CPF</label><input type="text" id="edit-cpf" class="edit-input" maxlength="14"
+              oninput="maskCPF(this)"></div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Nascimento</label><input type="date" id="edit-nasc" class="edit-input"></div>
+          <div><label class="edit-label">Idade</label><input type="number" id="edit-idade" class="edit-input" min="0">
+          </div>
+          <div><label class="edit-label">Sexo</label>
+            <div class="edit-radio" style="margin-top:8px;"><label><input type="radio" name="edit-sexo" value="M">
+                M</label><label><input type="radio" name="edit-sexo" value="F"> F</label></div>
+          </div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Tipo Sanguíneo</label><select id="edit-sangue" class="edit-input">
+              <option value="">—</option>
+              <option>A+</option>
+              <option>A-</option>
+              <option>B+</option>
+              <option>B-</option>
+              <option>AB+</option>
+              <option>AB-</option>
+              <option>O+</option>
+              <option>O-</option>
+            </select></div>
+          <div><label class="edit-label">Escolaridade</label><select id="edit-esc" class="edit-input">
+              <option value="">—</option>
+              <option>Fundamental Incompleto</option>
+              <option>Fundamental Completo</option>
+              <option>Médio Incompleto</option>
+              <option>Médio Completo</option>
+              <option>Superior Incompleto</option>
+              <option>Superior Completo</option>
+              <option>Pós-Graduação</option>
+            </select></div>
+          <div><label class="edit-label">Estado Civil</label><select id="edit-civil" class="edit-input">
+              <option value="">—</option>
+              <option>Solteiro(a)</option>
+              <option>Casado(a)</option>
+              <option>Divorciado(a)</option>
+              <option>Viúvo(a)</option>
+              <option>União Estável</option>
+            </select></div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Cônjuge</label><input type="text" id="edit-conjuge" class="edit-input"></div>
+          <div><label class="edit-label">Data Casamento</label><input type="date" id="edit-casamento"
+              class="edit-input"></div>
+        </div>
       </div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Fone Comercial</label><input type="text" id="edit-fone-com" class="edit-input" oninput="maskPhone(this)"></div>
-        <div><label class="edit-label">Celular / WhatsApp</label><input type="text" id="edit-celular" class="edit-input" oninput="maskPhone(this)"></div>
+      <div class="edit-section">
+        <div class="edit-section-title">📍 Endereço e Contato</div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">CEP</label><input type="text" id="edit-cep" class="edit-input" maxlength="9"
+              oninput="maskCEP(this)"></div>
+          <div><label class="edit-label">Bairro</label><input type="text" id="edit-bairro" class="edit-input"></div>
+        </div>
+        <label class="edit-label">Endereço</label><input type="text" id="edit-endereco" class="edit-input">
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Cidade / UF</label><input type="text" id="edit-cidade" class="edit-input">
+          </div>
+          <div><label class="edit-label">Fone Residencial</label><input type="text" id="edit-fone-res"
+              class="edit-input" oninput="maskPhone(this)"></div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Fone Comercial</label><input type="text" id="edit-fone-com" class="edit-input"
+              oninput="maskPhone(this)"></div>
+          <div><label class="edit-label">Celular / WhatsApp</label><input type="text" id="edit-celular"
+              class="edit-input" oninput="maskPhone(this)"></div>
+        </div>
+        <label class="edit-label">E-mail</label><input type="email" id="edit-email" class="edit-input">
       </div>
-      <label class="edit-label">E-mail</label><input type="email" id="edit-email" class="edit-input">
-    </div>
-    <div class="edit-section">
-      <div class="edit-section-title">✝️ Igreja</div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Forma de Recebimento</label><select id="edit-recebimento" class="edit-input"><option value="">—</option><option>Batismo nas Águas</option><option>Transferência</option><option>Aclamação</option><option>Reconciliação</option></select></div>
-        <div><label class="edit-label">Cargo Principal</label><input type="text" id="edit-cargo" class="edit-input"></div>
+      <div class="edit-section">
+        <div class="edit-section-title">✝️ Igreja</div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Forma de Recebimento</label><select id="edit-recebimento" class="edit-input">
+              <option value="">—</option>
+              <option>Batismo nas Águas</option>
+              <option>Transferência</option>
+              <option>Aclamação</option>
+              <option>Reconciliação</option>
+            </select></div>
+          <div><label class="edit-label">Cargo Principal</label><input type="text" id="edit-cargo" class="edit-input">
+          </div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Setor</label><input type="text" id="edit-setor" class="edit-input"></div>
+          <div><label class="edit-label">Congregação</label><input type="text" id="edit-congregacao" class="edit-input">
+          </div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Batismo Águas</label><input type="date" id="edit-bat-aguas" class="edit-input">
+          </div>
+          <div><label class="edit-label">Batismo ES</label><input type="date" id="edit-bat-es" class="edit-input"></div>
+          <div><label class="edit-label">Data Aprovação</label><input type="date" id="edit-aprovacao"
+              class="edit-input"></div>
+        </div>
       </div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Setor</label><input type="text" id="edit-setor" class="edit-input"></div>
-        <div><label class="edit-label">Congregação</label><input type="text" id="edit-congregacao" class="edit-input"></div>
+      <div class="edit-section">
+        <div class="edit-section-title">👨‍👩‍👧 Família</div>
+        <label class="edit-label">Qtd. Filhos</label>
+        <input type="number" id="edit-filhos" class="edit-input" min="0" style="max-width:100px;">
+        <div class="edit-row edit-col2" style="margin-top:0.5rem;">
+          <div><label class="edit-label">Integrante 1</label><input type="text" id="edit-dep1-nome" class="edit-input">
+          </div>
+          <div><label class="edit-label">Parentesco 1</label><input type="text" id="edit-dep1-par" class="edit-input">
+          </div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Integrante 2</label><input type="text" id="edit-dep2-nome" class="edit-input">
+          </div>
+          <div><label class="edit-label">Parentesco 2</label><input type="text" id="edit-dep2-par" class="edit-input">
+          </div>
+        </div>
       </div>
-      <div class="edit-row edit-col3">
-        <div><label class="edit-label">Batismo Águas</label><input type="date" id="edit-bat-aguas" class="edit-input"></div>
-        <div><label class="edit-label">Batismo ES</label><input type="date" id="edit-bat-es" class="edit-input"></div>
-        <div><label class="edit-label">Data Aprovação</label><input type="date" id="edit-aprovacao" class="edit-input"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost"
+          onclick="document.getElementById('edit-overlay').classList.remove('open')">Cancelar</button>
+        <button class="btn btn-primary" id="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar Alterações</button>
       </div>
-    </div>
-    <div class="edit-section">
-      <div class="edit-section-title">👨‍👩‍👧 Família</div>
-      <label class="edit-label">Qtd. Filhos</label>
-      <input type="number" id="edit-filhos" class="edit-input" min="0" style="max-width:100px;">
-      <div class="edit-row edit-col2" style="margin-top:0.5rem;">
-        <div><label class="edit-label">Integrante 1</label><input type="text" id="edit-dep1-nome" class="edit-input"></div>
-        <div><label class="edit-label">Parentesco 1</label><input type="text" id="edit-dep1-par" class="edit-input"></div>
-      </div>
-      <div class="edit-row edit-col2">
-        <div><label class="edit-label">Integrante 2</label><input type="text" id="edit-dep2-nome" class="edit-input"></div>
-        <div><label class="edit-label">Parentesco 2</label><input type="text" id="edit-dep2-par" class="edit-input"></div>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap;">
-      <button class="btn btn-ghost" onclick="document.getElementById('edit-overlay').classList.remove('open')">Cancelar</button>
-      <button class="btn btn-primary" id="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar Alterações</button>
     </div>
   </div>
-</div>
 
-<!-- MODAL HISTÓRICO NOTIFICAÇÕES -->
-<div class="overlay" id="hist-overlay" onclick="fecharOverlayClick(event,'hist-overlay')">
-  <div class="modal" style="max-width:480px;">
-    <div class="modal-header">
-      <div class="modal-nome">🔔 Novos Cadastros</div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="limparNotificacoes()">Limpar tudo</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('hist-overlay').classList.remove('open')">✕</button>
+  <!-- MODAL HISTÓRICO NOTIFICAÇÕES -->
+  <div class="overlay" id="hist-overlay" onclick="fecharOverlayClick(event,'hist-overlay')">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-header">
+        <div class="modal-nome">🔔 Novos Cadastros</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="limparNotificacoes()">Limpar tudo</button>
+          <button class="btn btn-ghost btn-sm"
+            onclick="document.getElementById('hist-overlay').classList.remove('open')">✕</button>
+        </div>
       </div>
+      <div id="hist-lista" style="max-height:60vh;overflow-y:auto;"></div>
     </div>
-    <div id="hist-lista" style="max-height:60vh;overflow-y:auto;"></div>
   </div>
-</div>
 
-<div id="notif-stack"></div>
-<div id="layout-impressao" style="display:none;"></div>
-<div id="toast"></div>
+  <div id="notif-stack"></div>
+  <div id="layout-impressao" style="display:none;"></div>
+  <div id="toast"></div>
 
-<script>
-const SUPABASE_URL = 'https://vclqdzvircnafwplivlfc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    const SUPABASE_URL = "https://hcxsmphzsebeaddowcvz.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_miFUhXV1GAk2HYy70qzvAQ_B0Z8vi3i";
 
-let membrosCache = [], paginaAtual = 1, anivAberto = true;
-let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
-const POR_PAGINA = 20;
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── TELAS ──────────────────────────────────────────────
-function mostrarTela(id) {
-  document.getElementById('tela-carregando').classList.remove('ativa');
-  ['tela-login','tela-principal'].forEach(t => {
-    const el = document.getElementById(t);
-    el.classList.remove('ativa');
-    el.style.display = 'none';
-  });
-  const alvo = document.getElementById(id);
-  alvo.style.display = '';
-  setTimeout(() => alvo.classList.add('ativa'), 10);
-}
+    let membrosCache = [], paginaAtual = 1, anivAberto = true;
+    let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
+    const POR_PAGINA = 20;
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) {
-    document.getElementById('header-email').textContent = session.user.email;
-    mostrarTela('tela-principal');
-    carregarLista();
-    iniciarRealtime();
-  } else {
-    mostrarTela('tela-login');
-    document.getElementById('login-email').focus();
-  }
-  db.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') mostrarTela('tela-login');
-  });
-  document.getElementById('login-senha').addEventListener('keydown', e => { if(e.key==='Enter') fazerLogin(); });
-  document.getElementById('login-email').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('login-senha').focus(); });
-});
+    // ── TELAS ──────────────────────────────────────────────
+    function mostrarTela(id) {
+      document.getElementById('tela-carregando').classList.remove('ativa');
+      ['tela-login', 'tela-principal'].forEach(t => {
+        const el = document.getElementById(t);
+        el.classList.remove('ativa');
+        el.style.display = 'none';
+      });
+      const alvo = document.getElementById(id);
+      alvo.style.display = '';
+      setTimeout(() => alvo.classList.add('ativa'), 10);
+    }
 
-// ── LOGIN ──────────────────────────────────────────────
-async function fazerLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const senha = document.getElementById('login-senha').value;
-  const erro = document.getElementById('login-erro');
-  const btn = document.getElementById('btn-entrar');
-  if (!email || !senha) { erro.textContent = '⚠️ Preencha e-mail e senha.'; erro.classList.add('show'); return; }
-  btn.innerHTML = '<span class="loading"></span> Entrando…';
-  btn.disabled = true;
-  erro.classList.remove('show');
-  const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
-  btn.innerHTML = '✝ Entrar no Painel';
-  btn.disabled = false;
-  if (error) {
-    erro.textContent = '❌ E-mail ou senha incorretos.';
-    erro.classList.add('show');
-    const box = document.querySelector('.login-box');
-    box.style.animation = 'none'; box.offsetHeight;
-    box.style.animation = 'shake 0.4s ease';
-    setTimeout(() => box.style.animation = '', 500);
-    return;
-  }
-  document.getElementById('header-email').textContent = data.user.email;
-  mostrarTela('tela-principal');
-  carregarLista();
-  iniciarRealtime();
-}
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await db.auth.getSession();
 
-async function sair() {
-  await db.auth.signOut();
-  membrosCache = [];
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-senha').value = '';
-  mostrarTela('tela-login');
-}
+      if (session) {
+        const userId = session.user.id;
 
-// ── NOTIFICAÇÕES ───────────────────────────────────────
-function criarNotificacao(membro) {
-  if (primeiraLeitura) return;
-  const id = 'notif-' + Date.now();
-  const tel = membro.celular ? membro.celular.replace(/\D/g,'') : null;
-  const hora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-  historicoNotif.unshift({ membro, hora, id });
-  notifNaoLidas++;
-  atualizarSinoBadge();
-  const stack = document.getElementById('notif-stack');
-  const card = document.createElement('div');
-  card.className = 'notif-card'; card.id = id;
-  card.innerHTML = `
+        const { data: profile } = await db
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+
+        if (!profile || profile.role !== 'admin') {
+          alert("⛔ Acesso negado. Apenas administradores.");
+          await db.auth.signOut();
+          mostrarTela('tela-login');
+          return;
+        }
+
+        document.getElementById('header-email').textContent = session.user.email;
+        mostrarTela('tela-principal');
+        carregarLista();
+        iniciarRealtime();
+      } else {
+        mostrarTela('tela-login');
+      }
+    });
+    // ── LOGIN ──────────────────────────────────────────────
+    async function fazerLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const senha = document.getElementById('login-senha').value;
+      const erro = document.getElementById('login-erro');
+      const btn = document.getElementById('btn-entrar');
+      if (!email || !senha) { erro.textContent = '⚠️ Preencha e-mail e senha.'; erro.classList.add('show'); return; }
+      btn.innerHTML = '<span class="loading"></span> Entrando…';
+      btn.disabled = true;
+      erro.classList.remove('show');
+      const { data, error } = await db.auth.signInWithPassword({ email, password: senha });
+      btn.innerHTML = '✝ Entrar no Painel';
+      btn.disabled = false;
+      if (error) {
+        console.log("ERRO REAL:", error);
+
+        erro.textContent = "❌ " + error.message;
+        erro.classList.add('show');
+
+        const box = document.querySelector('.login-box');
+        box.style.animation = 'none'; box.offsetHeight;
+        box.style.animation = 'shake 0.4s ease';
+        setTimeout(() => box.style.animation = '', 500);
+
+        return;
+      }
+      document.getElementById('header-email').textContent = data.user.email;
+      mostrarTela('tela-principal');
+      carregarLista();
+      iniciarRealtime();
+    }
+
+    async function sair() {
+      await db.auth.signOut();
+      membrosCache = [];
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-senha').value = '';
+      mostrarTela('tela-login');
+    }
+
+    // ── NOTIFICAÇÕES ───────────────────────────────────────
+    function criarNotificacao(membro) {
+      if (primeiraLeitura) return;
+      const id = 'notif-' + Date.now();
+      const tel = membro.celular ? membro.celular.replace(/\D/g, '') : null;
+      const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      historicoNotif.unshift({ membro, hora, id });
+      notifNaoLidas++;
+      atualizarSinoBadge();
+      const stack = document.getElementById('notif-stack');
+      const card = document.createElement('div');
+      card.className = 'notif-card'; card.id = id;
+      card.innerHTML = `
     <div class="notif-topo">
       <span class="notif-pulse"></span>
       <span class="notif-label">✨ Novo cadastro</span>
@@ -620,188 +1915,190 @@ function criarNotificacao(membro) {
     </div>
     <div class="notif-nome">${membro.nome}</div>
     <div class="notif-meta">
-      <span>${membro.tipo_cadastro||'Membro'}</span>
-      ${membro.celular?`<span>📱 ${membro.celular}</span>`:''}
-      ${membro.setor_igreja?`<span>📍 ${membro.setor_igreja}</span>`:''}
+      <span>${membro.tipo_cadastro || 'Membro'}</span>
+      ${membro.celular ? `<span>📱 ${membro.celular}</span>` : ''}
+      ${membro.setor_igreja ? `<span>📍 ${membro.setor_igreja}</span>` : ''}
     </div>
     <div class="notif-acoes">
       <button class="notif-btn" onclick="verDetalhes('${membro.id}');fecharNotif('${id}')">👁 Ver ficha</button>
-      ${tel?`<a class="notif-btn verde" href="https://wa.me/55${tel}" target="_blank">💬 WhatsApp</a>`:''}
+      ${tel ? `<a class="notif-btn verde" href="https://wa.me/55${tel}" target="_blank">💬 WhatsApp</a>` : ''}
     </div>`;
-  stack.appendChild(card);
-  try {
-    const ctx = new (window.AudioContext||window.webkitAudioContext)();
-    const osc = ctx.createOscillator(), gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime+0.1);
-    gain.gain.setValueAtTime(0.08, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.3);
-    osc.start(); osc.stop(ctx.currentTime+0.3);
-  } catch(e){}
-  setTimeout(() => fecharNotif(id), 6200);
-}
+      stack.appendChild(card);
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+        osc.start(); osc.stop(ctx.currentTime + 0.3);
+      } catch (e) { }
+      setTimeout(() => fecharNotif(id), 6200);
+    }
 
-function fecharNotif(id) {
-  const card = document.getElementById(id);
-  if (!card) return;
-  card.classList.add('notif-saindo');
-  setTimeout(() => card.remove(), 300);
-}
+    function fecharNotif(id) {
+      const card = document.getElementById(id);
+      if (!card) return;
+      card.classList.add('notif-saindo');
+      setTimeout(() => card.remove(), 300);
+    }
 
-function atualizarSinoBadge() {
-  const badge = document.getElementById('sino-badge');
-  if (notifNaoLidas > 0) { badge.textContent = notifNaoLidas > 9 ? '9+' : notifNaoLidas; badge.classList.add('visivel'); }
-  else badge.classList.remove('visivel');
-}
+    function atualizarSinoBadge() {
+      const badge = document.getElementById('sino-badge');
+      if (notifNaoLidas > 0) { badge.textContent = notifNaoLidas > 9 ? '9+' : notifNaoLidas; badge.classList.add('visivel'); }
+      else badge.classList.remove('visivel');
+    }
 
-function abrirHistoricoNotif() {
-  notifNaoLidas = 0; atualizarSinoBadge(); renderHistorico();
-  document.getElementById('hist-overlay').classList.add('open');
-}
+    function abrirHistoricoNotif() {
+      notifNaoLidas = 0; atualizarSinoBadge(); renderHistorico();
+      document.getElementById('hist-overlay').classList.add('open');
+    }
 
-function renderHistorico() {
-  const lista = document.getElementById('hist-lista');
-  if (!historicoNotif.length) {
-    lista.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;">📭 Nenhuma notificação ainda.</div>'; return;
-  }
-  lista.innerHTML = historicoNotif.map((n,i) => {
-    const tel = n.membro.celular ? n.membro.celular.replace(/\D/g,'') : null;
-    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
+    function renderHistorico() {
+      const lista = document.getElementById('hist-lista');
+      if (!historicoNotif.length) {
+        lista.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted);font-size:0.85rem;">📭 Nenhuma notificação ainda.</div>'; return;
+      }
+      lista.innerHTML = historicoNotif.map((n, i) => {
+        const tel = n.membro.celular ? n.membro.celular.replace(/\D/g, '') : null;
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">✨</div>
       <div style="flex:1;"><div style="font-weight:700;font-size:0.9rem;">${n.membro.nome}</div>
-        <div style="font-size:0.75rem;color:var(--muted);">${n.membro.tipo_cadastro||'—'}${n.membro.celular?' · '+n.membro.celular:''} · ${n.hora}</div></div>
+        <div style="font-size:0.75rem;color:var(--muted);">${n.membro.tipo_cadastro || '—'}${n.membro.celular ? ' · ' + n.membro.celular : ''} · ${n.hora}</div></div>
       <div style="display:flex;gap:5px;">
         <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${n.membro.id}');document.getElementById('hist-overlay').classList.remove('open')">👁</button>
-        ${tel?`<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬</a>`:''}
+        ${tel ? `<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬</a>` : ''}
       </div></div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function limparNotificacoes() {
-  historicoNotif = []; notifNaoLidas = 0; atualizarSinoBadge(); renderHistorico();
-  document.getElementById('notif-stack').innerHTML = '';
-}
+    function limparNotificacoes() {
+      historicoNotif = []; notifNaoLidas = 0; atualizarSinoBadge(); renderHistorico();
+      document.getElementById('notif-stack').innerHTML = '';
+    }
 
-function iniciarRealtime() {
-  db.channel('novos-membros')
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'membros' }, payload => {
-      const m = payload.new;
-      membrosCache.unshift(m);
-      renderStats(); popularFiltroSetor(); renderAniversariantes();
-      renderLista(m.id);
-      criarNotificacao(m);
-    }).subscribe();
-}
+    function iniciarRealtime() {
+      db.channel('novos-membros')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'membros' }, payload => {
+          const m = payload.new;
+          membrosCache.unshift(m);
+          renderStats(); popularFiltroSetor(); renderAniversariantes();
+          renderLista(m.id);
+          criarNotificacao(m);
+        }).subscribe();
+    }
 
-// ── HELPERS ────────────────────────────────────────────
-function toast(msg, dur=2800) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),dur); }
-function maskCPF(i) { let v=i.value.replace(/\D/g,''); v=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2'); i.value=v; }
-function maskCEP(i) { i.value=i.value.replace(/\D/g,'').replace(/^(\d{5})(\d)/,'$1-$2'); }
-function maskPhone(i) { let v=i.value.replace(/\D/g,''); v=v.replace(/^(\d{2})(\d)/g,'($1) $2').replace(/(\d)(\d{4})$/,'$1-$2'); i.value=v; }
-function fmt(v) { return v||'<span style="color:var(--muted)">—</span>'; }
-function fmtDate(v) { return v?v.split('-').reverse().join('/'):'<span style="color:var(--muted)">—</span>'; }
-function statusBadge(s) { const cls={'Ativo':'ativo','Inativo':'inativo','Transferido':'transferido','Falecido':'falecido'}[s]||'ativo'; return `<span class="badge badge-${cls}">${s||'Ativo'}</span>`; }
-function whatsappLink(cel) { if(!cel) return ''; const n=cel.replace(/\D/g,''); return `<a href="https://wa.me/55${n}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬</a>`; }
-function avatarImg(m,size=32) { if(m.foto_url) return `<img src="${m.foto_url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`; return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.45)}px;flex-shrink:0;">👤</div>`; }
+    // ── HELPERS ────────────────────────────────────────────
+    function toast(msg, dur = 2800) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
+    function maskCPF(i) { let v = i.value.replace(/\D/g, ''); v = v.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); i.value = v; }
+    function maskCEP(i) { i.value = i.value.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2'); }
+    function maskPhone(i) { let v = i.value.replace(/\D/g, ''); v = v.replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2'); i.value = v; }
+    function fmt(v) { return v || '<span style="color:var(--muted)">—</span>'; }
+    function fmtDate(v) { return v ? v.split('-').reverse().join('/') : '<span style="color:var(--muted)">—</span>'; }
+    function statusBadge(s) { const cls = { 'Ativo': 'ativo', 'Inativo': 'inativo', 'Transferido': 'transferido', 'Falecido': 'falecido' }[s] || 'ativo'; return `<span class="badge badge-${cls}">${s || 'Ativo'}</span>`; }
+    function whatsappLink(cel) { if (!cel) return ''; const n = cel.replace(/\D/g, ''); return `<a href="https://wa.me/55${n}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬</a>`; }
+    function avatarImg(m, size = 32) { if (m.foto_url) return `<img src="${m.foto_url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`; return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.45)}px;flex-shrink:0;">👤</div>`; }
 
-// ── FOTOS ──────────────────────────────────────────────
-async function comprimirImagem(file,maxDim=900) { return new Promise(resolve=>{ const r=new FileReader(); r.onload=e=>{ const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'),ratio=Math.min(1,maxDim/Math.max(img.width,img.height)); c.width=Math.round(img.width*ratio); c.height=Math.round(img.height*ratio); c.getContext('2d').drawImage(img,0,0,c.width,c.height); c.toBlob(b=>resolve(b),'image/jpeg',0.82); }; img.src=e.target.result; }; r.readAsDataURL(file); }); }
-async function uploadFotoAdmin(file,pasta) { if(!file) return null; try{ const blob=await comprimirImagem(file); const path=`${pasta}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`; const{error}=await db.storage.from('membros').upload(path,blob,{contentType:'image/jpeg',upsert:true}); if(error){console.warn(error.message);return null;} return db.storage.from('membros').getPublicUrl(path).data.publicUrl; }catch(e){return null;} }
-function editPreviewFoto(input,previewId,placeholderId,areaId) { const file=input.files[0]; if(!file) return; const r=new FileReader(); r.onload=e=>{ const prev=document.getElementById(previewId); prev.src=e.target.result; prev.style.display='block'; document.getElementById(placeholderId).style.display='none'; document.getElementById(areaId).classList.add('tem-foto'); }; r.readAsDataURL(file); }
+    // ── FOTOS ──────────────────────────────────────────────
+    async function comprimirImagem(file, maxDim = 900) { return new Promise(resolve => { const r = new FileReader(); r.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'), ratio = Math.min(1, maxDim / Math.max(img.width, img.height)); c.width = Math.round(img.width * ratio); c.height = Math.round(img.height * ratio); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); c.toBlob(b => resolve(b), 'image/jpeg', 0.82); }; img.src = e.target.result; }; r.readAsDataURL(file); }); }
+    async function uploadFotoAdmin(file, pasta) { if (!file) return null; try { const blob = await comprimirImagem(file); const path = `${pasta}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`; const { error } = await db.storage.from('membros').upload(path, blob, { contentType: 'image/jpeg', upsert: true }); if (error) { console.warn(error.message); return null; } return db.storage.from('membros').getPublicUrl(path).data.publicUrl; } catch (e) { return null; } }
+    function editPreviewFoto(input, previewId, placeholderId, areaId) { const file = input.files[0]; if (!file) return; const r = new FileReader(); r.onload = e => { const prev = document.getElementById(previewId); prev.src = e.target.result; prev.style.display = 'block'; document.getElementById(placeholderId).style.display = 'none'; document.getElementById(areaId).classList.add('tem-foto'); }; r.readAsDataURL(file); }
 
-// ── CARREGAR ───────────────────────────────────────────
-async function carregarLista() {
-  document.getElementById('corpo-lista').innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2.5rem;"><span class="loading" style="border-color:rgba(201,168,76,0.3);border-top-color:var(--gold);"></span><span style="margin-left:10px;">Carregando…</span></td></tr>`;
-  const {data,error} = await db.from('membros').select('*').order('nome');
-  if (error) { toast('❌ Erro ao carregar.'); return; }
-  membrosCache = data || [];
-  primeiraLeitura = false;
-  renderStats(); popularFiltroSetor(); renderAniversariantes(); renderLista();
-}
+    // ── CARREGAR ───────────────────────────────────────────
+    async function carregarLista() {
+      document.getElementById('corpo-lista').innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2.5rem;"><span class="loading" style="border-color:rgba(201,168,76,0.3);border-top-color:var(--gold);"></span><span style="margin-left:10px;">Carregando…</span></td></tr>`;
+      const { data, error } = await db.from('membros').select('*').order('nome');
+      if (error) { toast('❌ Erro ao carregar.'); return; }
+      membrosCache = data || [];
+      primeiraLeitura = false;
+      renderStats(); popularFiltroSetor(); renderAniversariantes(); renderLista();
+    }
 
-function renderStats() {
-  const total=membrosCache.length, membros=membrosCache.filter(m=>m.tipo_cadastro==='Membro').length,
-    congregados=membrosCache.filter(m=>m.tipo_cadastro==='Congregado').length,
-    ativos=membrosCache.filter(m=>!m.status||m.status==='Ativo').length,
-    agora=new Date(),
-    doMes=membrosCache.filter(m=>{ if(!m.created_at) return false; const d=new Date(m.created_at); return d.getMonth()===agora.getMonth()&&d.getFullYear()===agora.getFullYear(); }).length;
-  const setNum=(id,val)=>{ const el=document.getElementById(id); if(el.textContent!==String(val)){ el.textContent=val; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); } };
-  setNum('stat-total',total); setNum('stat-membros',membros); setNum('stat-congregados',congregados); setNum('stat-ativos',ativos); setNum('stat-mes',doMes);
-}
+    function renderStats() {
+      const total = membrosCache.length, membros = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length,
+        congregados = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length,
+        ativos = membrosCache.filter(m => !m.status || m.status === 'Ativo').length,
+        agora = new Date(),
+        doMes = membrosCache.filter(m => { if (!m.created_at) return false; const d = new Date(m.created_at); return d.getMonth() === agora.getMonth() && d.getFullYear() === agora.getFullYear(); }).length;
+      const setNum = (id, val) => { const el = document.getElementById(id); if (el.textContent !== String(val)) { el.textContent = val; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); } };
+      setNum('stat-total', total); setNum('stat-membros', membros); setNum('stat-congregados', congregados); setNum('stat-ativos', ativos); setNum('stat-mes', doMes);
+    }
 
-function popularFiltroSetor() {
-  const setores=[...new Set(membrosCache.map(m=>m.setor_igreja).filter(Boolean))].sort();
-  const sel=document.getElementById('filtro-setor'), val=sel.value;
-  sel.innerHTML='<option value="">Todos os setores</option>';
-  setores.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; if(s===val) o.selected=true; sel.appendChild(o); });
-}
+    function popularFiltroSetor() {
+      const setores = [...new Set(membrosCache.map(m => m.setor_igreja).filter(Boolean))].sort();
+      const sel = document.getElementById('filtro-setor'), val = sel.value;
+      sel.innerHTML = '<option value="">Todos os setores</option>';
+      setores.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; if (s === val) o.selected = true; sel.appendChild(o); });
+    }
 
-function toggleAniv() { anivAberto=!anivAberto; document.getElementById('aniv-body').classList.toggle('fechado',!anivAberto); document.getElementById('aniv-chevron').textContent=anivAberto?'▼':'▶'; }
+    function toggleAniv() { anivAberto = !anivAberto; document.getElementById('aniv-body').classList.toggle('fechado', !anivAberto); document.getElementById('aniv-chevron').textContent = anivAberto ? '▼' : '▶'; }
 
-function renderAniversariantes() {
-  const agora=new Date(), mesAtual=agora.getMonth(), hoje=agora.getDate();
-  const lista=membrosCache.filter(m=>m.data_nasc&&(!m.status||m.status==='Ativo')).map(m=>{ const d=new Date(m.data_nasc); return{...m,dia:d.getDate(),mes:d.getMonth(),ano:d.getFullYear()}; }).filter(m=>m.mes===mesAtual).sort((a,b)=>a.dia-b.dia);
-  const cnt=document.getElementById('aniv-count'); cnt.textContent=lista.length; cnt.style.display=lista.length?'':'none';
-  const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-  const body=document.getElementById('aniv-body');
-  if(!lista.length){ body.innerHTML='<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;text-align:center;">Nenhum aniversariante este mês 🎉</div>'; return; }
-  body.innerHTML=lista.map(m=>{ const eHoje=m.dia===hoje, idade=agora.getFullYear()-m.ano, tel=m.celular?m.celular.replace(/\D/g,''):null;
-    return `<div class="aniv-item" style="${eHoje?'background:rgba(201,168,76,0.06);border-radius:8px;padding:8px;':''}">
-      ${m.foto_url?`<img src="${m.foto_url}" class="aniv-avatar">`:`<div class="aniv-avatar-placeholder">🎂</div>`}
-      <div class="aniv-info"><div class="aniv-nome">${m.nome} ${eHoje?'<span class="hoje-badge">HOJE!</span>':''}</div><div class="aniv-sub">Dia ${m.dia} de ${meses[mesAtual]} · ${idade} anos</div></div>
-      ${tel?`<a href="https://wa.me/55${tel}?text=Feliz+aniversário+${encodeURIComponent(m.nome.split(' ')[0])}!+Que+Deus+te+abençoe+muito!" target="_blank" class="btn btn-gold btn-sm" style="text-decoration:none;">🎉 Parabenizar</a>`:''}
-    </div>`; }).join('');
-}
+    function renderAniversariantes() {
+      const agora = new Date(), mesAtual = agora.getMonth(), hoje = agora.getDate();
+      const lista = membrosCache.filter(m => m.data_nasc && (!m.status || m.status === 'Ativo')).map(m => { const d = new Date(m.data_nasc); return { ...m, dia: d.getDate(), mes: d.getMonth(), ano: d.getFullYear() }; }).filter(m => m.mes === mesAtual).sort((a, b) => a.dia - b.dia);
+      const cnt = document.getElementById('aniv-count'); cnt.textContent = lista.length; cnt.style.display = lista.length ? '' : 'none';
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      const body = document.getElementById('aniv-body');
+      if (!lista.length) { body.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;text-align:center;">Nenhum aniversariante este mês 🎉</div>'; return; }
+      body.innerHTML = lista.map(m => {
+        const eHoje = m.dia === hoje, idade = agora.getFullYear() - m.ano, tel = m.celular ? m.celular.replace(/\D/g, '') : null;
+        return `<div class="aniv-item" style="${eHoje ? 'background:rgba(201,168,76,0.06);border-radius:8px;padding:8px;' : ''}">
+      ${m.foto_url ? `<img src="${m.foto_url}" class="aniv-avatar">` : `<div class="aniv-avatar-placeholder">🎂</div>`}
+      <div class="aniv-info"><div class="aniv-nome">${m.nome} ${eHoje ? '<span class="hoje-badge">HOJE!</span>' : ''}</div><div class="aniv-sub">Dia ${m.dia} de ${meses[mesAtual]} · ${idade} anos</div></div>
+      ${tel ? `<a href="https://wa.me/55${tel}?text=Feliz+aniversário+${encodeURIComponent(m.nome.split(' ')[0])}!+Que+Deus+te+abençoe+muito!" target="_blank" class="btn btn-gold btn-sm" style="text-decoration:none;">🎉 Parabenizar</a>` : ''}
+    </div>`;
+      }).join('');
+    }
 
-function renderLista(novoId=null) {
-  const busca=document.getElementById('busca').value.toLowerCase();
-  const filtroTipo=document.getElementById('filtro-tipo').value;
-  const filtroStatus=document.getElementById('filtro-status').value;
-  const filtroSetor=document.getElementById('filtro-setor').value;
-  const filtrados=membrosCache.filter(m=>{ const mb=!busca||m.nome.toLowerCase().includes(busca)||(m.cpf||'').includes(busca)||(m.celular||'').includes(busca)||(m.email||'').toLowerCase().includes(busca); const mt=!filtroTipo||m.tipo_cadastro===filtroTipo; const ms=!filtroStatus||(m.status||'Ativo')===filtroStatus; const mse=!filtroSetor||m.setor_igreja===filtroSetor; return mb&&mt&&ms&&mse; });
-  const corpo=document.getElementById('corpo-lista'), totalPag=Math.max(1,Math.ceil(filtrados.length/POR_PAGINA));
-  if(paginaAtual>totalPag) paginaAtual=1;
-  const inicio=(paginaAtual-1)*POR_PAGINA, pagina=filtrados.slice(inicio,inicio+POR_PAGINA);
-  if(!filtrados.length){ corpo.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="e-icon">📭</div><p>Nenhum membro encontrado.</p></div></td></tr>`; document.getElementById('paginacao').innerHTML=''; return; }
-  corpo.innerHTML=pagina.map(m=>`<tr id="row-${m.id}" class="${m.id===novoId?'novo-destaque':''}">
-    <td><div style="display:flex;align-items:center;gap:8px;">${avatarImg(m,32)}<div><strong style="font-size:0.88rem;">${m.nome}</strong><div style="font-size:0.72rem;color:var(--muted);">${m.cpf||'—'}</div></div></div></td>
-    <td><span class="badge badge-${m.tipo_cadastro==='Membro'?'membro':'congregado'}">${m.tipo_cadastro}</span></td>
+    function renderLista(novoId = null) {
+      const busca = document.getElementById('busca').value.toLowerCase();
+      const filtroTipo = document.getElementById('filtro-tipo').value;
+      const filtroStatus = document.getElementById('filtro-status').value;
+      const filtroSetor = document.getElementById('filtro-setor').value;
+      const filtrados = membrosCache.filter(m => { const mb = !busca || m.nome.toLowerCase().includes(busca) || (m.cpf || '').includes(busca) || (m.celular || '').includes(busca) || (m.email || '').toLowerCase().includes(busca); const mt = !filtroTipo || m.tipo_cadastro === filtroTipo; const ms = !filtroStatus || (m.status || 'Ativo') === filtroStatus; const mse = !filtroSetor || m.setor_igreja === filtroSetor; return mb && mt && ms && mse; });
+      const corpo = document.getElementById('corpo-lista'), totalPag = Math.max(1, Math.ceil(filtrados.length / POR_PAGINA));
+      if (paginaAtual > totalPag) paginaAtual = 1;
+      const inicio = (paginaAtual - 1) * POR_PAGINA, pagina = filtrados.slice(inicio, inicio + POR_PAGINA);
+      if (!filtrados.length) { corpo.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="e-icon">📭</div><p>Nenhum membro encontrado.</p></div></td></tr>`; document.getElementById('paginacao').innerHTML = ''; return; }
+      corpo.innerHTML = pagina.map(m => `<tr id="row-${m.id}" class="${m.id === novoId ? 'novo-destaque' : ''}">
+    <td><div style="display:flex;align-items:center;gap:8px;">${avatarImg(m, 32)}<div><strong style="font-size:0.88rem;">${m.nome}</strong><div style="font-size:0.72rem;color:var(--muted);">${m.cpf || '—'}</div></div></div></td>
+    <td><span class="badge badge-${m.tipo_cadastro === 'Membro' ? 'membro' : 'congregado'}">${m.tipo_cadastro}</span></td>
     <td>${statusBadge(m.status)}</td>
-    <td style="font-size:0.85rem;">${m.celular||'—'}</td>
-    <td style="color:var(--muted);font-size:0.8rem;">${m.setor_igreja||'—'}</td>
+    <td style="font-size:0.85rem;">${m.celular || '—'}</td>
+    <td style="color:var(--muted);font-size:0.8rem;">${m.setor_igreja || '—'}</td>
     <td><div class="td-actions">
       <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${m.id}')">👁</button>
       <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}')">✏️</button>
       ${whatsappLink(m.celular)}
-      <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g,"\\'")}')">✕</button>
+      <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}')">✕</button>
     </div></td></tr>`).join('');
-  const pag=document.getElementById('paginacao');
-  if(totalPag<=1){ pag.innerHTML=`<span>${filtrados.length} registros</span>`; return; }
-  let h=`<span>${filtrados.length} registros</span>`;
-  h+=`<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${paginaAtual-1})" ${paginaAtual===1?'disabled':''}>‹</button>`;
-  for(let p=1;p<=totalPag;p++){ if(p===paginaAtual) h+=`<button class="btn btn-primary btn-sm">${p}</button>`; else if(p===1||p===totalPag||Math.abs(p-paginaAtual)<=1) h+=`<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${p})">${p}</button>`; else if(Math.abs(p-paginaAtual)===2) h+=`<span>…</span>`; }
-  h+=`<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${paginaAtual+1})" ${paginaAtual===totalPag?'disabled':''}>›</button>`;
-  pag.innerHTML=h;
-}
+      const pag = document.getElementById('paginacao');
+      if (totalPag <= 1) { pag.innerHTML = `<span>${filtrados.length} registros</span>`; return; }
+      let h = `<span>${filtrados.length} registros</span>`;
+      h += `<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${paginaAtual - 1})" ${paginaAtual === 1 ? 'disabled' : ''}>‹</button>`;
+      for (let p = 1; p <= totalPag; p++) { if (p === paginaAtual) h += `<button class="btn btn-primary btn-sm">${p}</button>`; else if (p === 1 || p === totalPag || Math.abs(p - paginaAtual) <= 1) h += `<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${p})">${p}</button>`; else if (Math.abs(p - paginaAtual) === 2) h += `<span>…</span>`; }
+      h += `<button class="btn btn-ghost btn-sm" onclick="mudarPagina(${paginaAtual + 1})" ${paginaAtual === totalPag ? 'disabled' : ''}>›</button>`;
+      pag.innerHTML = h;
+    }
 
-function mudarPagina(p) { paginaAtual=p; renderLista(); document.querySelector('.table-wrap')?.scrollIntoView({behavior:'smooth',block:'start'}); }
+    function mudarPagina(p) { paginaAtual = p; renderLista(); document.querySelector('.table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 
-function verDetalhes(id) {
-  const m=membrosCache.find(x=>x.id===id); if(!m) return;
-  const tel=m.celular?m.celular.replace(/\D/g,''):null;
-  document.getElementById('modal-conteudo').innerHTML=`
+    function verDetalhes(id) {
+      const m = membrosCache.find(x => x.id === id); if (!m) return;
+      const tel = m.celular ? m.celular.replace(/\D/g, '') : null;
+      document.getElementById('modal-conteudo').innerHTML = `
     <div class="modal-header">
       <div style="display:flex;align-items:center;">
-        ${m.foto_url?`<img src="${m.foto_url}" class="foto-modal-grande">`:`<div style="width:80px;height:80px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-right:1rem;flex-shrink:0;">👤</div>`}
-        <div><div class="modal-nome">${m.nome}</div><div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;"><span class="badge badge-${m.tipo_cadastro==='Membro'?'membro':'congregado'}">${m.tipo_cadastro}</span>${statusBadge(m.status)}</div></div>
+        ${m.foto_url ? `<img src="${m.foto_url}" class="foto-modal-grande">` : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-right:1rem;flex-shrink:0;">👤</div>`}
+        <div><div class="modal-nome">${m.nome}</div><div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;"><span class="badge badge-${m.tipo_cadastro === 'Membro' ? 'membro' : 'congregado'}">${m.tipo_cadastro}</span>${statusBadge(m.status)}</div></div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('modal-overlay').classList.remove('open')">✕</button>
     </div>
     <div class="modal-section"><div class="modal-section-title">👤 Dados Pessoais</div><div class="modal-grid">
       <div class="modal-field"><strong>CPF</strong><span>${fmt(m.cpf)}</span></div>
       <div class="modal-field"><strong>RG</strong><span>${fmt(m.rg)}</span></div>
-      <div class="modal-field"><strong>Nascimento</strong><span>${fmtDate(m.data_nasc)}${m.idade?' · '+m.idade+' anos':''}</span></div>
+      <div class="modal-field"><strong>Nascimento</strong><span>${fmtDate(m.data_nasc)}${m.idade ? ' · ' + m.idade + ' anos' : ''}</span></div>
       <div class="modal-field"><strong>Sexo</strong><span>${fmt(m.sexo)}</span></div>
       <div class="modal-field"><strong>Estado Civil</strong><span>${fmt(m.estado_civil)}</span></div>
       <div class="modal-field"><strong>Cônjuge</strong><span>${fmt(m.conjuge_nome)}</span></div>
@@ -809,7 +2106,7 @@ function verDetalhes(id) {
       <div class="modal-field"><strong>Ocupação</strong><span>${fmt(m.ocupacao)}</span></div>
     </div></div>
     <div class="modal-section"><div class="modal-section-title">📍 Contato</div><div class="modal-grid">
-      <div class="modal-field" style="grid-column:1/-1;"><strong>Endereço</strong><span>${fmt(m.endereco)}${m.bairro?', '+m.bairro:''}${m.cidade_estado?' — '+m.cidade_estado:''}</span></div>
+      <div class="modal-field" style="grid-column:1/-1;"><strong>Endereço</strong><span>${fmt(m.endereco)}${m.bairro ? ', ' + m.bairro : ''}${m.cidade_estado ? ' — ' + m.cidade_estado : ''}</span></div>
       <div class="modal-field"><strong>Celular</strong><span>${fmt(m.celular)}</span></div>
       <div class="modal-field"><strong>E-mail</strong><span>${fmt(m.email)}</span></div>
     </div></div>
@@ -821,76 +2118,76 @@ function verDetalhes(id) {
       <div class="modal-field"><strong>Batismo Águas</strong><span>${fmtDate(m.data_batismo_aguas)}</span></div>
       <div class="modal-field"><strong>Batismo ES</strong><span>${fmtDate(m.data_batismo_es)}</span></div>
     </div></div>
-    ${m.doc_url?`<div class="modal-section"><div class="modal-section-title">🪪 Documento</div><img src="${m.doc_url}" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;"></div>`:''}
-    ${m.talentos?`<div class="modal-section"><div class="modal-section-title">🌟 Talentos</div><span style="font-size:0.88rem;">${m.talentos}</span></div>`:''}
+    ${m.doc_url ? `<div class="modal-section"><div class="modal-section-title">🪪 Documento</div><img src="${m.doc_url}" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;"></div>` : ''}
+    ${m.talentos ? `<div class="modal-section"><div class="modal-section-title">🌟 Talentos</div><span style="font-size:0.88rem;">${m.talentos}</span></div>` : ''}
     <div style="display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;flex-wrap:wrap;">
-      ${tel?`<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬 WhatsApp</a>`:''}
+      ${tel ? `<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬 WhatsApp</a>` : ''}
       <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}');document.getElementById('modal-overlay').classList.remove('open')">✏️ Editar</button>
       <button class="btn btn-ghost btn-sm" onclick="imprimirFicha('${m.id}')">🖨️ Imprimir</button>
-      <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g,"\\'")}');document.getElementById('modal-overlay').classList.remove('open')">✕ Excluir</button>
+      <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}');document.getElementById('modal-overlay').classList.remove('open')">✕ Excluir</button>
     </div>`;
-  document.getElementById('modal-overlay').classList.add('open');
-}
+      document.getElementById('modal-overlay').classList.add('open');
+    }
 
-function abrirEdicao(id) {
-  const m=membrosCache.find(x=>x.id===id); if(!m) return;
-  ['nome','rg','cpf','nasc','idade','sangue','esc','civil','conjuge','casamento','cep','bairro','endereco','cidade','fone-res','fone-com','celular','email','recebimento','cargo','setor','congregacao','bat-aguas','bat-es','aprovacao','filhos','dep1-nome','dep1-par','dep2-nome','dep2-par'].forEach(k=>{ const el=document.getElementById('edit-'+k); if(el){ const mapa={'nome':m.nome,'rg':m.rg,'cpf':m.cpf,'nasc':m.data_nasc,'idade':m.idade,'sangue':m.tipo_sanguineo,'esc':m.escolaridade,'civil':m.estado_civil,'conjuge':m.conjuge_nome,'casamento':m.data_casamento,'cep':m.cep,'bairro':m.bairro,'endereco':m.endereco,'cidade':m.cidade_estado,'fone-res':m.fone_res,'fone-com':m.fone_com,'celular':m.celular,'email':m.email,'recebimento':m.forma_recebimento,'cargo':m.cargo_principal,'setor':m.setor_igreja,'congregacao':m.congregacao_igreja,'bat-aguas':m.data_batismo_aguas,'bat-es':m.data_batismo_es,'aprovacao':m.data_aprovacao,'filhos':m.qtd_filhos||0,'dep1-nome':m.nome_dep1,'dep1-par':m.parentesco_dep1,'dep2-nome':m.nome_dep2,'dep2-par':m.parentesco_dep2}; el.value=mapa[k]||''; } });
-  document.getElementById('edit-id').value=m.id;
-  document.getElementById('edit-status').value=m.status||'Ativo';
-  document.querySelectorAll('input[name="edit-tipo"]').forEach(r=>r.checked=(r.value===(m.tipo_cadastro||'Membro')));
-  document.querySelectorAll('input[name="edit-sexo"]').forEach(r=>r.checked=(r.value===(m.sexo||'M')));
-  const pf=document.getElementById('edit-preview-foto'), pd=document.getElementById('edit-preview-doc');
-  if(m.foto_url){pf.src=m.foto_url;pf.style.display='block';document.getElementById('edit-placeholder-foto').style.display='none';document.getElementById('edit-area-foto').classList.add('tem-foto');}
-  else{pf.style.display='none';document.getElementById('edit-placeholder-foto').style.display='';document.getElementById('edit-area-foto').classList.remove('tem-foto');}
-  if(m.doc_url){pd.src=m.doc_url;pd.style.display='block';document.getElementById('edit-placeholder-doc').style.display='none';document.getElementById('edit-area-doc').classList.add('tem-foto');}
-  else{pd.style.display='none';document.getElementById('edit-placeholder-doc').style.display='';document.getElementById('edit-area-doc').classList.remove('tem-foto');}
-  ['edit-input-foto','edit-input-cam','edit-input-doc','edit-input-doc-cam'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('edit-overlay').classList.add('open');
-}
+    function abrirEdicao(id) {
+      const m = membrosCache.find(x => x.id === id); if (!m) return;
+      ['nome', 'rg', 'cpf', 'nasc', 'idade', 'sangue', 'esc', 'civil', 'conjuge', 'casamento', 'cep', 'bairro', 'endereco', 'cidade', 'fone-res', 'fone-com', 'celular', 'email', 'recebimento', 'cargo', 'setor', 'congregacao', 'bat-aguas', 'bat-es', 'aprovacao', 'filhos', 'dep1-nome', 'dep1-par', 'dep2-nome', 'dep2-par'].forEach(k => { const el = document.getElementById('edit-' + k); if (el) { const mapa = { 'nome': m.nome, 'rg': m.rg, 'cpf': m.cpf, 'nasc': m.data_nasc, 'idade': m.idade, 'sangue': m.tipo_sanguineo, 'esc': m.escolaridade, 'civil': m.estado_civil, 'conjuge': m.conjuge_nome, 'casamento': m.data_casamento, 'cep': m.cep, 'bairro': m.bairro, 'endereco': m.endereco, 'cidade': m.cidade_estado, 'fone-res': m.fone_res, 'fone-com': m.fone_com, 'celular': m.celular, 'email': m.email, 'recebimento': m.forma_recebimento, 'cargo': m.cargo_principal, 'setor': m.setor_igreja, 'congregacao': m.congregacao_igreja, 'bat-aguas': m.data_batismo_aguas, 'bat-es': m.data_batismo_es, 'aprovacao': m.data_aprovacao, 'filhos': m.qtd_filhos || 0, 'dep1-nome': m.nome_dep1, 'dep1-par': m.parentesco_dep1, 'dep2-nome': m.nome_dep2, 'dep2-par': m.parentesco_dep2 }; el.value = mapa[k] || ''; } });
+      document.getElementById('edit-id').value = m.id;
+      document.getElementById('edit-status').value = m.status || 'Ativo';
+      document.querySelectorAll('input[name="edit-tipo"]').forEach(r => r.checked = (r.value === (m.tipo_cadastro || 'Membro')));
+      document.querySelectorAll('input[name="edit-sexo"]').forEach(r => r.checked = (r.value === (m.sexo || 'M')));
+      const pf = document.getElementById('edit-preview-foto'), pd = document.getElementById('edit-preview-doc');
+      if (m.foto_url) { pf.src = m.foto_url; pf.style.display = 'block'; document.getElementById('edit-placeholder-foto').style.display = 'none'; document.getElementById('edit-area-foto').classList.add('tem-foto'); }
+      else { pf.style.display = 'none'; document.getElementById('edit-placeholder-foto').style.display = ''; document.getElementById('edit-area-foto').classList.remove('tem-foto'); }
+      if (m.doc_url) { pd.src = m.doc_url; pd.style.display = 'block'; document.getElementById('edit-placeholder-doc').style.display = 'none'; document.getElementById('edit-area-doc').classList.add('tem-foto'); }
+      else { pd.style.display = 'none'; document.getElementById('edit-placeholder-doc').style.display = ''; document.getElementById('edit-area-doc').classList.remove('tem-foto'); }
+      ['edit-input-foto', 'edit-input-cam', 'edit-input-doc', 'edit-input-doc-cam'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('edit-overlay').classList.add('open');
+    }
 
-async function salvarEdicao() {
-  const id=document.getElementById('edit-id').value, nome=document.getElementById('edit-nome').value.trim();
-  if(!nome){toast('⚠️ Nome obrigatório!');return;}
-  const btn=document.getElementById('btn-salvar-edit'); btn.innerHTML='<span class="loading"></span> Salvando…'; btn.disabled=true;
-  const fi=document.getElementById('edit-input-foto'), di=document.getElementById('edit-input-doc');
-  const [novaFoto,novaDoc]=await Promise.all([fi.files[0]?uploadFotoAdmin(fi.files[0],'fotos'):Promise.resolve(null),di.files[0]?uploadFotoAdmin(di.files[0],'docs'):Promise.resolve(null)]);
-  const mAtual=membrosCache.find(x=>x.id===id);
-  const dados={tipo_cadastro:document.querySelector('input[name="edit-tipo"]:checked')?.value||'Membro',status:document.getElementById('edit-status').value,nome,rg:document.getElementById('edit-rg').value,cpf:document.getElementById('edit-cpf').value,data_nasc:document.getElementById('edit-nasc').value||null,idade:parseInt(document.getElementById('edit-idade').value)||null,sexo:document.querySelector('input[name="edit-sexo"]:checked')?.value||'M',tipo_sanguineo:document.getElementById('edit-sangue').value,escolaridade:document.getElementById('edit-esc').value,estado_civil:document.getElementById('edit-civil').value,conjuge_nome:document.getElementById('edit-conjuge').value,data_casamento:document.getElementById('edit-casamento').value||null,cep:document.getElementById('edit-cep').value,bairro:document.getElementById('edit-bairro').value,endereco:document.getElementById('edit-endereco').value,cidade_estado:document.getElementById('edit-cidade').value,fone_res:document.getElementById('edit-fone-res').value,fone_com:document.getElementById('edit-fone-com').value,celular:document.getElementById('edit-celular').value,email:document.getElementById('edit-email').value,forma_recebimento:document.getElementById('edit-recebimento').value,cargo_principal:document.getElementById('edit-cargo').value,setor_igreja:document.getElementById('edit-setor').value,congregacao_igreja:document.getElementById('edit-congregacao').value,data_batismo_aguas:document.getElementById('edit-bat-aguas').value||null,data_batismo_es:document.getElementById('edit-bat-es').value||null,data_aprovacao:document.getElementById('edit-aprovacao').value||null,qtd_filhos:parseInt(document.getElementById('edit-filhos').value)||0,nome_dep1:document.getElementById('edit-dep1-nome').value,parentesco_dep1:document.getElementById('edit-dep1-par').value,nome_dep2:document.getElementById('edit-dep2-nome').value,parentesco_dep2:document.getElementById('edit-dep2-par').value,foto_url:novaFoto||(mAtual?mAtual.foto_url:null),doc_url:novaDoc||(mAtual?mAtual.doc_url:null)};
-  const{error}=await db.from('membros').update(dados).eq('id',id);
-  btn.innerHTML='💾 Salvar Alterações'; btn.disabled=false;
-  if(error){toast('❌ Erro ao salvar.');return;}
-  const idx=membrosCache.findIndex(x=>x.id===id); if(idx!==-1) membrosCache[idx]={...membrosCache[idx],...dados};
-  renderStats();popularFiltroSetor();renderAniversariantes();renderLista();
-  document.getElementById('edit-overlay').classList.remove('open'); toast('✅ Cadastro atualizado!');
-}
+    async function salvarEdicao() {
+      const id = document.getElementById('edit-id').value, nome = document.getElementById('edit-nome').value.trim();
+      if (!nome) { toast('⚠️ Nome obrigatório!'); return; }
+      const btn = document.getElementById('btn-salvar-edit'); btn.innerHTML = '<span class="loading"></span> Salvando…'; btn.disabled = true;
+      const fi = document.getElementById('edit-input-foto'), di = document.getElementById('edit-input-doc');
+      const [novaFoto, novaDoc] = await Promise.all([fi.files[0] ? uploadFotoAdmin(fi.files[0], 'fotos') : Promise.resolve(null), di.files[0] ? uploadFotoAdmin(di.files[0], 'docs') : Promise.resolve(null)]);
+      const mAtual = membrosCache.find(x => x.id === id);
+      const dados = { tipo_cadastro: document.querySelector('input[name="edit-tipo"]:checked')?.value || 'Membro', status: document.getElementById('edit-status').value, nome, rg: document.getElementById('edit-rg').value, cpf: document.getElementById('edit-cpf').value, data_nasc: document.getElementById('edit-nasc').value || null, idade: parseInt(document.getElementById('edit-idade').value) || null, sexo: document.querySelector('input[name="edit-sexo"]:checked')?.value || 'M', tipo_sanguineo: document.getElementById('edit-sangue').value, escolaridade: document.getElementById('edit-esc').value, estado_civil: document.getElementById('edit-civil').value, conjuge_nome: document.getElementById('edit-conjuge').value, data_casamento: document.getElementById('edit-casamento').value || null, cep: document.getElementById('edit-cep').value, bairro: document.getElementById('edit-bairro').value, endereco: document.getElementById('edit-endereco').value, cidade_estado: document.getElementById('edit-cidade').value, fone_res: document.getElementById('edit-fone-res').value, fone_com: document.getElementById('edit-fone-com').value, celular: document.getElementById('edit-celular').value, email: document.getElementById('edit-email').value, forma_recebimento: document.getElementById('edit-recebimento').value, cargo_principal: document.getElementById('edit-cargo').value, setor_igreja: document.getElementById('edit-setor').value, congregacao_igreja: document.getElementById('edit-congregacao').value, data_batismo_aguas: document.getElementById('edit-bat-aguas').value || null, data_batismo_es: document.getElementById('edit-bat-es').value || null, data_aprovacao: document.getElementById('edit-aprovacao').value || null, qtd_filhos: parseInt(document.getElementById('edit-filhos').value) || 0, nome_dep1: document.getElementById('edit-dep1-nome').value, parentesco_dep1: document.getElementById('edit-dep1-par').value, nome_dep2: document.getElementById('edit-dep2-nome').value, parentesco_dep2: document.getElementById('edit-dep2-par').value, foto_url: novaFoto || (mAtual ? mAtual.foto_url : null), doc_url: novaDoc || (mAtual ? mAtual.doc_url : null) };
+      const { error } = await db.from('membros').update(dados).eq('id', id);
+      btn.innerHTML = '💾 Salvar Alterações'; btn.disabled = false;
+      if (error) { toast('❌ Erro ao salvar.'); return; }
+      const idx = membrosCache.findIndex(x => x.id === id); if (idx !== -1) membrosCache[idx] = { ...membrosCache[idx], ...dados };
+      renderStats(); popularFiltroSetor(); renderAniversariantes(); renderLista();
+      document.getElementById('edit-overlay').classList.remove('open'); toast('✅ Cadastro atualizado!');
+    }
 
-async function excluirMembro(id,nome) {
-  if(!confirm(`Excluir "${nome}" permanentemente?`)) return;
-  const{error}=await db.from('membros').delete().eq('id',id);
-  if(error){toast('❌ Erro ao excluir.');return;}
-  membrosCache=membrosCache.filter(m=>m.id!==id);
-  renderStats();popularFiltroSetor();renderAniversariantes();renderLista();
-  toast('🗑️ Membro excluído.');
-}
+    async function excluirMembro(id, nome) {
+      if (!confirm(`Excluir "${nome}" permanentemente?`)) return;
+      const { error } = await db.from('membros').delete().eq('id', id);
+      if (error) { toast('❌ Erro ao excluir.'); return; }
+      membrosCache = membrosCache.filter(m => m.id !== id);
+      renderStats(); popularFiltroSetor(); renderAniversariantes(); renderLista();
+      toast('🗑️ Membro excluído.');
+    }
 
-function fecharOverlayClick(e,id){ if(e.target===document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+    function fecharOverlayClick(e, id) { if (e.target === document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
 
-function exportarPDF() {
-  if(!membrosCache.length){toast('⚠️ Nenhum membro.');return;}
-  const{jsPDF}=window.jspdf, doc=new jsPDF();
-  doc.setFillColor(26,18,8); doc.rect(0,0,210,38,'F');
-  doc.setTextColor(232,201,109); doc.setFont('helvetica','bold'); doc.setFontSize(16);
-  doc.text('LISTA DE MEMBROS — AD BELA-VISTA 2026',105,15,{align:'center'});
-  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(180,150,80);
-  doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} · Total: ${membrosCache.length}`,105,27,{align:'center'});
-  doc.autoTable({head:[['#','Nome','Tipo','Status','CPF','Celular','Setor']],body:membrosCache.map((m,i)=>[i+1,m.nome,m.tipo_cadastro,m.status||'Ativo',m.cpf||'—',m.celular||'—',m.setor_igreja||'—']),startY:44,styles:{font:'helvetica',fontSize:7.5,cellPadding:4},headStyles:{fillColor:[61,43,31],textColor:[232,201,109],fontStyle:'bold'},alternateRowStyles:{fillColor:[250,247,242]},columnStyles:{0:{cellWidth:8}}});
-  doc.save('membros_adbela-vista_2026.pdf'); toast('📄 PDF gerado!');
-}
+    function exportarPDF() {
+      if (!membrosCache.length) { toast('⚠️ Nenhum membro.'); return; }
+      const { jsPDF } = window.jspdf, doc = new jsPDF();
+      doc.setFillColor(26, 18, 8); doc.rect(0, 0, 210, 38, 'F');
+      doc.setTextColor(232, 201, 109); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+      doc.text('LISTA DE MEMBROS — AD BELA-VISTA 2026', 105, 15, { align: 'center' });
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(180, 150, 80);
+      doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} · Total: ${membrosCache.length}`, 105, 27, { align: 'center' });
+      doc.autoTable({ head: [['#', 'Nome', 'Tipo', 'Status', 'CPF', 'Celular', 'Setor']], body: membrosCache.map((m, i) => [i + 1, m.nome, m.tipo_cadastro, m.status || 'Ativo', m.cpf || '—', m.celular || '—', m.setor_igreja || '—']), startY: 44, styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 4 }, headStyles: { fillColor: [61, 43, 31], textColor: [232, 201, 109], fontStyle: 'bold' }, alternateRowStyles: { fillColor: [250, 247, 242] }, columnStyles: { 0: { cellWidth: 8 } } });
+      doc.save('membros_adbela-vista_2026.pdf'); toast('📄 PDF gerado!');
+    }
 
-function imprimirFicha(id) {
-  const m=membrosCache.find(x=>x.id===id); if(!m) return;
-  const f=v=>v||'—', fd=v=>v?v.split('-').reverse().join('/'):'—';
-  document.getElementById('layout-impressao').innerHTML=`
+    function imprimirFicha(id) {
+      const m = membrosCache.find(x => x.id === id); if (!m) return;
+      const f = v => v || '—', fd = v => v ? v.split('-').reverse().join('/') : '—';
+      document.getElementById('layout-impressao').innerHTML = `
     <div class="pdf-header">
       <div><div style="font-size:14px;font-weight:bold;">FICHA CADASTRAL — IGREJA AD BELA-VISTA</div>
       <div style="font-size:10px;color:#555;">Rua Frei Lauro, 44 · Ponte do Imaruim · Palhoça - SC · (48) 3242-2451</div></div>
@@ -898,7 +2195,7 @@ function imprimirFicha(id) {
     </div>
     <div class="pdf-section"><div class="pdf-section-title">Identificação</div>
       <div class="pdf-field"><strong>Nome:</strong> ${f(m.nome)} | <strong>Tipo:</strong> ${f(m.tipo_cadastro)} | <strong>RG:</strong> ${f(m.rg)} | <strong>CPF:</strong> ${f(m.cpf)}</div>
-      <div class="pdf-field"><strong>Nasc:</strong> ${fd(m.data_nasc)} | <strong>Idade:</strong> ${m.idade||'—'} | <strong>Sexo:</strong> ${f(m.sexo)} | <strong>Estado Civil:</strong> ${f(m.estado_civil)}</div>
+      <div class="pdf-field"><strong>Nasc:</strong> ${fd(m.data_nasc)} | <strong>Idade:</strong> ${m.idade || '—'} | <strong>Sexo:</strong> ${f(m.sexo)} | <strong>Estado Civil:</strong> ${f(m.estado_civil)}</div>
     </div>
     <div class="pdf-section"><div class="pdf-section-title">Endereço e Contato</div>
       <div class="pdf-field"><strong>Endereço:</strong> ${f(m.endereco)} | <strong>Bairro:</strong> ${f(m.bairro)} | <strong>Cidade/UF:</strong> ${f(m.cidade_estado)}</div>
@@ -909,8 +2206,9 @@ function imprimirFicha(id) {
       <div class="pdf-field"><strong>Batismo Águas:</strong> ${fd(m.data_batismo_aguas)} | <strong>Batismo ES:</strong> ${fd(m.data_batismo_es)} | <strong>Cargo:</strong> ${f(m.cargo_principal)}</div>
     </div>
     <p style="margin-top:40px;text-align:center;font-size:11px;">________________________________________________<br>Assinatura do Membro</p>`;
-  setTimeout(()=>{ window.print(); setTimeout(()=>{ document.getElementById('layout-impressao').innerHTML=''; },500); },300);
-}
-</script>
+      setTimeout(() => { window.print(); setTimeout(() => { document.getElementById('layout-impressao').innerHTML = ''; }, 500); }, 300);
+    }
+  </script>
 </body>
+
 </html>
