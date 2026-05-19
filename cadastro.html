@@ -8,439 +8,175 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --cream: #faf7f2;
-    --warm: #f5efe6;
-    --gold: #c9a84c;
-    --gold2: #e8c96d;
-    --deep: #1a1208;
-    --brown: #3d2b1f;
-    --text: #2c1f14;
-    --muted: #8a7060;
-    --border: #e0d4c0;
-    --surface: #ffffff;
-    --accent: #7c3d12;
-    --green: #2d6a4f;
-    --radius: 16px;
-    --shadow: 0 4px 24px rgba(60,30,10,0.10);
+    --cream: #faf7f2; --warm: #f5efe6; --gold: #c9a84c; --gold2: #e8c96d;
+    --deep: #1a1208; --brown: #3d2b1f; --text: #2c1f14; --muted: #8a7060;
+    --border: #e0d4c0; --surface: #ffffff; --accent: #7c3d12;
+    --green: #2d6a4f; --radius: 16px; --shadow: 0 4px 24px rgba(60,30,10,0.10);
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--cream);
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    min-height: 100vh;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* BG TEXTURE */
+  body { background: var(--cream); color: var(--text); font-family: 'Outfit', sans-serif; min-height: 100vh; position: relative; overflow-x: hidden; }
   body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.10) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 90%, rgba(124,61,18,0.07) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+    content: ''; position: fixed; inset: 0;
+    background-image: radial-gradient(ellipse 80% 50% at 20% 10%, rgba(201,168,76,0.10) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 90%, rgba(124,61,18,0.07) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
   }
 
-  /* HERO HEADER */
-  .hero {
-    background: linear-gradient(135deg, var(--deep) 0%, var(--brown) 60%, #5c3210 100%);
-    padding: 3rem 1.5rem 4rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-      45deg,
-      rgba(255,255,255,0.02) 0px,
-      rgba(255,255,255,0.02) 1px,
-      transparent 1px,
-      transparent 20px
-    );
-  }
-  .hero::after {
-    content: '';
-    position: absolute;
-    bottom: -1px; left: 0; right: 0;
-    height: 60px;
-    background: var(--cream);
-    clip-path: ellipse(55% 100% at 50% 100%);
-  }
-  .hero-cross {
-    font-size: 2.5rem;
-    margin-bottom: 0.8rem;
-    display: block;
-    animation: float 4s ease-in-out infinite;
-  }
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.6rem, 5vw, 2.4rem);
-    font-weight: 900;
-    color: var(--gold2);
-    line-height: 1.15;
-    margin-bottom: 0.4rem;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
-  }
-  .hero p {
-    color: rgba(255,255,255,0.65);
-    font-size: 0.9rem;
-    font-weight: 300;
-    letter-spacing: 0.5px;
-  }
-  .hero-address {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 0.8rem;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 30px;
-    padding: 5px 14px;
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.6);
-  }
+  /* HERO */
+  .hero { background: linear-gradient(135deg, var(--deep) 0%, var(--brown) 60%, #5c3210 100%); padding: 3rem 1.5rem 4rem; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 20px); }
+  .hero::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 60px; background: var(--cream); clip-path: ellipse(55% 100% at 50% 100%); }
+  .hero-cross { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; animation: float 4s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 5vw, 2.4rem); font-weight: 900; color: var(--gold2); line-height: 1.15; margin-bottom: 0.4rem; text-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+  .hero p { color: rgba(255,255,255,0.65); font-size: 0.9rem; font-weight: 300; letter-spacing: 0.5px; }
+  .hero-address { display: inline-flex; align-items: center; gap: 6px; margin-top: 0.8rem; background: rgba(255,255,255,0.08); border: 1px solid rgba(201,168,76,0.3); border-radius: 30px; padding: 5px 14px; font-size: 0.78rem; color: rgba(255,255,255,0.6); }
 
   /* PROGRESS */
-  .progress-wrap {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--cream);
-    border-bottom: 1px solid var(--border);
-    padding: 0.6rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .progress-bar {
-    flex: 1;
-    height: 4px;
-    background: var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--accent));
-    border-radius: 10px;
-    width: 0%;
-    transition: width 0.5s ease;
-  }
-  .progress-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--muted);
-    white-space: nowrap;
-  }
+  .progress-wrap { position: sticky; top: 0; z-index: 50; background: var(--cream); border-bottom: 1px solid var(--border); padding: 0.6rem 1.5rem; display: flex; align-items: center; gap: 10px; }
+  .progress-bar { flex: 1; height: 4px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--accent)); border-radius: 10px; width: 0%; transition: width 0.5s ease; }
+  .progress-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
 
-  /* MAIN */
-  main {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 2rem 1rem 6rem;
-    position: relative;
-    z-index: 1;
-  }
+  main { max-width: 700px; margin: 0 auto; padding: 2rem 1rem 6rem; position: relative; z-index: 1; }
 
-  /* TIPO CADASTRO */
-  .tipo-toggle {
-    display: flex;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 5px;
-    margin-bottom: 1.5rem;
-    box-shadow: var(--shadow);
-  }
-  .tipo-btn {
-    flex: 1;
-    padding: 0.75rem;
-    border: none;
-    background: transparent;
-    border-radius: 9px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.25s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .tipo-btn.active {
-    background: linear-gradient(135deg, var(--brown), var(--accent));
-    color: white;
-    box-shadow: 0 4px 16px rgba(60,30,10,0.25);
-  }
+  /* TIPO */
+  .tipo-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 5px; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+  .tipo-btn { flex: 1; padding: 0.75rem; border: none; background: transparent; border-radius: 9px; font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .tipo-btn.active { background: linear-gradient(135deg, var(--brown), var(--accent)); color: white; box-shadow: 0 4px 16px rgba(60,30,10,0.25); }
 
-  /* SECTION CARD */
-  .section-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--shadow);
-    transition: border-color 0.2s;
-  }
-  .section-card:focus-within {
-    border-color: var(--gold);
-  }
-  .section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--brown);
-    margin-bottom: 1rem;
-    padding-bottom: 0.7rem;
-    border-bottom: 2px solid var(--warm);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title .icon-wrap {
-    width: 28px; height: 28px;
-    background: var(--warm);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    flex-shrink: 0;
-  }
+  /* SECTION */
+  .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); transition: border-color 0.2s; }
+  .section-card:focus-within { border-color: var(--gold); }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; color: var(--brown); margin-bottom: 1rem; padding-bottom: 0.7rem; border-bottom: 2px solid var(--warm); display: flex; align-items: center; gap: 8px; }
+  .section-title .icon-wrap { width: 28px; height: 28px; background: var(--warm); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
 
-  /* LABELS */
-  .field-label {
-    display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin-top: 1rem;
-    margin-bottom: 3px;
-  }
+  /* LABELS & INPUTS */
+  .field-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 1rem; margin-bottom: 3px; }
   .field-label .req { color: var(--accent); margin-left: 2px; }
-
-  /* INPUTS */
-  input[type=text], input[type=email], input[type=date],
-  input[type=number], select, textarea {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    background: var(--warm);
-    border: 1.5px solid transparent;
-    border-radius: 10px;
-    color: var(--text);
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.92rem;
-    outline: none;
-    transition: all 0.2s;
-    margin-top: 2px;
+  input[type=text], input[type=email], input[type=date], input[type=number], select, textarea {
+    width: 100%; padding: 0.7rem 1rem; background: var(--warm); border: 1.5px solid transparent; border-radius: 10px; color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.92rem; outline: none; transition: all 0.2s; margin-top: 2px;
   }
   input::placeholder, textarea::placeholder { color: #b8a898; }
-  input:focus, select:focus, textarea:focus {
-    background: var(--surface);
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
-  }
-  select { cursor: pointer; }
-  select option { background: var(--surface); }
+  input:focus, select:focus, textarea:focus { background: var(--surface); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.15); }
+  select { cursor: pointer; } select option { background: var(--surface); }
   textarea { resize: vertical; min-height: 80px; }
 
   /* RADIO PILLS */
   .radio-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
   .radio-pill input[type=radio] { display: none; }
-  .radio-pill label {
-    display: flex; align-items: center; gap: 5px;
-    padding: 6px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 30px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--warm);
-    user-select: none;
-  }
-  .radio-pill input[type=radio]:checked + label {
-    background: var(--brown);
-    border-color: var(--brown);
-    color: white;
-  }
+  .radio-pill label { display: flex; align-items: center; gap: 5px; padding: 6px 14px; border: 1.5px solid var(--border); border-radius: 30px; font-size: 0.85rem; font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s; background: var(--warm); user-select: none; }
+  .radio-pill input[type=radio]:checked + label { background: var(--brown); border-color: var(--brown); color: white; }
 
   /* GRID */
   .form-row { display: grid; gap: 10px; }
   .col-2 { grid-template-columns: 1fr 1fr; }
   .col-3 { grid-template-columns: 1fr 1fr 1fr; }
-  @media (max-width: 560px) {
-    .col-2, .col-3 { grid-template-columns: 1fr; }
-  }
+  @media (max-width: 560px) { .col-2, .col-3 { grid-template-columns: 1fr; } }
 
-  /* FAMILY MEMBER ROW */
-  .dep-row {
-    display: grid;
-    grid-template-columns: 1fr 140px;
-    gap: 8px;
-    align-items: end;
-    margin-top: 8px;
-    padding: 10px;
-    background: var(--warm);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-  }
-  .dep-num {
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 3px;
-  }
+  /* FAMÍLIA */
+  .dep-row { display: grid; grid-template-columns: 1fr 140px; gap: 8px; align-items: end; margin-top: 8px; padding: 10px; background: var(--warm); border-radius: 10px; border: 1px solid var(--border); }
+  .dep-num { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
   .dep-row input { margin-top: 0; }
 
-  /* SUBMIT */
-  .submit-wrap {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, var(--cream) 70%, transparent);
-    padding: 1.5rem 1rem 1.2rem;
-    z-index: 40;
-  }
-  .submit-wrap .inner {
-    max-width: 700px;
-    margin: 0 auto;
-  }
-  .btn-submit {
-    width: 100%;
-    padding: 1rem;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--green), #1b4332);
-    color: white;
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-weight: 700;
+  /* ── FOTO UPLOAD ── */
+  .foto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width:480px) { .foto-grid { grid-template-columns: 1fr; } }
+
+  .foto-box {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    text-align: center;
+    background: var(--warm);
+    transition: all 0.2s;
     cursor: pointer;
-    display: flex;
+    position: relative;
+  }
+  .foto-box:hover { border-color: var(--gold); background: rgba(201,168,76,0.05); }
+  .foto-box.tem-foto { border-color: var(--green); border-style: solid; background: rgba(45,106,79,0.04); }
+
+  .foto-preview-round {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 0.6rem;
+    display: block;
+    border: 3px solid var(--green);
+    box-shadow: 0 4px 16px rgba(45,106,79,0.2);
+  }
+  .doc-preview-img {
+    width: 100%; max-height: 100px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin: 0.4rem 0;
+    display: block;
+  }
+
+  .foto-placeholder-icon { font-size: 2rem; display: block; margin-bottom: 0.3rem; opacity: 0.3; }
+  .foto-placeholder-text { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.8rem; line-height: 1.4; }
+  .foto-label-title { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 0.5rem; }
+
+  .foto-btns { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+  .btn-foto {
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    background: var(--surface);
+    color: var(--brown);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-foto:hover { border-color: var(--gold); background: var(--warm); }
+
+  .foto-check {
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 22px; height: 22px;
+    background: var(--green);
+    border-radius: 50%;
+    display: none;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    box-shadow: 0 8px 28px rgba(45,106,79,0.35);
-    transition: all 0.25s;
-    letter-spacing: 0.3px;
+    color: white;
+    font-size: 12px;
   }
+  .foto-box.tem-foto .foto-check { display: flex; }
+
+  /* SUBMIT */
+  .submit-wrap { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, var(--cream) 70%, transparent); padding: 1.5rem 1rem 1.2rem; z-index: 40; }
+  .submit-wrap .inner { max-width: 700px; margin: 0 auto; }
+  .btn-submit { width: 100%; padding: 1rem; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--green), #1b4332); color: white; font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 8px 28px rgba(45,106,79,0.35); transition: all 0.25s; letter-spacing: 0.3px; }
   .btn-submit:hover { filter: brightness(1.1); transform: translateY(-1px); }
   .btn-submit:active { transform: translateY(0) scale(0.99); }
   .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-  /* LOADING SPINNER */
-  .spin {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
+  .spin { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* SUCCESS SCREEN */
-  #tela-sucesso {
-    display: none;
-    min-height: 100vh;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-    padding: 2rem;
-  }
+  /* SUCESSO */
+  #tela-sucesso { display: none; min-height: 100vh; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 2rem; }
   #tela-sucesso.show { display: flex; }
-  .success-icon {
-    width: 90px; height: 90px;
-    background: linear-gradient(135deg, var(--green), #1b4332);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 30px rgba(45,106,79,0.3);
-    animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes popIn {
-    from { transform: scale(0); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-  #tela-sucesso h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
-    color: var(--brown);
-    margin-bottom: 0.5rem;
-  }
+  .success-icon { width: 90px; height: 90px; background: linear-gradient(135deg, var(--green), #1b4332); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin-bottom: 1.5rem; box-shadow: 0 8px 30px rgba(45,106,79,0.3); animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+  @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #tela-sucesso h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--brown); margin-bottom: 0.5rem; }
   #tela-sucesso p { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 340px; }
-  .btn-novo {
-    padding: 0.75rem 2rem;
-    border: 2px solid var(--brown);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--brown);
-    font-family: 'Outfit', sans-serif;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .btn-novo { padding: 0.75rem 2rem; border: 2px solid var(--brown); border-radius: 10px; background: transparent; color: var(--brown); font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
   .btn-novo:hover { background: var(--brown); color: white; }
 
   /* TOAST */
-  #toast {
-    position: fixed;
-    bottom: 5rem; left: 50%;
-    transform: translateX(-50%) translateY(60px);
-    background: var(--brown);
-    color: white;
-    padding: 0.7rem 1.4rem;
-    border-radius: 30px;
-    font-size: 0.85rem;
-    z-index: 999;
-    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    white-space: nowrap;
-    box-shadow: 0 8px 24px rgba(60,30,10,0.25);
-    pointer-events: none;
-  }
+  #toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%) translateY(60px); background: var(--brown); color: white; padding: 0.7rem 1.4rem; border-radius: 30px; font-size: 0.85rem; z-index: 999; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; box-shadow: 0 8px 24px rgba(60,30,10,0.25); pointer-events: none; }
   #toast.show { transform: translateX(-50%) translateY(0); }
 
-  /* FIELD VALIDATION */
-  input.invalid, select.invalid {
-    border-color: #e74c3c !important;
-    background: #fff5f5 !important;
-  }
-
-  .hint {
-    font-size: 0.73rem;
-    color: var(--muted);
-    margin-top: 3px;
-    padding-left: 2px;
-  }
+  input.invalid, select.invalid { border-color: #e74c3c !important; background: #fff5f5 !important; }
+  .hint { font-size: 0.73rem; color: var(--muted); margin-top: 3px; padding-left: 2px; }
 </style>
 </head>
 <body>
 
-<!-- TELA SUCESSO -->
+<!-- SUCESSO -->
 <div id="tela-sucesso">
   <div class="success-icon">✝</div>
   <h2>Bem-vindo à família!</h2>
@@ -448,12 +184,12 @@
   <button class="btn-novo" onclick="novoCadastro()">+ Novo Cadastro</button>
 </div>
 
-<!-- FORMULÁRIO -->
+<!-- APP -->
 <div id="app">
 
   <!-- HERO -->
   <div class="hero">
-    <span class="hero-cross"><img src="images-removebg-preview.png" alt="logo"></span>
+    <span class="hero-cross"><img src="images-removebg-preview.png" alt="logo" style="height:60px;"></span>
     <h1>Ficha de Cadastro<br>de Membros</h1>
     <p>Igreja AD BELA-VISTA — 2026</p>
     <div class="hero-address">📍 Rua Frei Lauro, 44 · Ponte do Imaruim · Palhoça - SC</div>
@@ -469,21 +205,63 @@
 
     <!-- TIPO -->
     <div class="tipo-toggle">
-      <button class="tipo-btn active" id="btn-membro" onclick="setTipo('Membro')">
-        🏛️ Membro
-      </button>
-      <button class="tipo-btn" id="btn-congregado" onclick="setTipo('Congregado')">
-        🙏 Congregado
-      </button>
+      <button class="tipo-btn active" id="btn-membro" onclick="setTipo('Membro')">🏛️ Membro</button>
+      <button class="tipo-btn" id="btn-congregado" onclick="setTipo('Congregado')">🙏 Congregado</button>
     </div>
     <input type="hidden" id="tipo_cadastro" value="Membro">
 
-    <!-- DADOS PESSOAIS -->
+    <!-- ── FOTOS ── -->
     <div class="section-card">
       <div class="section-title">
-        <div class="icon-wrap">👤</div>
-        Dados Pessoais
+        <div class="icon-wrap">📸</div>
+        Fotos
       </div>
+      <div class="foto-grid">
+
+        <!-- Foto do membro -->
+        <div class="foto-box" id="box-foto-membro">
+          <div class="foto-check">✓</div>
+          <div class="foto-label-title">Foto do Membro</div>
+          <img id="prev-foto-membro" class="foto-preview-round" style="display:none;">
+          <div id="placeholder-foto-membro">
+            <span class="foto-placeholder-icon">👤</span>
+            <div class="foto-placeholder-text">Tire ou envie<br>uma foto 3×4</div>
+          </div>
+          <div class="foto-btns">
+            <button type="button" class="btn-foto" onclick="document.getElementById('inp-foto-membro').click()">📁 Arquivo</button>
+            <button type="button" class="btn-foto" onclick="document.getElementById('inp-cam-membro').click()">📷 Câmera</button>
+          </div>
+          <input type="file" id="inp-foto-membro" accept="image/*" style="display:none"
+            onchange="previewFoto(this,'prev-foto-membro','placeholder-foto-membro','box-foto-membro','round')">
+          <input type="file" id="inp-cam-membro" accept="image/*" capture="environment" style="display:none"
+            onchange="previewFoto(this,'prev-foto-membro','placeholder-foto-membro','box-foto-membro','round')">
+        </div>
+
+        <!-- Foto do documento -->
+        <div class="foto-box" id="box-foto-doc">
+          <div class="foto-check">✓</div>
+          <div class="foto-label-title">Foto do Documento</div>
+          <img id="prev-foto-doc" class="doc-preview-img" style="display:none;">
+          <div id="placeholder-foto-doc">
+            <span class="foto-placeholder-icon">🪪</span>
+            <div class="foto-placeholder-text">Foto do RG<br>ou CPF</div>
+          </div>
+          <div class="foto-btns">
+            <button type="button" class="btn-foto" onclick="document.getElementById('inp-foto-doc').click()">📁 Arquivo</button>
+            <button type="button" class="btn-foto" onclick="document.getElementById('inp-cam-doc').click()">📷 Câmera</button>
+          </div>
+          <input type="file" id="inp-foto-doc" accept="image/*" style="display:none"
+            onchange="previewFoto(this,'prev-foto-doc','placeholder-foto-doc','box-foto-doc','doc')">
+          <input type="file" id="inp-cam-doc" accept="image/*" capture="environment" style="display:none"
+            onchange="previewFoto(this,'prev-foto-doc','placeholder-foto-doc','box-foto-doc','doc')">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- DADOS PESSOAIS -->
+    <div class="section-card">
+      <div class="section-title"><div class="icon-wrap">👤</div>Dados Pessoais</div>
 
       <label class="field-label">Nome Completo <span class="req">*</span></label>
       <input type="text" id="nome" placeholder="Seu nome completo" autocomplete="name">
@@ -512,14 +290,8 @@
         <div>
           <label class="field-label">Sexo</label>
           <div class="radio-pills" style="margin-top:10px;">
-            <div class="radio-pill">
-              <input type="radio" name="sexo" id="sexo-m" value="M" checked>
-              <label for="sexo-m">♂ Masc.</label>
-            </div>
-            <div class="radio-pill">
-              <input type="radio" name="sexo" id="sexo-f" value="F">
-              <label for="sexo-f">♀ Fem.</label>
-            </div>
+            <div class="radio-pill"><input type="radio" name="sexo" id="sexo-m" value="M" checked><label for="sexo-m">♂ Masc.</label></div>
+            <div class="radio-pill"><input type="radio" name="sexo" id="sexo-f" value="F"><label for="sexo-f">♀ Fem.</label></div>
           </div>
         </div>
       </div>
@@ -527,107 +299,50 @@
       <div class="form-row col-3">
         <div>
           <label class="field-label">Tipo Sanguíneo</label>
-          <select id="tipo_sanguineo">
-            <option value="">— Selecione</option>
-            <option>A+</option><option>A-</option>
-            <option>B+</option><option>B-</option>
-            <option>AB+</option><option>AB-</option>
-            <option>O+</option><option>O-</option>
-          </select>
+          <select id="tipo_sanguineo"><option value="">— Selecione</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select>
         </div>
         <div>
           <label class="field-label">Escolaridade</label>
-          <select id="escolaridade">
-            <option value="">— Selecione</option>
-            <option>Fundamental Incompleto</option>
-            <option>Fundamental Completo</option>
-            <option>Médio Incompleto</option>
-            <option>Médio Completo</option>
-            <option>Superior Incompleto</option>
-            <option>Superior Completo</option>
-            <option>Pós-Graduação</option>
-          </select>
+          <select id="escolaridade"><option value="">— Selecione</option><option>Fundamental Incompleto</option><option>Fundamental Completo</option><option>Médio Incompleto</option><option>Médio Completo</option><option>Superior Incompleto</option><option>Superior Completo</option><option>Pós-Graduação</option></select>
         </div>
         <div>
           <label class="field-label">Estado Civil</label>
-          <select id="estadoCivil" onchange="toggleConjuge()">
-            <option value="">— Selecione</option>
-            <option>Solteiro(a)</option>
-            <option>Casado(a)</option>
-            <option>Divorciado(a)</option>
-            <option>Viúvo(a)</option>
-            <option>União Estável</option>
-          </select>
+          <select id="estadoCivil" onchange="toggleConjuge()"><option value="">— Selecione</option><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option><option>União Estável</option></select>
         </div>
       </div>
 
       <div id="campo-conjuge" style="display:none;">
         <div class="form-row col-2">
-          <div>
-            <label class="field-label">Nome do Cônjuge</label>
-            <input type="text" id="conjuge_nome" placeholder="Nome completo">
-          </div>
-          <div>
-            <label class="field-label">Data do Casamento</label>
-            <input type="date" id="dataCasamento">
-          </div>
+          <div><label class="field-label">Nome do Cônjuge</label><input type="text" id="conjuge_nome" placeholder="Nome completo"></div>
+          <div><label class="field-label">Data do Casamento</label><input type="date" id="dataCasamento"></div>
         </div>
       </div>
     </div>
 
     <!-- ENDEREÇO -->
     <div class="section-card">
-      <div class="section-title">
-        <div class="icon-wrap">📍</div>
-        Endereço e Contato
-      </div>
-
+      <div class="section-title"><div class="icon-wrap">📍</div>Endereço e Contato</div>
       <div class="form-row col-2">
-        <div>
-          <label class="field-label">CEP</label>
-          <input type="text" id="cep" maxlength="9" oninput="maskCEP(this)" placeholder="00000-000" inputmode="numeric">
-        </div>
-        <div>
-          <label class="field-label">Bairro</label>
-          <input type="text" id="bairro" placeholder="Bairro">
-        </div>
+        <div><label class="field-label">CEP</label><input type="text" id="cep" maxlength="9" oninput="maskCEP(this)" placeholder="00000-000" inputmode="numeric"></div>
+        <div><label class="field-label">Bairro</label><input type="text" id="bairro" placeholder="Bairro"></div>
       </div>
-
       <label class="field-label">Endereço completo</label>
       <input type="text" id="endereco" placeholder="Rua, número, complemento">
-
       <div class="form-row col-2">
-        <div>
-          <label class="field-label">Cidade / UF</label>
-          <input type="text" id="cidade_estado" placeholder="Ex: Palhoça - SC">
-        </div>
-        <div>
-          <label class="field-label">Fone Residencial</label>
-          <input type="text" id="fone_res" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel">
-        </div>
+        <div><label class="field-label">Cidade / UF</label><input type="text" id="cidade_estado" placeholder="Ex: Palhoça - SC"></div>
+        <div><label class="field-label">Fone Residencial</label><input type="text" id="fone_res" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel"></div>
       </div>
-
       <div class="form-row col-2">
-        <div>
-          <label class="field-label">Fone Comercial</label>
-          <input type="text" id="fone_com" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel">
-        </div>
-        <div>
-          <label class="field-label">Celular / WhatsApp <span class="req">*</span></label>
-          <input type="text" id="celular" oninput="maskPhone(this)" placeholder="(48) 00000-0000" inputmode="tel">
-        </div>
+        <div><label class="field-label">Fone Comercial</label><input type="text" id="fone_com" oninput="maskPhone(this)" placeholder="(48) 0000-0000" inputmode="tel"></div>
+        <div><label class="field-label">Celular / WhatsApp <span class="req">*</span></label><input type="text" id="celular" oninput="maskPhone(this)" placeholder="(48) 00000-0000" inputmode="tel"></div>
       </div>
-
       <label class="field-label">E-mail</label>
       <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" inputmode="email">
     </div>
 
     <!-- PROFISSIONAL -->
     <div class="section-card">
-      <div class="section-title">
-        <div class="icon-wrap">💼</div>
-        Dados Profissionais
-      </div>
+      <div class="section-title"><div class="icon-wrap">💼</div>Dados Profissionais</div>
       <label class="field-label">Ocupação Atual</label>
       <input type="text" id="ocupacao" placeholder="Ex: Professor, Comerciante…">
       <label class="field-label">Local de Trabalho</label>
@@ -636,68 +351,28 @@
 
     <!-- IGREJA -->
     <div class="section-card">
-      <div class="section-title">
-        <div class="icon-wrap">✝️</div>
-        Dados da Igreja
-      </div>
-
+      <div class="section-title"><div class="icon-wrap">✝️</div>Dados da Igreja</div>
       <label class="field-label">Forma de Recebimento</label>
-      <select id="forma_recebimento">
-        <option value="">— Selecione</option>
-        <option>Batismo nas Águas</option>
-        <option>Transferência</option>
-        <option>Aclamação</option>
-        <option>Reconciliação</option>
-      </select>
-
+      <select id="forma_recebimento"><option value="">— Selecione</option><option>Batismo nas Águas</option><option>Transferência</option><option>Aclamação</option><option>Reconciliação</option></select>
       <div class="form-row col-2">
-        <div>
-          <label class="field-label">Setor</label>
-          <input type="text" id="setor_igreja" placeholder="Setor">
-        </div>
-        <div>
-          <label class="field-label">Congregação</label>
-          <input type="text" id="congregacao_igreja" placeholder="Congregação">
-        </div>
+        <div><label class="field-label">Setor</label><input type="text" id="setor_igreja" placeholder="Setor"></div>
+        <div><label class="field-label">Congregação</label><input type="text" id="congregacao_igreja" placeholder="Congregação"></div>
       </div>
-
       <div class="form-row col-3">
-        <div>
-          <label class="field-label">Igreja Anterior</label>
-          <input type="text" id="igreja_anterior" placeholder="Nome">
-        </div>
-        <div>
-          <label class="field-label">Cidade</label>
-          <input type="text" id="igreja_cidade" placeholder="Cidade">
-        </div>
-        <div>
-          <label class="field-label">Pastor Anterior</label>
-          <input type="text" id="igreja_pastor" placeholder="Nome">
-        </div>
+        <div><label class="field-label">Igreja Anterior</label><input type="text" id="igreja_anterior" placeholder="Nome"></div>
+        <div><label class="field-label">Cidade</label><input type="text" id="igreja_cidade" placeholder="Cidade"></div>
+        <div><label class="field-label">Pastor Anterior</label><input type="text" id="igreja_pastor" placeholder="Nome"></div>
       </div>
-
       <div class="form-row col-3">
-        <div>
-          <label class="field-label">Batismo nas Águas</label>
-          <input type="date" id="data_batismo_aguas">
-        </div>
-        <div>
-          <label class="field-label">Batismo Espírito Santo</label>
-          <input type="date" id="data_batismo_es">
-        </div>
-        <div>
-          <label class="field-label">Data Aprovação</label>
-          <input type="date" id="data_aprovacao">
-        </div>
+        <div><label class="field-label">Batismo nas Águas</label><input type="date" id="data_batismo_aguas"></div>
+        <div><label class="field-label">Batismo Espírito Santo</label><input type="date" id="data_batismo_es"></div>
+        <div><label class="field-label">Data Aprovação</label><input type="date" id="data_aprovacao"></div>
       </div>
     </div>
 
     <!-- CARGOS -->
     <div class="section-card">
-      <div class="section-title">
-        <div class="icon-wrap">🎖️</div>
-        Cargo e Funções
-      </div>
+      <div class="section-title"><div class="icon-wrap">🎖️</div>Cargo e Funções</div>
       <label class="field-label">Cargo Principal</label>
       <input type="text" id="cargo_principal" placeholder="Ex: Diácono, Presbítero, Líder…">
       <label class="field-label">Outras Funções</label>
@@ -706,85 +381,33 @@
 
     <!-- FAMÍLIA -->
     <div class="section-card">
-      <div class="section-title">
-        <div class="icon-wrap">👨‍👩‍👧</div>
-        Família
-      </div>
-
+      <div class="section-title"><div class="icon-wrap">👨‍👩‍👧</div>Família</div>
       <label class="field-label">Quantidade de Filhos</label>
       <input type="number" id="qtd_filhos" min="0" max="30" placeholder="0" inputmode="numeric" style="max-width:100px;">
-
-      <div style="margin-top:1.2rem; font-size:0.75rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">
-        Demais integrantes da casa
-      </div>
-
-      <div class="dep-row">
-        <div>
-          <div class="dep-num">Integrante 1</div>
-          <input type="text" id="nome_dep1" placeholder="Nome completo">
-        </div>
-        <div>
-          <div class="dep-num">Parentesco</div>
-          <input type="text" id="parentesco_dep1" placeholder="Ex: Filho(a)">
-        </div>
-      </div>
-      <div class="dep-row">
-        <div>
-          <div class="dep-num">Integrante 2</div>
-          <input type="text" id="nome_dep2" placeholder="Nome completo">
-        </div>
-        <div>
-          <div class="dep-num">Parentesco</div>
-          <input type="text" id="parentesco_dep2" placeholder="Ex: Mãe">
-        </div>
-      </div>
-      <div class="dep-row">
-        <div>
-          <div class="dep-num">Integrante 3</div>
-          <input type="text" id="nome_dep3" placeholder="Nome completo">
-        </div>
-        <div>
-          <div class="dep-num">Parentesco</div>
-          <input type="text" id="parentesco_dep3" placeholder="Ex: Pai">
-        </div>
-      </div>
+      <div style="margin-top:1.2rem; font-size:0.75rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Demais integrantes da casa</div>
+      <div class="dep-row"><div><div class="dep-num">Integrante 1</div><input type="text" id="nome_dep1" placeholder="Nome completo"></div><div><div class="dep-num">Parentesco</div><input type="text" id="parentesco_dep1" placeholder="Ex: Filho(a)"></div></div>
+      <div class="dep-row"><div><div class="dep-num">Integrante 2</div><input type="text" id="nome_dep2" placeholder="Nome completo"></div><div><div class="dep-num">Parentesco</div><input type="text" id="parentesco_dep2" placeholder="Ex: Mãe"></div></div>
+      <div class="dep-row"><div><div class="dep-num">Integrante 3</div><input type="text" id="nome_dep3" placeholder="Nome completo"></div><div><div class="dep-num">Parentesco</div><input type="text" id="parentesco_dep3" placeholder="Ex: Pai"></div></div>
     </div>
 
     <!-- TALENTOS -->
-    <div class="section-card" style="margin-bottom: 5rem;">
-      <div class="section-title">
-        <div class="icon-wrap">🌟</div>
-        Talentos e Recursos
-      </div>
-
+    <div class="section-card" style="margin-bottom:5rem;">
+      <div class="section-title"><div class="icon-wrap">🌟</div>Talentos e Recursos</div>
       <label class="field-label">Talentos e Habilidades</label>
       <textarea id="talentos" placeholder="Ex: Canto, violão, pregação, ensino, administração…"></textarea>
-
       <div class="form-row col-2" style="margin-top:0.8rem;">
         <div>
           <label class="field-label">Tem computador em casa?</label>
           <div class="radio-pills" style="margin-top:8px;">
-            <div class="radio-pill">
-              <input type="radio" name="tem_computador" id="comp-sim" value="Sim" checked>
-              <label for="comp-sim">✓ Sim</label>
-            </div>
-            <div class="radio-pill">
-              <input type="radio" name="tem_computador" id="comp-nao" value="Não">
-              <label for="comp-nao">✗ Não</label>
-            </div>
+            <div class="radio-pill"><input type="radio" name="tem_computador" id="comp-sim" value="Sim" checked><label for="comp-sim">✓ Sim</label></div>
+            <div class="radio-pill"><input type="radio" name="tem_computador" id="comp-nao" value="Não"><label for="comp-nao">✗ Não</label></div>
           </div>
         </div>
         <div>
           <label class="field-label">Acesso à internet?</label>
           <div class="radio-pills" style="margin-top:8px;">
-            <div class="radio-pill">
-              <input type="radio" name="tem_internet" id="inet-sim" value="Sim" checked>
-              <label for="inet-sim">✓ Sim</label>
-            </div>
-            <div class="radio-pill">
-              <input type="radio" name="tem_internet" id="inet-nao" value="Não">
-              <label for="inet-nao">✗ Não</label>
-            </div>
+            <div class="radio-pill"><input type="radio" name="tem_internet" id="inet-sim" value="Sim" checked><label for="inet-sim">✓ Sim</label></div>
+            <div class="radio-pill"><input type="radio" name="tem_internet" id="inet-nao" value="Não"><label for="inet-nao">✗ Não</label></div>
           </div>
         </div>
       </div>
@@ -792,84 +415,65 @@
 
   </main>
 
-  <!-- SUBMIT FIXO -->
+  <!-- SUBMIT -->
   <div class="submit-wrap">
     <div class="inner">
-      <button class="btn-submit" id="btn-salvar" onclick="salvarMembro()">
-        ✝ Enviar Cadastro
-      </button>
+      <button class="btn-submit" id="btn-salvar" onclick="salvarMembro()">✝ Enviar Cadastro</button>
     </div>
   </div>
 
-</div><!-- fim app -->
+</div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-// ─── CONFIG SUPABASE ───────────────────────────────────
-// Apenas a anon key é exposta aqui — ela é pública por design do Supabase.
-// A segurança real é garantida via Row Level Security (RLS) no painel do Supabase:
-// habilite RLS na tabela "membros" e crie uma policy que permita apenas INSERT (sem SELECT/UPDATE/DELETE)
-// para o papel "anon". Assim ninguém consegue ler ou alterar dados pelo front-end de cadastro.
 const SB_URL = 'https://vclqdzvircnafwplivlfc.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
 const { createClient } = supabase;
 const db = createClient(SB_URL, SB_KEY);
 
-// ─── TIPO CADASTRO ─────────────────────────────────────
+// ── TIPO ──────────────────────────────────────────────
 function setTipo(tipo) {
   document.getElementById('tipo_cadastro').value = tipo;
   document.getElementById('btn-membro').classList.toggle('active', tipo === 'Membro');
   document.getElementById('btn-congregado').classList.toggle('active', tipo === 'Congregado');
 }
 
-// ─── CÔNJUGE CONDICIONAL ───────────────────────────────
+// ── CÔNJUGE ───────────────────────────────────────────
 function toggleConjuge() {
   const ec = document.getElementById('estadoCivil').value;
-  const show = ['Casado(a)', 'União Estável'].includes(ec);
-  document.getElementById('campo-conjuge').style.display = show ? 'block' : 'none';
+  document.getElementById('campo-conjuge').style.display = ['Casado(a)','União Estável'].includes(ec) ? 'block' : 'none';
 }
 
-// ─── CALCULAR IDADE ────────────────────────────────────
+// ── CALCULAR IDADE ────────────────────────────────────
 function calcIdade() {
   const val = document.getElementById('dataNasc').value;
   if (!val) { document.getElementById('idade').value = ''; return; }
-  const hoje = new Date();
-  const nasc = new Date(val);
+  const hoje = new Date(), nasc = new Date(val);
   let idade = hoje.getFullYear() - nasc.getFullYear();
   const m = hoje.getMonth() - nasc.getMonth();
   if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
   document.getElementById('idade').value = idade >= 0 ? idade : '';
 }
 
-// ─── MÁSCARAS ──────────────────────────────────────────
+// ── MÁSCARAS ──────────────────────────────────────────
 function maskCPF(i) {
   let v = i.value.replace(/\D/g,'');
-  v = v.replace(/(\d{3})(\d)/,'$1.$2');
-  v = v.replace(/(\d{3})(\d)/,'$1.$2');
-  v = v.replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  v = v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
   i.value = v;
 }
-function maskCEP(i) {
-  let v = i.value.replace(/\D/g,'');
-  v = v.replace(/^(\d{5})(\d)/,'$1-$2');
-  i.value = v;
-}
+function maskCEP(i) { i.value = i.value.replace(/\D/g,'').replace(/^(\d{5})(\d)/,'$1-$2'); }
 function maskPhone(i) {
   let v = i.value.replace(/\D/g,'');
-  if (v.length <= 10) {
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
-  } else {
-    v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
-  }
+  if (v.length <= 10) v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');
+  else v = v.replace(/^(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');
   i.value = v;
 }
 
-// ─── PROGRESS BAR ─────────────────────────────────────
+// ── PROGRESS ──────────────────────────────────────────
 function calcProgress() {
   const campos = ['nome','cpf','celular','dataNasc','endereco','setor_igreja'];
-  let filled = campos.filter(id => document.getElementById(id)?.value?.trim()).length;
+  const filled = campos.filter(id => document.getElementById(id)?.value?.trim()).length;
   const pct = Math.round((filled / campos.length) * 100);
   document.getElementById('progress-fill').style.width = pct + '%';
   document.getElementById('progress-label').textContent = pct + '% preenchido';
@@ -877,7 +481,7 @@ function calcProgress() {
 document.addEventListener('input', calcProgress);
 document.addEventListener('change', calcProgress);
 
-// ─── TOAST ─────────────────────────────────────────────
+// ── TOAST ─────────────────────────────────────────────
 function toast(msg, dur=3000) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -885,7 +489,55 @@ function toast(msg, dur=3000) {
   setTimeout(() => t.classList.remove('show'), dur);
 }
 
-// ─── COLETAR DADOS ─────────────────────────────────────
+// ── PREVIEW FOTO ─────────────────────────────────────
+function previewFoto(input, previewId, placeholderId, boxId, tipo) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById(previewId);
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    document.getElementById(placeholderId).style.display = 'none';
+    document.getElementById(boxId).classList.add('tem-foto');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── COMPRIMIR IMAGEM ──────────────────────────────────
+async function comprimirImagem(file, maxDim=900) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.82);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ── UPLOAD FOTO ───────────────────────────────────────
+async function uploadFoto(inputId, pasta) {
+  const input = document.getElementById(inputId);
+  if (!input || !input.files[0]) return null;
+  try {
+    const blob = await comprimirImagem(input.files[0]);
+    const path = `${pasta}/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+    const { error } = await db.storage.from('membros').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+    if (error) { console.warn('Storage:', error.message); return null; }
+    return db.storage.from('membros').getPublicUrl(path).data.publicUrl;
+  } catch(e) { console.warn(e); return null; }
+}
+
+// ── COLETAR DADOS ─────────────────────────────────────
 function coletarDados() {
   return {
     tipo_cadastro: document.getElementById('tipo_cadastro').value,
@@ -931,17 +583,14 @@ function coletarDados() {
     talentos: document.getElementById('talentos').value.trim(),
     tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
     tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
+    status: 'Ativo',
   };
 }
 
-// ─── VALIDAR ───────────────────────────────────────────
+// ── VALIDAR ───────────────────────────────────────────
 function validar(dados) {
   let ok = true;
-  const required = {
-    nome: document.getElementById('nome'),
-    cpf: document.getElementById('cpf'),
-    celular: document.getElementById('celular'),
-  };
+  const required = { nome: document.getElementById('nome'), cpf: document.getElementById('cpf'), celular: document.getElementById('celular') };
   Object.entries(required).forEach(([k, el]) => {
     if (!dados[k]) { el.classList.add('invalid'); ok = false; }
     else el.classList.remove('invalid');
@@ -949,7 +598,7 @@ function validar(dados) {
   return ok;
 }
 
-// ─── SALVAR ────────────────────────────────────────────
+// ── SALVAR ────────────────────────────────────────────
 async function salvarMembro() {
   const dados = coletarDados();
   if (!validar(dados)) {
@@ -957,14 +606,26 @@ async function salvarMembro() {
     document.querySelector('.invalid')?.scrollIntoView({ behavior:'smooth', block:'center' });
     return;
   }
+
   const btn = document.getElementById('btn-salvar');
   btn.innerHTML = '<span class="spin"></span> Enviando…';
   btn.disabled = true;
+
   try {
+    // Upload fotos em paralelo
+    const [foto_url, doc_url] = await Promise.all([
+      uploadFoto('inp-foto-membro', 'fotos'),
+      uploadFoto('inp-foto-doc', 'docs'),
+    ]);
+    if (foto_url) dados.foto_url = foto_url;
+    if (doc_url) dados.doc_url = doc_url;
+
     const { error } = await db.from('membros').insert([dados]);
     if (error) throw error;
+
     document.getElementById('app').style.display = 'none';
     document.getElementById('tela-sucesso').classList.add('show');
+    window.scrollTo(0,0);
   } catch(e) {
     console.error(e);
     toast('❌ Erro ao enviar. Tente novamente.');
@@ -973,13 +634,11 @@ async function salvarMembro() {
   }
 }
 
-// ─── NOVO CADASTRO ─────────────────────────────────────
+// ── NOVO CADASTRO ─────────────────────────────────────
 function novoCadastro() {
   document.getElementById('tela-sucesso').classList.remove('show');
   document.getElementById('app').style.display = 'block';
-  // limpar todos os campos
-  document.querySelectorAll('input[type=text], input[type=email], input[type=number], input[type=date], textarea, select')
-    .forEach(el => el.value = '');
+  document.querySelectorAll('input[type=text],input[type=email],input[type=number],input[type=date],textarea,select').forEach(el => el.value = '');
   document.getElementById('tipo_cadastro').value = 'Membro';
   document.getElementById('btn-membro').classList.add('active');
   document.getElementById('btn-congregado').classList.remove('active');
@@ -987,10 +646,17 @@ function novoCadastro() {
   document.querySelector('input[name="tem_computador"][value="Sim"]').checked = true;
   document.querySelector('input[name="tem_internet"][value="Sim"]').checked = true;
   document.getElementById('campo-conjuge').style.display = 'none';
-  document.getElementById('btn-salvar').innerHTML = '✝ Enviar Cadastro';
+  // Reset fotos
+  ['membro','doc'].forEach(t => {
+    document.getElementById(`prev-foto-${t}`).style.display = 'none';
+    document.getElementById(`placeholder-foto-${t}`).style.display = '';
+    document.getElementById(`box-foto-${t}`).classList.remove('tem-foto');
+    ['inp-foto-','inp-cam-'].forEach(p => { const el = document.getElementById(p+t); if(el) el.value=''; });
+  });
+  btn.innerHTML = '✝ Enviar Cadastro';
   document.getElementById('btn-salvar').disabled = false;
   calcProgress();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 </script>
 </body>
