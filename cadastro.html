@@ -903,91 +903,310 @@ async function comprimirImagem(file, maxDim=1000) {
 }
 
 // ── UPLOAD ARQUIVO ─────────────────────────────────────
-async function uploadArquivo(inputId, pasta) {
+// ─────────────────────────────────────────────────────
+// UPLOAD DE ARQUIVOS
+// ─────────────────────────────────────────────────────
+
+async function uploadArquivo(inputId, pasta, publico = false) {
   const input = document.getElementById(inputId);
+
   if (!input || !input.files[0]) return null;
+
   const file = input.files[0];
+
   try {
+
     let uploadFile;
+
+    // Comprimi imagem
     if (file.type.startsWith('image/')) {
       uploadFile = await comprimirImagem(file);
     } else {
       uploadFile = file;
     }
-    const ext = file.type === 'application/pdf' ? 'pdf' : 'jpg';
-    const path = `${pasta}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await db.storage.from('membros').upload(path, uploadFile, {
-      contentType: file.type.startsWith('image/') ? 'image/jpeg' : 'application/pdf',
-      upsert: true
-    });
-    if (error) { console.warn('Storage:', error.message); return null; }
-    return db.storage.from('membros').getPublicUrl(path).data.publicUrl;
-  } catch(e) { console.warn(e); return null; }
+
+    // Extensão
+    const ext = file.type === 'application/pdf'
+      ? 'pdf'
+      : 'jpg';
+
+    // Caminho arquivo
+    const path = `${pasta}/${Date.now()}_${Math.random()
+      .toString(36)
+      .slice(2)}.${ext}`;
+
+    // Escolhe bucket
+    const bucket = publico
+      ? 'membros-public'
+      : 'membros-docs';
+
+    // Upload
+    const { error } = await db.storage
+      .from(bucket)
+      .upload(path, uploadFile, {
+        contentType: file.type.startsWith('image/')
+          ? 'image/jpeg'
+          : 'application/pdf',
+        upsert: true
+      });
+
+    if (error) {
+      console.warn('Storage:', error.message);
+      return null;
+    }
+
+    // ─────────────────────────────────────────
+    // ARQUIVO PÚBLICO
+    // ─────────────────────────────────────────
+    if (publico) {
+
+      const { data } = db.storage
+        .from(bucket)
+        .getPublicUrl(path);
+
+      return data.publicUrl;
+    }
+
+    // ─────────────────────────────────────────
+    // ARQUIVO PRIVADO
+    // ─────────────────────────────────────────
+    const { data, error: signedError } =
+      await db.storage
+        .from(bucket)
+        .createSignedUrl(path, 60 * 60 * 24 * 7); // 7 dias
+
+    if (signedError) {
+      console.warn('Signed URL:', signedError.message);
+      return null;
+    }
+
+    return data.signedUrl;
+
+  } catch (e) {
+    console.warn(e);
+    return null;
+  }
 }
 
-// ── ASSINATURA DIGITAL ────────────────────────────────
+// ─────────────────────────────────────────────────────
+// ASSINATURA DIGITAL
+// ─────────────────────────────────────────────────────
+
 const canvas = document.getElementById('canvas-assinatura');
 const ctx = canvas.getContext('2d');
+
 let desenhando = false;
 let assinadoPeloMenos = false;
 let ultimoPonto = null;
 
+// Config
 ctx.strokeStyle = '#2c1f14';
 ctx.lineWidth = 2.5;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
+// ─────────────────────────────────────────
+// PEGAR POSIÇÃO
+// ─────────────────────────────────────────
+
 function getPonto(e) {
+
   const rect = canvas.getBoundingClientRect();
+
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
+
   if (e.touches) {
-    return { x: (e.touches[0].clientX - rect.left) * scaleX, y: (e.touches[0].clientY - rect.top) * scaleY };
+    return {
+      x: (e.touches[0].clientX - rect.left) * scaleX,
+      y: (e.touches[0].clientY - rect.top) * scaleY
+    };
   }
-  return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
 }
 
-canvas.addEventListener('mousedown', e => { desenhando = true; ultimoPonto = getPonto(e); });
+// ─────────────────────────────────────────
+// DESENHAR MOUSE
+// ─────────────────────────────────────────
+
+canvas.addEventListener('mousedown', e => {
+  desenhando = true;
+  ultimoPonto = getPonto(e);
+});
+
 canvas.addEventListener('mousemove', e => {
+
   if (!desenhando) return;
+
   const p = getPonto(e);
-  ctx.beginPath(); ctx.moveTo(ultimoPonto.x, ultimoPonto.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-  ultimoPonto = p; assinadoPeloMenos = true;
-  document.getElementById('assinatura-wrap').classList.add('assinado');
-  document.getElementById('assinatura-hint').textContent = '✓ Assinatura registrada';
-  document.getElementById('hint-assinatura').textContent = '';
+
+  ctx.beginPath();
+  ctx.moveTo(ultimoPonto.x, ultimoPonto.y);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+
+  ultimoPonto = p;
+
+  assinadoPeloMenos = true;
+
+  document
+    .getElementById('assinatura-wrap')
+    .classList.add('assinado');
+
+  document.getElementById(
+    'assinatura-hint'
+  ).textContent = '✓ Assinatura registrada';
+
+  document.getElementById(
+    'hint-assinatura'
+  ).textContent = '';
 });
-canvas.addEventListener('mouseup', () => desenhando = false);
-canvas.addEventListener('mouseleave', () => desenhando = false);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); desenhando = true; ultimoPonto = getPonto(e); });
-canvas.addEventListener('touchmove', e => {
+
+canvas.addEventListener('mouseup', () => {
+  desenhando = false;
+});
+
+canvas.addEventListener('mouseleave', () => {
+  desenhando = false;
+});
+
+// ─────────────────────────────────────────
+// TOUCH MOBILE
+// ─────────────────────────────────────────
+
+canvas.addEventListener('touchstart', e => {
+
   e.preventDefault();
-  if (!desenhando) return;
-  const p = getPonto(e);
-  ctx.beginPath(); ctx.moveTo(ultimoPonto.x, ultimoPonto.y); ctx.lineTo(p.x, p.y); ctx.stroke();
-  ultimoPonto = p; assinadoPeloMenos = true;
-  document.getElementById('assinatura-wrap').classList.add('assinado');
-  document.getElementById('assinatura-hint').textContent = '✓ Assinatura registrada';
+
+  desenhando = true;
+
+  ultimoPonto = getPonto(e);
 });
-canvas.addEventListener('touchend', () => desenhando = false);
+
+canvas.addEventListener('touchmove', e => {
+
+  e.preventDefault();
+
+  if (!desenhando) return;
+
+  const p = getPonto(e);
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    ultimoPonto.x,
+    ultimoPonto.y
+  );
+
+  ctx.lineTo(
+    p.x,
+    p.y
+  );
+
+  ctx.stroke();
+
+  ultimoPonto = p;
+
+  assinadoPeloMenos = true;
+
+  document
+    .getElementById('assinatura-wrap')
+    .classList.add('assinado');
+
+  document.getElementById(
+    'assinatura-hint'
+  ).textContent = '✓ Assinatura registrada';
+
+});
+
+canvas.addEventListener('touchend', () => {
+  desenhando = false;
+});
+
+// ─────────────────────────────────────────
+// LIMPAR ASSINATURA
+// ─────────────────────────────────────────
 
 function limparAssinatura() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
   assinadoPeloMenos = false;
-  document.getElementById('assinatura-wrap').classList.remove('assinado');
-  document.getElementById('assinatura-hint').textContent = '✍️ Assine no espaço acima';
+
+  document
+    .getElementById('assinatura-wrap')
+    .classList.remove('assinado');
+
+  document.getElementById(
+    'assinatura-hint'
+  ).textContent =
+    '✍️ Assine no espaço acima';
 }
 
+// ─────────────────────────────────────────
+// UPLOAD ASSINATURA
+// ─────────────────────────────────────────
+
 async function uploadAssinatura() {
+
   if (!assinadoPeloMenos) return null;
+
   return new Promise(resolve => {
+
     canvas.toBlob(async blob => {
-      if (!blob) { resolve(null); return; }
-      const path = `assinaturas/${Date.now()}_${Math.random().toString(36).slice(2)}.png`;
-      const { error } = await db.storage.from('membros').upload(path, blob, { contentType: 'image/png', upsert: true });
-      if (error) { resolve(null); return; }
-      resolve(db.storage.from('membros').getPublicUrl(path).data.publicUrl);
+
+      if (!blob) {
+        resolve(null);
+        return;
+      }
+
+      const path =
+        `assinaturas/${Date.now()}_${Math.random()
+          .toString(36)
+          .slice(2)}.png`;
+
+      // Upload bucket privado
+      const { error } = await db.storage
+        .from('membros-docs')
+        .upload(path, blob, {
+          contentType: 'image/png',
+          upsert: true
+        });
+
+      if (error) {
+        console.warn(error.message);
+        resolve(null);
+        return;
+      }
+
+      // URL assinada
+      const { data, error: signedError } =
+        await db.storage
+          .from('membros-docs')
+          .createSignedUrl(
+            path,
+            60 * 60 * 24 * 7
+          );
+
+      if (signedError) {
+        console.warn(signedError.message);
+        resolve(null);
+        return;
+      }
+
+      resolve(data.signedUrl);
+
     }, 'image/png');
+
   });
 }
 
