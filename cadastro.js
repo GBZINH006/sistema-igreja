@@ -2,7 +2,7 @@
 // Extraído do cadastro.html para arquivo separado.
 
 (function () {
-  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co';
+  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co/rest/v1/';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
 
   const { createClient } = window.supabase;
@@ -83,12 +83,27 @@
 
   function calcIdade() {
     const val = document.getElementById('dataNasc').value;
-    if (!val) { document.getElementById('idade').value = ''; return; }
+    if (!val) {
+      document.getElementById('idade').value = '';
+      document.getElementById('hint').textContent = 'Calculada automaticamente';
+      document.getElementById('hint').className = 'hint';
+      return;
+    }
+
     const hoje = new Date(), nasc = new Date(val);
     let idade = hoje.getFullYear() - nasc.getFullYear();
     const m = hoje.getMonth() - nasc.getMonth();
     if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
-    document.getElementById('idade').value = idade >= 0 ? idade : '';
+    document.getElementById('idade').value = idade >=0 ? idade : '';
+
+    const hint = document.getElementById('hint')
+    if (idade < 18) {
+      hint.textContent = '⚠️ Menor de idade';
+      hint.className = 'hint erro';
+    } else {
+       hint.textContent = 'Verificação de idade autorizada ✅';
+       hint.className = 'hint';
+    }
   }
   window.calcIdade = calcIdade;
 
