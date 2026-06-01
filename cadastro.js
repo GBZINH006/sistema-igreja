@@ -2,7 +2,7 @@
 // Extraído do cadastro.html para arquivo separado.
 
 (function () {
-  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co/rest/v1/';
+  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
 
   const { createClient } = window.supabase;
@@ -109,6 +109,8 @@
 
   // ── MÁSCARAS ─────────────────────────────
   function maskCPF(i) {
+    const tipo = document.getElementById('tipo_cpf')?.value;
+    if (tipo !== 'br') return; // Não aplica máscara de CPF se for estrangeiro
     let v = i.value.replace(/\D/g, '');
     v = v.replace(/(\d{3})(\d)/, '$1.$2')
       .replace(/(\d{3})(\d)/, '$1.$2')
@@ -134,51 +136,86 @@
     const tipo = document.getElementById('tipo_cpf')?.value;
     const cpfInput = document.getElementById('cpf');
     const hint = document.getElementById('hint-cpf');
+    const labelCpf = document.getElementById('label-cpf');
+    const wrapperRg = document.getElementById('wrapper-rg');
+    const rgInput = document.getElementById('rg');
     const isBR = tipo === 'br';
 
     if (!cpfInput) return;
 
-    cpfInput.disabled = !isBR;
+    cpfInput.disabled = false;
 
-    if (hint) {
-      if (!isBR) {
-        hint.textContent = 'Para estrangeiro, informe um documento numérico (sem validação de CPF).';
-        hint.className = 'hint';
-      } else {
+    if (isBR) {
+      if (labelCpf) labelCpf.innerHTML = 'CPF <span class="req">*</span>';
+      cpfInput.placeholder = '000.000.000-00';
+      cpfInput.setAttribute('maxlength', '14');
+      cpfInput.setAttribute('inputmode', 'numeric');
+      if (wrapperRg) wrapperRg.style.display = ''; // Mostra RG
+      if (hint) {
         hint.textContent = '';
+        hint.className = 'hint';
+      }
+    } else {
+      if (labelCpf) labelCpf.innerHTML = 'CRNM <span class="req">*</span>';
+      cpfInput.placeholder = 'Ex: G123456-A';
+      cpfInput.setAttribute('maxlength', '15');
+      cpfInput.removeAttribute('inputmode');
+      if (wrapperRg) wrapperRg.style.display = 'none'; // Esconde RG
+      if (rgInput) {
+        rgInput.value = ''; // Limpa o valor do RG
+        rgInput.classList.remove('valido', 'invalido');
+      }
+      const hintRg = document.getElementById('hint-rg');
+      if (hintRg) hintRg.textContent = '';
+      if (hint) {
+        hint.textContent = 'Informe a Carteira de Registro Nacional Migratório.';
         hint.className = 'hint';
       }
     }
 
     cpfInput.classList.remove('valido', 'invalido');
-    if (!isBR) cpfInput.value = '';
+    cpfInput.value = '';
   }
   window.toggleCPF = toggleCPF;
 
   function validarCPF(input) {
     const tipo = document.getElementById('tipo_cpf')?.value;
+    const hint = document.getElementById('hint-cpf');
+    
     if (tipo !== 'br') {
-      const hint = document.getElementById('hint-cpf');
+      if (!input.value.trim()) {
+        if (hint) {
+          hint.textContent = '⚠️ CRNM obrigatório.';
+          hint.className = 'hint erro';
+        }
+        input.classList.add('invalido');
+        input.classList.remove('valido');
+      } else {
+        if (hint) {
+          hint.textContent = '✓ CRNM preenchido';
+          hint.className = 'hint ok';
+        }
+        input.classList.add('valido');
+        input.classList.remove('invalido');
+      }
+      return;
+    }
+
+    const cpf = input.value.replace(/\D/g, '');
+
+    if (cpf.length < 11) {
       if (hint) {
-        hint.textContent = 'Pessoa estrangeira: CPF não obrigatório.';
-        hint.className = 'hint';
+        hint.textContent = '';
       }
       input.classList.remove('valido', 'invalido');
       return;
     }
 
-    const hint = document.getElementById('hint-cpf');
-    const cpf = input.value.replace(/\D/g, '');
-
-    if (cpf.length < 11) {
-      hint.textContent = '';
-      input.classList.remove('valido', 'invalido');
-      return;
-    }
-
     if (/^(\d)\1+$/.test(cpf)) {
-      hint.textContent = 'CPF inválido.';
-      hint.className = 'hint erro';
+      if (hint) {
+        hint.textContent = 'CPF inválido.';
+        hint.className = 'hint erro';
+      }
       input.classList.add('invalido');
       input.classList.remove('valido');
       return;
@@ -190,8 +227,10 @@
     if (r === 10 || r === 11) r = 0;
 
     if (r !== parseInt(cpf[9])) {
-      hint.textContent = 'CPF inválido.';
-      hint.className = 'hint erro';
+      if (hint) {
+        hint.textContent = 'CPF inválido.';
+        hint.className = 'hint erro';
+      }
       input.classList.add('invalido');
       input.classList.remove('valido');
       return;
@@ -309,35 +348,106 @@
   }
   window.validarTelefone = validarTelefone;
 
-  // ── VIACEP ──────────────────────────────
   async function buscarCEP() {
     const cep = document.getElementById('cep').value.replace(/\D/g, '');
     const hint = document.getElementById('hint-cep');
     const load = document.getElementById('cep-loading');
     if (cep.length !== 8) return;
-    load.classList.add('ativo');
-    hint.textContent = '';
+    if (load) load.classList.add('ativo');
+    if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
       const data = await res.json();
-      load.classList.remove('ativo');
+      if (load) load.classList.remove('ativo');
       if (data.erro) {
-        hint.textContent = 'CEP não encontrado.';
-        hint.className = 'hint erro';
+        if (hint) {
+          hint.textContent = 'CEP não encontrado.';
+          hint.className = 'hint erro';
+        }
         return;
       }
       if (data.logradouro) document.getElementById('endereco').value = data.logradouro;
       if (data.bairro) document.getElementById('bairro').value = data.bairro;
-      if (data.localidade && data.uf) document.getElementById('cidade_estado').value = `${data.localidade} - ${data.uf}`;
-      hint.textContent = `✓ ${data.localidade} - ${data.uf}`;
-      hint.className = 'hint ok';
+      
+      if (data.uf) {
+        const selEstado = document.getElementById('sel_estado');
+        if (selEstado) {
+          selEstado.value = data.uf;
+          await carregarCidades(data.uf, data.localidade);
+        }
+      }
+      
+      if (hint) {
+        hint.textContent = `✓ ${data.localidade} - ${data.uf}`;
+        hint.className = 'hint ok';
+      }
     } catch (e) {
-      load.classList.remove('ativo');
-      hint.textContent = 'Erro ao buscar CEP.';
-      hint.className = 'hint erro';
+      if (load) load.classList.remove('ativo');
+      if (hint) {
+        hint.textContent = 'Erro ao buscar CEP.';
+        hint.className = 'hint erro';
+      }
     }
   }
   window.buscarCEP = buscarCEP;
+
+  // ── IBGE ESTADOS E CIDADES ────────────────
+  async function inicializarEstados() {
+    const selEstado = document.getElementById('sel_estado');
+    if (!selEstado) return;
+    try {
+      const res = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?ordenar=nome');
+      const estados = await res.json();
+      selEstado.innerHTML = '<option value="">UF</option>';
+      estados.forEach(est => {
+        const opt = document.createElement('option');
+        opt.value = est.sigla;
+        opt.textContent = est.sigla;
+        selEstado.appendChild(opt);
+      });
+      selEstado.value = 'SC';
+      await carregarCidades('SC');
+    } catch (e) {
+      console.error("Erro ao inicializar estados:", e);
+    }
+  }
+
+  async function carregarCidades(sigla, cidadeSelecionar = null) {
+    const selCidade = document.getElementById('sel_cidade');
+    if (!selCidade) return;
+    
+    if (!sigla) {
+      selCidade.innerHTML = '<option value="">Selecione o Estado primeiro</option>';
+      return;
+    }
+
+    selCidade.innerHTML = '<option value="">Carregando...</option>';
+
+    try {
+      const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${sigla}/municipios?ordenar=nome`);
+      const cidades = await res.json();
+      selCidade.innerHTML = '<option value="">Selecione a cidade</option>';
+      cidades.forEach(cid => {
+        const opt = document.createElement('option');
+        opt.value = cid.nome;
+        opt.textContent = cid.nome;
+        selCidade.appendChild(opt);
+      });
+      if (cidadeSelecionar) {
+        selCidade.value = cidadeSelecionar;
+      }
+    } catch (e) {
+      console.error("Erro ao carregar cidades:", e);
+      selCidade.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
+  }
+  window.carregarCidades = carregarCidades;
+  
+  // Inicializa os estados no carregamento
+  inicializarEstados();
 
   // ── PROGRESSO ─────────────────────────
   function calcProgress() {
@@ -432,7 +542,8 @@
       }
 
       const membroId = crypto.randomUUID();
-      const path = `${membroId}/${pasta}/${nome}`;
+      const fileName = file.name || 'arquivo';
+      const path = `${membroId}/${pasta}/${fileName}`;
 
       const bucket = publico ? 'membros-public' : 'membros-docs';
 
@@ -611,7 +722,7 @@
       cep: document.getElementById('cep').value.trim(),
       bairro: document.getElementById('bairro').value.trim(),
       endereco: document.getElementById('endereco').value.trim(),
-      cidade_estado: document.getElementById('cidade_estado').value.trim(),
+      cidade_estado: `${document.getElementById('sel_cidade')?.value || ''} - ${document.getElementById('sel_estado')?.value || ''}`,
       fone_res: document.getElementById('fone_res').value.trim(),
       fone_com: document.getElementById('fone_com').value.trim(),
       celular: document.getElementById('celular').value.trim(),
@@ -619,7 +730,7 @@
       ocupacao: document.getElementById('ocupacao').value.trim(),
       empresa: document.getElementById('empresa').value.trim(),
       forma_recebimento: document.getElementById('forma_recebimento').value,
-      setor_igreja: document.getElementById('setor_igreja').value?.trim?.() || document.getElementById('setor_igreja')?.value?.trim?.() || document.getElementById('setor_igreja').value.trim(),
+      setor_igreja: document.getElementById('setor_igreja').value.trim(),
       congregacao_igreja: document.getElementById('congregacao_igreja').value.trim(),
       igreja_anterior: document.getElementById('igreja_anterior').value.trim(),
       igreja_cidade: document.getElementById('igreja_cidade').value.trim(),
@@ -649,12 +760,11 @@
 
     const required = {
       nome: document.getElementById('nome'),
-      cpf: null,
+      cpf: document.getElementById('cpf'),
       celular: document.getElementById('celular')
     };
 
     const tipo = document.getElementById('tipo_cpf')?.value;
-    if (tipo === 'br') required.cpf = document.getElementById('cpf');
 
     Object.entries(required).forEach(([k, el]) => {
       if (!el) return;
@@ -663,8 +773,14 @@
     });
 
     // CPF deve estar válido apenas para brasileiros
-    if (dados.cpf && document.getElementById('hint-cpf')?.textContent?.includes('inválido')) {
+    if (tipo === 'br' && dados.cpf && document.getElementById('hint-cpf')?.textContent?.includes('inválido')) {
       toast('⚠️ Verifique o CPF informado.', 'erro');
+      ok = false;
+    }
+
+    // CRNM deve estar preenchido se for estrangeiro
+    if (tipo !== 'br' && !dados.cpf) {
+      toast('⚠️ Informe o seu CRNM.', 'erro');
       ok = false;
     }
 

@@ -1043,18 +1043,18 @@
           autocomplete="name">
 
         <div class="form-row col-2">
-          <div>
-            <label class="field-label">RG</label>
+          <div id="wrapper-rg">
+            <label class="field-label" id="label-rg">RG</label>
             <input type="text" id="rg" placeholder="0000000" oninput="bloquearLetras(this); validarRG(this);" maxlength="15" inputmode="numeric">
             <div class="hint" id="hint-rg"></div>
           </div>
           <div>
-            <label class="field-label">CPF <span class="req">*</span></label>
+            <label class="field-label" id="label-cpf">CPF <span class="req">*</span></label>
             <select id="tipo_cpf" onchange="toggleCPF()" style="width:100%;margin-top:2px;">
               <option value="br" selected>Brasileiro (CPF)</option>
-              <option value="estrangeiro">Pessoa estrangeira</option>
+              <option value="estrangeiro">Pessoa estrangeira (CRNM)</option>
             </select>
-            <input type="text" id="cpf" maxlength="14" oninput="maskCPF(this);validarCPF(this)" placeholder="000.000.000-00" inputmode="numeric" disabled>
+            <input type="text" id="cpf" maxlength="14" oninput="maskCPF(this);validarCPF(this)" placeholder="000.000.000-00" inputmode="numeric">
             <div class="hint" id="hint-cpf"></div>
           </div>
         </div>
@@ -1236,9 +1236,19 @@
         <input type="text" id="endereco" placeholder="Rua, número, complemento">
 
         <div class="form-row col-2">
-          <div>
-            <label class="field-label">Cidade / UF</label>
-            <input type="text" id="cidade_estado" placeholder="Ex: Palhoça - SC">
+          <div style="display: grid; grid-template-columns: 80px 1fr; gap: 8px;">
+            <div>
+              <label class="field-label">UF</label>
+              <select id="sel_estado" style="width:100%;margin-top:2px;" onchange="carregarCidades(this.value)">
+                <option value="">UF</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">Cidade</label>
+              <select id="sel_cidade" style="width:100%;margin-top:2px;">
+                <option value="">Selecione</option>
+              </select>
+            </div>
           </div>
           <div>
             <label class="field-label">Fone Residencial</label>

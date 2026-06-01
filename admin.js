@@ -3,12 +3,13 @@
 
 (function () {
   const SUPABASE_URL = "https://vclqdzvirnafwplivlfc.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_rHBJYKS7LLlnRyItQy9dfw_TNMdFY5_";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc";
 
   const { createClient } = window.supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let membrosCache = [], paginaAtual = 1, anivAberto = true;
+  let membrosCache = [], paginaAtual = 1, anivAberto = true, graficosAberto = true;
+  let chartCrescimento = null, chartTipo = null, chartSetor = null;
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
 
@@ -228,17 +229,26 @@
   window.limparNotificacoes = limparNotificacoes;
 
   function iniciarRealtime() {
-    db.channel('novos-membros')
+    console.log("Iniciando Realtime para novos membros...");
+    const channel = db.channel('novos-membros')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'membros' }, payload => {
+        console.log("Novo membro detectado via Realtime:", payload.new);
         const m = payload.new;
         membrosCache.unshift(m);
         renderStats();
         popularFiltroSetor();
+        popularFiltroCargo();
         renderAniversariantes();
+        renderGraficos();
         renderLista(m.id);
         criarNotificacao(m);
       })
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log("Status da inscrição Realtime:", status);
+        if (err) {
+          console.error("Erro na inscrição Realtime:", err);
+        }
+      });
   }
 
   function comprimirImagem(file, maxDim = 900) {
@@ -300,7 +310,9 @@
 
     renderStats();
     popularFiltroSetor();
+    popularFiltroCargo();
     renderAniversariantes();
+    renderGraficos();
     renderLista();
   }
 
@@ -347,6 +359,172 @@
       sel.appendChild(o);
     });
   }
+
+  function popularFiltroCargo() {
+    const cargos = [...new Set(membrosCache.map(m => m.cargo_principal).filter(Boolean))].sort();
+    const sel = document.getElementById('filtro-cargo');
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todos os cargos</option>';
+    cargos.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c;
+      o.textContent = c;
+      if (c === val) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  function toggleGraficos() {
+    graficosAberto = !graficosAberto;
+    const body = document.getElementById('graficos-body');
+    if (body) body.style.display = graficosAberto ? 'grid' : 'none';
+    const chevron = document.getElementById('graficos-chevron');
+    if (chevron) chevron.textContent = graficosAberto ? '▼' : '▶';
+  }
+  window.toggleGraficos = toggleGraficos;
+
+  function renderGraficos() {
+    // 1. Crescimento Mensal
+    const ctxCrescimento = document.getElementById('chart-crescimento')?.getContext('2d');
+    if (ctxCrescimento) {
+      if (chartCrescimento) chartCrescimento.destroy();
+      const mesesLabels = [];
+      const contagemMeses = {};
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setMonth(d.getMonth() - i);
+        const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
+        mesesLabels.push(label);
+        contagemMeses[label] = 0;
+      }
+      membrosCache.forEach(m => {
+        if (!m.created_at) return;
+        const d = new Date(m.created_at);
+        const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
+        if (contagemMeses[label] !== undefined) contagemMeses[label]++;
+      });
+      chartCrescimento = new Chart(ctxCrescimento, {
+        type: 'line',
+        data: {
+          labels: mesesLabels,
+          datasets: [{
+            data: mesesLabels.map(l => contagemMeses[l]),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            borderWidth: 2.5,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', stepSize: 1 } },
+            x: { grid: { display: false }, ticks: { color: '#64748b' } }
+          }
+        }
+      });
+    }
+
+    // 2. Tipo (Membro vs Congregado)
+    const ctxTipo = document.getElementById('chart-tipo')?.getContext('2d');
+    if (ctxTipo) {
+      if (chartTipo) chartTipo.destroy();
+      const totalM = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length;
+      const totalC = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length;
+      chartTipo = new Chart(ctxTipo, {
+        type: 'doughnut',
+        data: {
+          labels: ['Membros', 'Congregados'],
+          datasets: [{
+            data: [totalM, totalC],
+            backgroundColor: ['#c9a84c', '#06b6d4'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#e2e8f0', boxWidth: 10, font: { size: 9.5 } }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Setores (Top 5)
+    const ctxSetor = document.getElementById('chart-setor')?.getContext('2d');
+    if (ctxSetor) {
+      if (chartSetor) chartSetor.destroy();
+      const setoresCount = {};
+      membrosCache.forEach(m => {
+        const s = m.setor_igreja || 'Sem Setor';
+        setoresCount[s] = (setoresCount[s] || 0) + 1;
+      });
+      const sorted = Object.entries(setoresCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      chartSetor = new Chart(ctxSetor, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(x => x[0]),
+          datasets: [{
+            data: sorted.map(x => x[1]),
+            backgroundColor: 'rgba(201, 168, 76, 0.7)',
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', stepSize: 1 } },
+            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 8 } } }
+          }
+        }
+      });
+    }
+  }
+
+  function exportarExcel() {
+    if (!membrosCache.length) { toast('⚠️ Nenhum membro para exportar.'); return; }
+    const dados = membrosCache.map((m, idx) => ({
+      '#': idx + 1,
+      'Nome Completo': m.nome,
+      'Tipo': m.tipo_cadastro,
+      'Status': m.status || 'Ativo',
+      'CPF/CRNM': m.cpf || '—',
+      'Tipo Doc': m.tipo_cpf === 'estrangeiro' ? 'CRNM (Estrangeiro)' : 'CPF (Brasileiro)',
+      'RG': m.rg || '—',
+      'Nascimento': m.data_nasc ? m.data_nasc.split('-').reverse().join('/') : '—',
+      'Idade': m.idade || '—',
+      'Sexo': m.sexo || 'M',
+      'Celular': m.celular || '—',
+      'E-mail': m.email || '—',
+      'Setor': m.setor_igreja || '—',
+      'Congregação': m.congregacao_igreja || '—',
+      'Cargo': m.cargo_principal || '—',
+      'Forma Recebimento': m.forma_recebimento || '—'
+    }));
+    const ws = XLSX.utils.json_to_sheet(dados);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Membros");
+    const maxLens = {};
+    dados.forEach(row => {
+      Object.entries(row).forEach(([k, v]) => {
+        maxLens[k] = Math.max(maxLens[k] || 10, String(v).length);
+      });
+    });
+    ws['!cols'] = Object.keys(maxLens).map(k => ({ wch: maxLens[k] + 2 }));
+    XLSX.writeFile(wb, "membros_adbela-vista_2026.xlsx");
+    toast('📊 Planilha Excel gerada com sucesso!');
+  }
+  window.exportarExcel = exportarExcel;
 
   function toggleAniv() {
     anivAberto = !anivAberto;
@@ -403,6 +581,8 @@
     const filtroTipo = document.getElementById('filtro-tipo').value;
     const filtroStatus = document.getElementById('filtro-status').value;
     const filtroSetor = document.getElementById('filtro-setor').value;
+    const filtroIdade = document.getElementById('filtro-idade').value;
+    const filtroCargo = document.getElementById('filtro-cargo').value;
 
     const filtrados = membrosCache.filter(m => {
       const mb = !busca || m.nome.toLowerCase().includes(busca)
@@ -412,7 +592,21 @@
       const mt = !filtroTipo || m.tipo_cadastro === filtroTipo;
       const ms = !filtroStatus || (m.status || 'Ativo') === filtroStatus;
       const mse = !filtroSetor || m.setor_igreja === filtroSetor;
-      return mb && mt && ms && mse;
+      
+      let mi = true;
+      if (filtroIdade) {
+        const idade = m.idade;
+        if (idade === null || idade === undefined) mi = false;
+        else if (filtroIdade === 'crianca') mi = (idade <= 12);
+        else if (filtroIdade === 'adolescente') mi = (idade >= 13 && idade <= 17);
+        else if (filtroIdade === 'jovem') mi = (idade >= 18 && idade <= 29);
+        else if (filtroIdade === 'adulto') mi = (idade >= 30 && idade <= 59);
+        else if (filtroIdade === 'idoso') mi = (idade >= 60);
+      }
+
+      const mc = !filtroCargo || m.cargo_principal === filtroCargo;
+
+      return mb && mt && ms && mse && mi && mc;
     });
 
     const corpo = document.getElementById('corpo-lista');
@@ -492,8 +686,8 @@
       </div>
 
       <div class="modal-section"><div class="modal-section-title">👤 Dados Pessoais</div><div class="modal-grid">
-        <div class="modal-field"><strong>CPF</strong><span>${fmt(m.cpf)}</span></div>
-        <div class="modal-field"><strong>RG</strong><span>${fmt(m.rg)}</span></div>
+        <div class="modal-field"><strong>${m.tipo_cpf === 'estrangeiro' ? 'CRNM' : 'CPF'}</strong><span>${fmt(m.cpf)}</span></div>
+        ${m.tipo_cpf !== 'estrangeiro' ? `<div class="modal-field"><strong>RG</strong><span>${fmt(m.rg)}</span></div>` : ''}
         <div class="modal-field"><strong>Nascimento</strong><span>${fmtDate(m.data_nasc)}${m.idade ? ' · ' + m.idade + ' anos' : ''}</span></div>
         <div class="modal-field"><strong>Sexo</strong><span>${fmt(m.sexo)}</span></div>
         <div class="modal-field"><strong>Estado Civil</strong><span>${fmt(m.estado_civil)}</span></div>
@@ -619,7 +813,7 @@
     const nome = document.getElementById('edit-nome').value.trim();
 
     if (!nome) { toast('⚠️ Nome obrigatório!'); return; }
-    if (nome == 1 || 2 || 3 || 4 || 5 || 6 || 7 || 8 || 9) { toast('⚠️ Nome inválido!'); return; }
+    if (/^\d+$/.test(nome)) { toast('⚠️ Nome inválido!'); return; }
 
     const btn = document.getElementById('btn-salvar-edit');
     btn.innerHTML = '<span class="loading"></span> Salvando…';
@@ -679,12 +873,38 @@
 
     if (error) { toast('❌ Erro ao salvar.'); return; }
 
+    // Limpa fotos antigas do Storage se novas foram enviadas
+    const obterCaminhoStorage = (url) => {
+      if (!url) return null;
+      const partes = url.split('/public/membros/');
+      if (partes.length === 2) return partes[1];
+      return null;
+    };
+
+    const arquivosParaDeletar = [];
+    if (novaFoto && mAtual && mAtual.foto_url) {
+      const caminho = obterCaminhoStorage(mAtual.foto_url);
+      if (caminho) arquivosParaDeletar.push(caminho);
+    }
+    if (novaDoc && mAtual && mAtual.doc_url) {
+      const caminho = obterCaminhoStorage(mAtual.doc_url);
+      if (caminho) arquivosParaDeletar.push(caminho);
+    }
+    if (arquivosParaDeletar.length > 0) {
+      console.log("Removendo mídias antigas do Storage:", arquivosParaDeletar);
+      db.storage.from('membros').remove(arquivosParaDeletar).then(({ error: storageErr }) => {
+        if (storageErr) console.warn("Erro ao deletar mídia antiga:", storageErr.message);
+      });
+    }
+
     const idx = membrosCache.findIndex(x => x.id === id);
     if (idx !== -1) membrosCache[idx] = { ...membrosCache[idx], ...dados };
 
     renderStats();
     popularFiltroSetor();
+    popularFiltroCargo();
     renderAniversariantes();
+    renderGraficos();
     renderLista();
 
     document.getElementById('edit-overlay').classList.remove('open');
@@ -695,13 +915,44 @@
 
   async function excluirMembro(id, nome) {
     if (!confirm(`Excluir "${nome}" permanentemente?`)) return;
+    const m = membrosCache.find(x => x.id === id);
     const { error } = await db.from('membros').delete().eq('id', id);
     if (error) { toast('❌ Erro ao excluir.'); return; }
+
+    // Deleta os arquivos do storage se existirem
+    if (m) {
+      const arquivosParaDeletar = [];
+      const obterCaminhoStorage = (url) => {
+        if (!url) return null;
+        const partes = url.split('/public/membros/');
+        if (partes.length === 2) return partes[1];
+        return null;
+      };
+
+      const caminhos = [
+        obterCaminhoStorage(m.foto_url),
+        obterCaminhoStorage(m.doc_url),
+        obterCaminhoStorage(m.foto_certidao_nasc),
+        obterCaminhoStorage(m.foto_certidao_casamento),
+        obterCaminhoStorage(m.foto_diploma),
+        obterCaminhoStorage(m.foto_comprovante_end),
+        obterCaminhoStorage(m.assinatura_url)
+      ].filter(Boolean);
+
+      if (caminhos.length > 0) {
+        console.log("Limpando Storage do membro deletado:", caminhos);
+        db.storage.from('membros').remove(caminhos).then(({ error: storageError }) => {
+          if (storageError) console.warn("Erro ao limpar Storage:", storageError.message);
+        });
+      }
+    }
 
     membrosCache = membrosCache.filter(m => m.id !== id);
     renderStats();
     popularFiltroSetor();
+    popularFiltroCargo();
     renderAniversariantes();
+    renderGraficos();
     renderLista();
     toast('🗑️ Membro excluído.');
   }
@@ -732,7 +983,7 @@
     doc.text(`Gerado em ${new Date().toLocaleDateString('pt-BR')} · Total: ${membrosCache.length}`, 105, 27, { align: 'center' });
 
     doc.autoTable({
-      head: [['#', 'Nome', 'Tipo', 'Status', 'CPF', 'Celular', 'Setor']],
+      head: [['#', 'Nome', 'Tipo', 'Status', 'CPF/CRNM', 'Celular', 'Setor']],
       body: membrosCache.map((m, i) => [i + 1, m.nome, m.tipo_cadastro, m.status || 'Ativo', m.cpf || '—', m.celular || '—', m.setor_igreja || '—']),
       startY: 44,
       styles: { font: 'helvetica', fontSize: 7.5, cellPadding: 4 },
@@ -764,7 +1015,7 @@
       </div>
 
       <div class="pdf-section"><div class="pdf-section-title">Identificação</div>
-        <div class="pdf-field"><strong>Nome:</strong> ${f(m.nome)} | <strong>Tipo:</strong> ${f(m.tipo_cadastro)} | <strong>RG:</strong> ${f(m.rg)} | <strong>CPF:</strong> ${f(m.cpf)}</div>
+        <div class="pdf-field"><strong>Nome:</strong> ${f(m.nome)} | <strong>Tipo:</strong> ${f(m.tipo_cadastro)} ${m.tipo_cpf === 'estrangeiro' ? `| <strong>CRNM:</strong> ${f(m.cpf)}` : `| <strong>RG:</strong> ${f(m.rg)} | <strong>CPF:</strong> ${f(m.cpf)}`}</div>
         <div class="pdf-field"><strong>Nasc:</strong> ${fd(m.data_nasc)} | <strong>Idade:</strong> ${m.idade || '—'} | <strong>Sexo:</strong> ${f(m.sexo)} | <strong>Estado Civil:</strong> ${f(m.estado_civil)}</div>
       </div>
 

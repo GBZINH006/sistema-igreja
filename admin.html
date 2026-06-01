@@ -11,6 +11,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg: #0a0f1e;
@@ -1509,6 +1511,7 @@
           <span id="sino-badge">0</span>
         </div>
         <button class="btn btn-gold btn-sm" onclick="exportarPDF()">📄 PDF</button>
+        <button class="btn btn-green btn-sm" onclick="exportarExcel()" style="background:#10b981;border-color:#10b981;color:white;">📊 Excel</button>
         <button class="btn btn-ghost btn-sm" onclick="carregarLista()">🔄</button>
         <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
       </div>
@@ -1535,6 +1538,28 @@
         <div class="stat-card roxo">
           <div class="stat-num" id="stat-mes">—</div>
           <div class="stat-lbl">Este mês</div>
+        </div>
+      </div>
+
+      <!-- GRÁFICOS DO DASHBOARD -->
+      <div class="aniv-card" style="margin-bottom:1.5rem;">
+        <div class="aniv-header" onclick="toggleGraficos()" style="cursor:pointer;">
+          <div class="aniv-title">📊 Estatísticas e Gráficos do Templo</div>
+          <span id="graficos-chevron" style="color:var(--muted);">▼</span>
+        </div>
+        <div class="aniv-body" id="graficos-body" style="padding:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;transition:all 0.3s ease;">
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
+            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Crescimento Mensal</span>
+            <canvas id="chart-crescimento" style="width:100%;height:180px;"></canvas>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
+            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Membros vs Congregados</span>
+            <canvas id="chart-tipo" style="width:100%;height:180px;"></canvas>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
+            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Membros por Setor</span>
+            <canvas id="chart-setor" style="width:100%;height:180px;"></canvas>
+          </div>
         </div>
       </div>
 
@@ -1569,6 +1594,17 @@
         </select>
         <select class="filtro" id="filtro-setor" onchange="renderLista()">
           <option value="">Todos os setores</option>
+        </select>
+        <select class="filtro" id="filtro-idade" onchange="renderLista()">
+          <option value="">Todas as idades</option>
+          <option value="crianca">Crianças (0-12)</option>
+          <option value="adolescente">Adolescentes (13-17)</option>
+          <option value="jovem">Jovens (18-29)</option>
+          <option value="adulto">Adultos (30-59)</option>
+          <option value="idoso">Idosos (60+)</option>
+        </select>
+        <select class="filtro" id="filtro-cargo" onchange="renderLista()">
+          <option value="">Todos os cargos</option>
         </select>
       </div>
 
