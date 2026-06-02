@@ -4,8 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="robots" content="noindex, nofollow">
+  <meta name="robots" content="noindex,nofollow">
   <title>Cadastro de Membros — Igreja AD BELA-VISTA</title>
+
+  <!-- Font Awesome (para exibir o ícone <i class="fa-duotone fa-light fa-location-dot">) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap"
     rel="stylesheet">
@@ -960,8 +964,7 @@
         onerror="this.style.display='none';document.getElementById('hero-fallback').style.display='block'">
       <h1>Ficha de Cadastro<br>de Membros</h1>
       <div class="hero-sub">Igreja AD BELA-VISTA — 2026</div>
-      <div class="hero-address">📍 Rua Frei Lauro, 44 · Ponte do Imaruim ·
-        Palhoça - SC</div>
+      <div class="hero-address"><i class="fa-solid fa-location-dot" style="color: #ef4444;  "></i> Rua Frei Lauro, 44 · Ponte do Imaruim · Palhoça - SC</div>
       <div class="hero-divider"></div>
     </div>
 
@@ -979,15 +982,15 @@
 
       <!-- TIPO -->
       <div class="tipo-toggle">
-        <button class="tipo-btn active" id="btn-membro" onclick="setTipo('Membro')">🏛️ Membro</button>
-        <button class="tipo-btn" id="btn-congregado" onclick="setTipo('Congregado')">🙏 Congregado</button>
+        <button class="tipo-btn active" id="btn-membro" onclick="setTipo('Membro')"><i class="fa-solid fa-users-line"></i> Membro</button>
+        <button class="tipo-btn" id="btn-congregado" onclick="setTipo('Congregado')"><i class="fa-solid fa-church"></i> Congregado</button>
       </div>
       <input type="hidden" id="tipo_cadastro" value="Membro">
 
       <!-- FOTOS PESSOAIS -->
       <div class="section-card">
         <div class="section-title">
-          <div class="icon-wrap">📸</div>Fotos de Identificação
+          <div class="icon-wrap"><i class="fa-solid fa-camera"></i></div>Fotos de Identificação
           <div class="section-check">✓</div>
         </div>
         <div class="foto-grid">
@@ -996,11 +999,11 @@
             <div class="foto-label-title">Foto do Membro</div>
             <img id="prev-foto-membro" class="foto-preview-round" style="display:none;">
             <div id="ph-foto-membro">
-              <span class="foto-placeholder-icon">👤</span>
+              <span class="foto-placeholder-icon"><i class="fa-solid fa-user"></i></span>
               <div class="foto-placeholder-text">Foto 3×4 recente</div>
             </div>
             <div class="foto-btns">
-              <button type="button" class="btn-foto" onclick="document.getElementById('inp-foto-membro').click()">📁
+              <button type="button" class="btn-foto" onclick="document.getElementById('inp-foto-membro').click()">
                 Arquivo</button>
               <button type="button" class="btn-foto" onclick="document.getElementById('inp-cam-membro').click()">📷
                 Câmera</button>
@@ -1012,11 +1015,11 @@
           </div>
           <div class="foto-box" id="box-foto-doc">
             <div class="foto-check">✓</div>
-            <div class="foto-label-title">Foto do Documento <span class="foto-opc-badge">RG ou CPF</span></div>
+            <div class="foto-label-title">Foto do Documento <span class="foto-opc-badge">NACIONAL</span></div>
             <img id="prev-foto-doc" class="doc-preview-img" style="display:none;">
             <div id="ph-foto-doc">
-              <span class="foto-placeholder-icon">🪪</span>
-              <div class="foto-placeholder-text">Frente do RG ou CPF</div>
+              <span class="foto-placeholder-icon"><i class="fa-solid fa-address-card"></i></span>
+              <div class="foto-placeholder-text">Frente do RG, CPF (Caso seja estrangeiro CRNM)</div>
             </div>
             <div class="foto-btns">
               <button type="button" class="btn-foto" onclick="document.getElementById('inp-foto-doc').click()">📁
@@ -1035,7 +1038,7 @@
       <!-- DADOS PESSOAIS -->
       <div class="section-card">
         <div class="section-title">
-          <div class="icon-wrap">👤</div>Dados
+          <div class="icon-wrap"><i class="fa-solid fa-user"></i></div>Dados
           Pessoais<div class="section-check">✓</div>
         </div>
 
@@ -1075,9 +1078,9 @@
             <label class="field-label">Sexo</label>
             <div class="radio-pills" style="margin-top:10px;">
               <div class="radio-pill"><input type="radio" name="sexo" id="sexo-m" value="M" checked><label
-                  for="sexo-m">♂
+                  for="sexo-m"><i class="fa-solid fa-mars-stroke-up"></i>
                   Masc.</label></div>
-              <div class="radio-pill"><input type="radio" name="sexo" id="sexo-f" value="F"><label for="sexo-f">♀
+              <div class="radio-pill"><input type="radio" name="sexo" id="sexo-f" value="F"><label for="sexo-f"><i class="fa-solid fa-venus"></i>
                   Fem.</label></div>
             </div>
           </div>
@@ -1140,7 +1143,7 @@
       <!-- DOCUMENTOS -->
       <div class="section-card">
         <div class="section-title">
-          <div class="icon-wrap">📄</div>Documentos
+          <div class="icon-wrap"><i class="fa-solid fa-file-lines"></i></div>Documentos
           <div class="section-check">✓</div>
         </div>
         <div class="foto-grid">
@@ -1149,15 +1152,15 @@
             <div class="foto-label-title">Certidão de Nascimento</div>
             <img id="prev-certidao-nasc" class="doc-preview-img" style="display:none;">
             <div id="ph-certidao-nasc">
-              <span class="foto-placeholder-icon">📋</span>
+              <span class="foto-placeholder-icon"><i class="fa-solid fa-file-image"></i></span>
               <div class="foto-placeholder-text">Foto ou scan da
                 certidão</div>
             </div>
             <div class="foto-btns">
-              <button type="button" class="btn-foto" onclick="document.getElementById('inp-certidao-nasc').click()">📁
+              <button type="button" class="btn-foto" onclick="document.getElementById('inp-certidao-nasc').click()"><i class="fa-solid fa-folder"></i>
                 Arquivo</button>
               <button type="button" class="btn-foto"
-                onclick="document.getElementById('inp-cam-certidao-nasc').click()">📷
+                onclick="document.getElementById('inp-cam-certidao-nasc').click()"><i class="fa-solid fa-camera"></i>
                 Câmera</button>
             </div>
             <input type="file" id="inp-certidao-nasc" accept="image/*,application/pdf" style="display:none"
@@ -1171,7 +1174,7 @@
             <div class="foto-label-title">Certidão de Casamento</div>
             <img id="prev-certidao-cas" class="doc-preview-img" style="display:none;">
             <div id="ph-certidao-cas">
-              <span class="foto-placeholder-icon">💍</span>
+              <span class="foto-placeholder-icon"><i class="fa-solid fa-ring"></i></span>
               <div class="foto-placeholder-text">Foto ou scan da
                 certidão</div>
             </div>
@@ -1214,7 +1217,7 @@
       <!-- ENDEREÇO -->
       <div class="section-card">
         <div class="section-title">
-          <div class="icon-wrap">📍</div>Endereço e
+          <div class="icon-wrap"><i class="fa-solid fa-map-marker-alt"></i></div>Endereço e
           Contato<div class="section-check">✓</div>
         </div>
 
@@ -1480,6 +1483,7 @@
   <div id="toast"></div>
 
   <script src="cadastro.js"></script>
+
 
     
 </body>

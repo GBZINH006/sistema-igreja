@@ -62,8 +62,90 @@
     document.getElementById('tipo_cadastro').value = tipo;
     document.getElementById('btn-membro').classList.toggle('active', tipo === 'Membro');
     document.getElementById('btn-congregado').classList.toggle('active', tipo === 'Congregado');
+
+    // Modo Congregado: deixa apenas o essencial (mínimo) no formulário
+    const modoCongregado = tipo === 'Congregado';
+
+    // Fotos/documentos extras
+    const showFotoDoc = false;
+    const showFotoMembro = true;
+
+    const boxFotoMembro = document.getElementById('box-foto-membro');
+    const boxFotoDoc = document.getElementById('box-foto-doc');
+    if (boxFotoMembro) boxFotoMembro.style.display = showFotoMembro ? '' : 'none';
+    if (boxFotoDoc) boxFotoDoc.style.display = showFotoDoc ? '' : 'none';
+
+    // Documento nascimento/casamento/diploma
+    const boxCertNasc = document.getElementById('box-certidao-nasc');
+    const boxCertCas = document.getElementById('box-certidao-cas');
+    const boxDiploma = document.getElementById('box-diploma');
+    if (boxCertNasc) boxCertNasc.style.display = modoCongregado ? 'none' : '';
+    if (boxCertCas) boxCertCas.style.display = modoCongregado ? 'none' : '';
+    if (boxDiploma) boxDiploma.style.display = modoCongregado ? 'none' : '';
+
+    // Seções extras
+    // Oculta cards completos de dados extras quando for Congregado.
+    // Seu pedido: Nome, CPF, Telefone e Estado Civil.
+    const fallbackEsconderPorIds = () => {
+      // Cards que vamos esconder no modo Congregado
+      const idsToHideCards = [
+        'cep',
+        'ocupacao','empresa',
+        'forma_recebimento',
+        'cargo_principal','outras_funcoes',
+        'qtd_filhos','nome_dep1','talentos'
+      ];
+
+      idsToHideCards.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const card = el.closest('.section-card');
+        if (card) card.style.display = modoCongregado ? 'none' : '';
+      });
+    };
+
+    fallbackEsconderPorIds();
+
+
+    // Limpa campos que ficam escondidos (para não mandar lixo) e, ao mesmo tempo,
+    // garante que o modo Congregado NÃO deixe valores “sobrando” do Membro.
+    if (modoCongregado) {
+      const camposParaLimpar = [
+        // Dados pessoais não essenciais (e toda a parte não-miníma)
+        'rg','dataNasc','idade','tipo_sanguineo','escolaridade','conjuge_nome','dataCasamento',
+        'bairro','endereco','sel_estado','sel_cidade','fone_res','fone_com','email',
+        // Igreja / profissional / cargos / família / talentos
+        'ocupacao','empresa','forma_recebimento','setor_igreja','congregacao_igreja','igreja_anterior','igreja_cidade','igreja_pastor',
+        'data_batismo_aguas','data_batismo_es','data_aprovacao','cargo_principal','outras_funcoes','qtd_filhos','nome_dep1','parentesco_dep1',
+        'nome_dep2','parentesco_dep2','nome_dep3','parentesco_dep3','talentos',
+        // Talentos/recursos
+        'tem_computador','tem_internet'
+      ];
+
+      camposParaLimpar.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && 'value' in el) el.value = '';
+
+        // radios (quando o id é o nome do radio)
+        const radios = document.querySelectorAll(`input[name="${id}"]`);
+        if (radios && radios.length) radios.forEach(r => (r.checked = false));
+      });
+
+      // RG não é necessário no congregado mínimo do seu pedido.
+      const wrapperRg = document.getElementById('wrapper-rg');
+      if (wrapperRg) wrapperRg.style.display = 'none';
+    } else {
+      // Ao voltar para Membro, não precisamos restaurar valores anteriores (não guardamos estado),
+      // apenas mostramos RG novamente.
+      const wrapperRg = document.getElementById('wrapper-rg');
+      if (wrapperRg) wrapperRg.style.display = '';
+    }
+
+    calcProgress();
+
   }
   window.setTipo = setTipo;
+
 
   // ── CÔNJUGE E DIPLOMA ─────────────────
   function toggleConjuge() {
@@ -758,7 +840,17 @@
   function validar(dados) {
     let ok = true;
 
-    const required = {
+    const tipoCadastro = document.getElementById('tipo_cadastro')?.value;
+    const isCongregado = tipoCadastro === 'Congregado';
+
+    // No modo Congregado mínimo, a validação deve considerar APENAS campos mínimos.
+    // Pedido: Nome, CPF/CRNM, Telefone (celular) e Estado Civil.
+    const required = isCongregado ? {
+      nome: document.getElementById('nome'),
+      cpf: document.getElementById('cpf'),
+      celular: document.getElementById('celular'),
+      estado_civil: document.getElementById('estadoCivil')
+    } : {
       nome: document.getElementById('nome'),
       cpf: document.getElementById('cpf'),
       celular: document.getElementById('celular')
@@ -790,6 +882,7 @@
       ok = false;
     }
 
+    // Assinatura obrigatória (você confirmou SIM)
     if (!assinadoPeloMenos) {
       document.getElementById('hint-assinatura').textContent = '⚠️ Assinatura obrigatória.';
       document.getElementById('hint-assinatura').className = 'hint erro';
@@ -799,6 +892,7 @@
     return ok;
   }
   window.validar = validar;
+
 
   async function salvarMembro() {
     const dados = coletarDados();

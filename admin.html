@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="robots" content="noindex, nofollow">
   <title>Painel do Pastor — AD Bela-Vista</title>
+  <!-- Font Awesome (para exibir ícones) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
     rel="stylesheet">
@@ -1508,12 +1511,12 @@
       <div style="display:flex;gap:8px;align-items:center;">
         <span class="header-user" id="header-email"></span>
         <div id="sino-wrap" onclick="abrirHistoricoNotif()" title="Notificações">
-          <button class="btn btn-ghost btn-sm">🔔</button>
+      <button class="btn btn-ghost btn-sm"><i class="fa-solid fa-bell"></i></button>
           <span id="sino-badge">0</span>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="exportarPDF()">📄 PDF</button>
-        <button class="btn btn-green btn-sm" onclick="exportarExcel()" style="background:#10b981;border-color:#10b981;color:white;">📊 Excel</button>
-        <button class="btn btn-ghost btn-sm" onclick="carregarLista()">🔄</button>
+        <button class="btn btn-gold btn-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        <button class="btn btn-green btn-sm" onclick="exportarExcel()" style="background:#10b981;border-color:#10b981;color:white;"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        <button class="btn btn-ghost btn-sm" onclick="carregarLista()"><i class="fa-solid fa-rotate-right"></i></button>
         <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
       </div>
     </header>
@@ -1578,7 +1581,7 @@
 
       <div class="toolbar">
         <div class="search-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
           <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderLista()">
         </div>
         <select class="filtro" id="filtro-tipo" onchange="renderLista()">
