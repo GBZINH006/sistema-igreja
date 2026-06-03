@@ -63,6 +63,25 @@
     document.getElementById('btn-membro').classList.toggle('active', tipo === 'Membro');
     document.getElementById('btn-congregado').classList.toggle('active', tipo === 'Congregado');
 
+    // Card de escolha (mostra apenas instrução; não deve ser "boas-vindas")
+    const card = document.getElementById('card-boas-vindas');
+    const cardText = document.getElementById('card-boas-vindas-text');
+    if (card && cardText) {
+      card.style.display = '';
+      cardText.textContent = tipo === 'Congregado'
+        ? 'Você escolheu CONGREGADO. Preencha apenas o cadastro de Congregado.'
+        : 'Você escolheu MEMBRO. Preencha o cadastro de Membro.';
+    }
+
+    // Após a escolha, esconde o card (para ele não atrapalhar o preenchimento)
+    setTimeout(() => {
+      const c = document.getElementById('card-boas-vindas');
+      if (c) c.style.display = 'none';
+    }, 900);
+
+
+
+
     // Modo Congregado: deixa apenas o essencial (mínimo) no formulário
     const modoCongregado = tipo === 'Congregado';
 
@@ -90,10 +109,10 @@
       // Cards que vamos esconder no modo Congregado
       const idsToHideCards = [
         'cep',
-        'ocupacao','empresa',
+        'ocupacao', 'empresa',
         'forma_recebimento',
-        'cargo_principal','outras_funcoes',
-        'qtd_filhos','nome_dep1','talentos'
+        'cargo_principal', 'outras_funcoes',
+        'qtd_filhos', 'nome_dep1', 'talentos'
       ];
 
       idsToHideCards.forEach(id => {
@@ -112,14 +131,14 @@
     if (modoCongregado) {
       const camposParaLimpar = [
         // Dados pessoais não essenciais (e toda a parte não-miníma)
-        'rg','dataNasc','idade','tipo_sanguineo','escolaridade','conjuge_nome','dataCasamento',
-        'bairro','endereco','sel_estado','sel_cidade','fone_res','fone_com','email',
+        'rg', 'dataNasc', 'idade', 'tipo_sanguineo', 'escolaridade', 'conjuge_nome', 'dataCasamento',
+        'bairro', 'endereco', 'sel_estado', 'sel_cidade', 'fone_res', 'fone_com', 'email',
         // Igreja / profissional / cargos / família / talentos
-        'ocupacao','empresa','forma_recebimento','setor_igreja','congregacao_igreja','igreja_anterior','igreja_cidade','igreja_pastor',
-        'data_batismo_aguas','data_batismo_es','data_aprovacao','cargo_principal','outras_funcoes','qtd_filhos','nome_dep1','parentesco_dep1',
-        'nome_dep2','parentesco_dep2','nome_dep3','parentesco_dep3','talentos',
+        'ocupacao', 'empresa', 'forma_recebimento', 'setor_igreja', 'congregacao_igreja', 'igreja_anterior', 'igreja_cidade', 'igreja_pastor',
+        'data_batismo_aguas', 'data_batismo_es', 'data_aprovacao', 'cargo_principal', 'outras_funcoes', 'qtd_filhos', 'nome_dep1', 'parentesco_dep1',
+        'nome_dep2', 'parentesco_dep2', 'nome_dep3', 'parentesco_dep3', 'talentos',
         // Talentos/recursos
-        'tem_computador','tem_internet'
+        'tem_computador', 'tem_internet'
       ];
 
       camposParaLimpar.forEach(id => {
@@ -141,10 +160,142 @@
       if (wrapperRg) wrapperRg.style.display = '';
     }
 
+    // Garante que valores/carregamentos iniciais reflitam o modo selecionado
     calcProgress();
+
+    // No modo Congregado: o campo RG (wrapper) já é escondido em setTipo().
+    // Porém, também garantimos que o usuário não fique com CPF/CRNM "esquecido".
+    // Mantém o valor escolhido no seletor CPF (br/estrangeiro).
+    if (modoCongregado) {
+      toggleCPF();
+    }
 
   }
   window.setTipo = setTipo;
+
+  function setFluxoCadastroVisivel(mostrarFormulario) {
+    const telaEscolha = document.getElementById('tela-escolha-cadastro');
+    const progresso = document.querySelector('.progress-wrap');
+    const formulario = document.getElementById('cadastro-formulario');
+    const submit = document.querySelector('.submit-wrap');
+
+    telaEscolha?.classList.toggle('cadastro-flow-hidden', mostrarFormulario);
+    progresso?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
+    formulario?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
+    submit?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
+  }
+
+  function resetarCamposCadastro() {
+    document.querySelectorAll('#cadastro-formulario input, #cadastro-formulario textarea, #cadastro-formulario select')
+      .forEach(el => {
+        if (el.id === 'tipo_cadastro') return;
+
+        if (el.type === 'radio' || el.type === 'checkbox') {
+          el.checked = false;
+        } else {
+          el.value = '';
+        }
+
+        el.classList.remove('valido', 'invalido', 'invalid');
+      });
+
+    const sexoPadrao = document.querySelector('input[name="sexo"][value="M"]');
+    const computadorPadrao = document.querySelector('input[name="tem_computador"][value="Sim"]');
+    const internetPadrao = document.querySelector('input[name="tem_internet"][value="Sim"]');
+    if (sexoPadrao) sexoPadrao.checked = true;
+    if (computadorPadrao) computadorPadrao.checked = true;
+    if (internetPadrao) internetPadrao.checked = true;
+
+    const tipoCpf = document.getElementById('tipo_cpf');
+    if (tipoCpf) tipoCpf.value = 'br';
+
+    document.querySelectorAll('.hint').forEach(hint => {
+      hint.textContent = '';
+      hint.className = 'hint';
+    });
+
+    const hintIdade = document.getElementById('hint');
+    if (hintIdade) hintIdade.textContent = 'Calculada automaticamente';
+
+    const campoConjuge = document.getElementById('campo-conjuge');
+    const boxCertidaoCas = document.getElementById('box-certidao-cas');
+    const boxDiploma = document.getElementById('box-diploma');
+    if (campoConjuge) campoConjuge.style.display = 'none';
+    if (boxCertidaoCas) boxCertidaoCas.style.display = 'none';
+    if (boxDiploma) boxDiploma.style.display = 'none';
+
+    ['foto-membro', 'foto-doc', 'certidao-nasc', 'certidao-cas', 'diploma'].forEach(t => {
+      const prev = document.getElementById('prev-' + t);
+      const ph = document.getElementById('ph-' + t);
+      const box = document.getElementById('box-' + t);
+      const inp = document.getElementById('inp-' + t);
+      const cam = document.getElementById('inp-cam-' + t);
+      if (prev) prev.style.display = 'none';
+      if (ph) ph.style.display = '';
+      if (box) box.classList.remove('tem-foto');
+      if (inp) inp.value = '';
+      if (cam) cam.value = '';
+    });
+
+    const prevComprovante = document.getElementById('prev-comprovante');
+    const boxComprovante = document.getElementById('box-comprovante');
+    const inpComprovante = document.getElementById('inp-comprovante');
+    const camComprovante = document.getElementById('inp-cam-comprovante');
+    if (prevComprovante) prevComprovante.style.display = 'none';
+    if (boxComprovante) boxComprovante.classList.remove('tem-foto');
+    if (inpComprovante) inpComprovante.value = '';
+    if (camComprovante) camComprovante.value = '';
+
+    const btnSalvar = document.getElementById('btn-salvar');
+    if (btnSalvar) btnSalvar.disabled = false;
+
+    limparAssinatura();
+    toggleCPF();
+  }
+
+  function mostrarTelaEscolhaCadastro() {
+    document.body.classList.remove('modo-congregado');
+    document.getElementById('tipo_cadastro').value = '';
+    document.getElementById('btn-membro')?.classList.remove('active');
+    document.getElementById('btn-congregado')?.classList.remove('active');
+    setFluxoCadastroVisivel(false);
+    calcProgress();
+  }
+
+  function aplicarTipoCadastro(tipo, opcoes = {}) {
+    const tipoInput = document.getElementById('tipo_cadastro');
+    if (!tipoInput || !['Membro', 'Congregado'].includes(tipo)) return;
+
+    const tipoAnterior = tipoInput.value;
+    const trocouTipo = tipoAnterior && tipoAnterior !== tipo;
+
+    if (opcoes.resetar || trocouTipo) {
+      resetarCamposCadastro();
+    }
+
+    tipoInput.value = tipo;
+    document.body.classList.toggle('modo-congregado', tipo === 'Congregado');
+    document.getElementById('btn-membro')?.classList.toggle('active', tipo === 'Membro');
+    document.getElementById('btn-congregado')?.classList.toggle('active', tipo === 'Congregado');
+
+    const btnSalvar = document.getElementById('btn-salvar');
+    if (btnSalvar) btnSalvar.innerHTML = `✝ Enviar Cadastro de ${tipo}`;
+
+    setFluxoCadastroVisivel(true);
+    calcProgress();
+
+    if (opcoes.scroll !== false) {
+      document.getElementById('cadastro-formulario')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function escolherTipoCadastro(tipo) {
+    aplicarTipoCadastro(tipo, { resetar: true });
+  }
+
+  window.setTipo = aplicarTipoCadastro;
+  window.escolherTipoCadastro = escolherTipoCadastro;
+
 
 
   // ── CÔNJUGE E DIPLOMA ─────────────────
@@ -176,15 +327,15 @@
     let idade = hoje.getFullYear() - nasc.getFullYear();
     const m = hoje.getMonth() - nasc.getMonth();
     if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
-    document.getElementById('idade').value = idade >=0 ? idade : '';
+    document.getElementById('idade').value = idade >= 0 ? idade : '';
 
     const hint = document.getElementById('hint')
     if (idade < 18) {
       hint.textContent = '⚠️ Menor de idade';
       hint.className = 'hint erro';
     } else {
-       hint.textContent = 'Verificação de idade autorizada ✅';
-       hint.className = 'hint';
+      hint.textContent = 'Verificação de idade autorizada ✅';
+      hint.className = 'hint';
     }
   }
   window.calcIdade = calcIdade;
@@ -263,7 +414,7 @@
   function validarCPF(input) {
     const tipo = document.getElementById('tipo_cpf')?.value;
     const hint = document.getElementById('hint-cpf');
-    
+
     if (tipo !== 'br') {
       if (!input.value.trim()) {
         if (hint) {
@@ -453,7 +604,7 @@
       }
       if (data.logradouro) document.getElementById('endereco').value = data.logradouro;
       if (data.bairro) document.getElementById('bairro').value = data.bairro;
-      
+
       if (data.uf) {
         const selEstado = document.getElementById('sel_estado');
         if (selEstado) {
@@ -461,7 +612,7 @@
           await carregarCidades(data.uf, data.localidade);
         }
       }
-      
+
       if (hint) {
         hint.textContent = `✓ ${data.localidade} - ${data.uf}`;
         hint.className = 'hint ok';
@@ -500,7 +651,7 @@
   async function carregarCidades(sigla, cidadeSelecionar = null) {
     const selCidade = document.getElementById('sel_cidade');
     if (!selCidade) return;
-    
+
     if (!sigla) {
       selCidade.innerHTML = '<option value="">Selecione o Estado primeiro</option>';
       return;
@@ -527,18 +678,36 @@
     }
   }
   window.carregarCidades = carregarCidades;
-  
+
   // Inicializa os estados no carregamento
   inicializarEstados();
 
   // ── PROGRESSO ─────────────────────────
   function calcProgress() {
-    const campos = ['nome', 'cpf', 'celular', 'dataNasc', 'endereco', 'setor_igreja', 'forma_recebimento', 'talentos'];
-    const filled = campos.filter(id => document.getElementById(id)?.value?.trim()).length;
-    const pct = Math.round((filled / campos.length) * 100);
-    document.getElementById('progress-fill').style.width = pct + '%';
+    const tipoCadastro = document.getElementById('tipo_cadastro')?.value;
+    const fill = document.getElementById('progress-fill');
     const label = document.getElementById('progress-label');
     const pctEl = document.getElementById('progress-pct');
+
+    if (!fill || !label || !pctEl) return;
+
+    if (!tipoCadastro) {
+      fill.style.width = '0%';
+      label.textContent = 'Escolha o tipo de cadastro';
+      pctEl.textContent = '';
+      return;
+    }
+
+    const isCongregado = tipoCadastro === 'Congregado';
+
+    // Para Congregado, a barra deve considerar só os campos mínimos que aparecem/validam.
+    const campos = isCongregado
+      ? ['nome', 'cpf', 'celular', 'estadoCivil']
+      : ['nome', 'cpf', 'celular', 'dataNasc', 'endereco', 'setor_igreja', 'forma_recebimento', 'talentos'];
+
+    const filled = campos.filter(id => document.getElementById(id)?.value?.toString().trim()).length;
+    const pct = Math.round((filled / campos.length) * 100);
+    fill.style.width = pct + '%';
     if (pct === 0) label.textContent = 'Preencha o formulário';
     else if (pct < 50) label.textContent = 'Continue preenchendo…';
     else if (pct < 100) label.textContent = 'Quase lá!';
@@ -547,6 +716,7 @@
   }
   document.addEventListener('input', calcProgress);
   document.addEventListener('change', calcProgress);
+
 
   // ── TOAST ─────────────────────────────
   function toast(msg, tipo = '', dur = 3200) {
@@ -845,23 +1015,30 @@
 
     // No modo Congregado mínimo, a validação deve considerar APENAS campos mínimos.
     // Pedido: Nome, CPF/CRNM, Telefone (celular) e Estado Civil.
-    const required = isCongregado ? {
-      nome: document.getElementById('nome'),
-      cpf: document.getElementById('cpf'),
-      celular: document.getElementById('celular'),
-      estado_civil: document.getElementById('estadoCivil')
-    } : {
-      nome: document.getElementById('nome'),
-      cpf: document.getElementById('cpf'),
-      celular: document.getElementById('celular')
-    };
+    // Observação: os dados vêm de coletarDados() com as chaves:
+    // - nome, cpf, celular, estado_civil
+    const required = isCongregado ? [
+      ['nome', document.getElementById('nome')],
+      ['cpf', document.getElementById('cpf')],
+      ['celular', document.getElementById('celular')],
+      ['estado_civil', document.getElementById('estadoCivil')]
+    ] : [
+      ['nome', document.getElementById('nome')],
+      ['cpf', document.getElementById('cpf')],
+      ['celular', document.getElementById('celular')]
+    ];
 
     const tipo = document.getElementById('tipo_cpf')?.value;
 
-    Object.entries(required).forEach(([k, el]) => {
+    required.forEach(([k, el]) => {
       if (!el) return;
-      if (!dados[k]) { el.classList.add('invalid'); ok = false; }
-      else el.classList.remove('invalid');
+      // para estadoCivil (select) pode ser vazio string
+      if (!dados[k] || String(dados[k]).trim() === '') {
+        el.classList.add('invalid');
+        ok = false;
+      } else {
+        el.classList.remove('invalid');
+      }
     });
 
     // CPF deve estar válido apenas para brasileiros
@@ -876,13 +1053,13 @@
       ok = false;
     }
 
-    const celDigits = dados.celular.replace(/\D/g, '');
+    const celDigits = (dados.celular || '').replace(/\D/g, '');
     if (celDigits.length > 0 && celDigits.length < 10) {
       document.getElementById('celular').classList.add('invalid');
       ok = false;
     }
 
-    // Assinatura obrigatória (você confirmou SIM)
+    // Assinatura obrigatória
     if (!assinadoPeloMenos) {
       document.getElementById('hint-assinatura').textContent = '⚠️ Assinatura obrigatória.';
       document.getElementById('hint-assinatura').className = 'hint erro';
@@ -894,8 +1071,15 @@
   window.validar = validar;
 
 
+
   async function salvarMembro() {
     const dados = coletarDados();
+
+    if (!dados.tipo_cadastro) {
+      toast('⚠️ Escolha se o cadastro é de Membro ou Congregado.', 'erro');
+      mostrarTelaEscolhaCadastro();
+      return;
+    }
 
     if (!validar(dados)) {
       toast('⚠️ Preencha os campos obrigatórios.', 'erro');
@@ -983,6 +1167,23 @@
   }
 
   window.novoCadastro = novoCadastro;
+
+  function iniciarNovoCadastro() {
+    document.getElementById('tela-sucesso').classList.remove('show');
+    document.getElementById('app').style.display = 'block';
+    resetarCamposCadastro();
+
+    const btnSalvar = document.getElementById('btn-salvar');
+    if (btnSalvar) {
+      btnSalvar.innerHTML = '✝ Enviar Cadastro';
+      btnSalvar.disabled = false;
+    }
+
+    mostrarTelaEscolhaCadastro();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  window.novoCadastro = iniciarNovoCadastro;
 
 })();
 
