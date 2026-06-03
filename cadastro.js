@@ -679,6 +679,17 @@
   }
   window.carregarCidades = carregarCidades;
 
+  function sincronizarCongregacaoComSetor() {
+    const setor = document.getElementById('setor_igreja');
+    const congregacao = document.getElementById('congregacao_igreja');
+
+    if (setor && congregacao) {
+      congregacao.value = setor.value || '';
+    }
+  }
+
+  window.sincronizarCongregacaoComSetor = sincronizarCongregacaoComSetor;
+
   // Inicializa os estados no carregamento
   inicializarEstados();
 
@@ -957,6 +968,9 @@
 
   // ── Coleta dados ───────────────────────
   function coletarDados() {
+    sincronizarCongregacaoComSetor();
+    const setorIgreja = document.getElementById('setor_igreja').value.trim();
+
     return {
       tipo_cadastro: document.getElementById('tipo_cadastro').value,
       nome: document.getElementById('nome').value.trim(),
@@ -982,8 +996,8 @@
       ocupacao: document.getElementById('ocupacao').value.trim(),
       empresa: document.getElementById('empresa').value.trim(),
       forma_recebimento: document.getElementById('forma_recebimento').value,
-      setor_igreja: document.getElementById('setor_igreja').value.trim(),
-      congregacao_igreja: document.getElementById('congregacao_igreja').value.trim(),
+      setor_igreja: setorIgreja,
+      congregacao_igreja: setorIgreja,
       igreja_anterior: document.getElementById('igreja_anterior').value.trim(),
       igreja_cidade: document.getElementById('igreja_cidade').value.trim(),
       igreja_pastor: document.getElementById('igreja_pastor').value.trim(),

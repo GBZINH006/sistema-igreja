@@ -1514,6 +1514,7 @@
       <button class="btn btn-ghost btn-sm"><i class="fa-solid fa-bell"></i></button>
           <span id="sino-badge">0</span>
         </div>
+        <button class="btn btn-gold btn-sm" onclick="abrirCadastro()"><i class="fa-solid fa-user-plus"></i> Novo cadastro</button>
         <button class="btn btn-gold btn-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
         <button class="btn btn-green btn-sm" onclick="exportarExcel()" style="background:#10b981;border-color:#10b981;color:white;"><i class="fa-solid fa-file-excel"></i> Excel</button>
         <button class="btn btn-ghost btn-sm" onclick="carregarLista()"><i class="fa-solid fa-rotate-right"></i></button>
@@ -1787,8 +1788,28 @@
           </div>
         </div>
         <div class="edit-row edit-col2">
-          <div><label class="edit-label">Setor</label><input type="text" id="edit-setor" class="edit-input"></div>
-          <div><label class="edit-label">Congregação</label><input type="text" id="edit-congregacao" class="edit-input">
+          <div><label class="edit-label">Setor</label><select id="edit-setor" class="edit-input" onchange="sincronizarEdicaoCongregacaoPastor()">
+              <option value="">Selecione o setor</option>
+              <option>Setor 01: Ponte do Imaruim (Sede)</option>
+              <option>Setor 02: Jardim Eldorado</option>
+              <option>Setor 03: Caminho Novo</option>
+              <option>Setor 04: Guarda do Cubatão</option>
+              <option>Setor 05: Barra do Aririú</option>
+              <option>Setor 06: Alto Aririú</option>
+              <option>Setor 07: Rio Grande</option>
+              <option>Setor 08: Pacheco</option>
+              <option>Setor 09: Bela Vista</option>
+              <option>Setor 10: Madri</option>
+              <option>Setor 11: São Sebastião</option>
+              <option>Setor 12: Pagani</option>
+              <option>Setor 13: Passa Vinte</option>
+              <option>Setor 14: Nova Esperança / Brejaru</option>
+              <option>Setor 15: Pinheira (Baixada do Maciambu e praias)</option>
+              <option>Setor 16: Enseada de Brito</option>
+              <option>Setor 17: Pedra Branca</option>
+              <option>Setor 18: Aririú da Formiga / Loteamentos Recentes</option>
+            </select></div>
+          <div><label class="edit-label">Congregação</label><input type="text" id="edit-congregacao" class="edit-input" placeholder="Preenchida pelo setor escolhido" readonly>
           </div>
         </div>
         <div class="edit-row edit-col3">

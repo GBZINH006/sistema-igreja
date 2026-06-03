@@ -12,6 +12,7 @@
   let chartCrescimento = null, chartTipo = null, chartSetor = null;
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
+  const ROLE_ADMIN = 'admin';
 
   function mostrarTela(id) {
     document.getElementById('tela-carregando').classList.remove('ativa');
@@ -26,6 +27,45 @@
   }
 
   window.mostrarTela = mostrarTela;
+
+  async function obterPerfil(userId) {
+    const { data, error } = await db
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Erro ao validar perfil:', error.message);
+      return null;
+    }
+
+    return data;
+  }
+
+  async function validarAcesso(session) {
+    if (!session?.user?.id) {
+      mostrarTela('tela-login');
+      return false;
+    }
+
+    const profile = await obterPerfil(session.user.id);
+    if (!profile || profile.role !== ROLE_ADMIN) {
+      const email = session.user.email || 'este usuario';
+      const roleAtual = profile?.role ? ` Role atual: ${profile.role}.` : ' Perfil nao encontrado em public.profiles.';
+      alert(`Acesso negado para ${email}.${roleAtual} Coloque este usuario como admin no SQL do Supabase.`);
+      await db.auth.signOut();
+      membrosCache = [];
+      mostrarTela('tela-login');
+      return false;
+    }
+
+    document.getElementById('header-email').textContent = session.user.email || '';
+    mostrarTela('tela-principal');
+    carregarLista();
+    iniciarRealtime();
+    return true;
+  }
 
   async function fazerLogin() {
     const email = document.getElementById('login-email').value.trim();
@@ -60,10 +100,7 @@
       return;
     }
 
-    document.getElementById('header-email').textContent = data.user.email;
-    mostrarTela('tela-principal');
-    carregarLista();
-    iniciarRealtime();
+    await validarAcesso(data.session);
   }
 
   window.fazerLogin = fazerLogin;
@@ -77,6 +114,12 @@
   }
 
   window.sair = sair;
+
+  function abrirCadastro() {
+    window.open('cadastro.html', '_blank', 'noopener,noreferrer');
+  }
+
+  window.abrirCadastro = abrirCadastro;
 
   function toast(msg, dur = 2800) {
     const t = document.getElementById('toast');
@@ -725,6 +768,29 @@
   }
   window.verDetalhes = verDetalhes;
 
+  function ensureSelectValue(el, value) {
+    if (!el || el.tagName !== 'SELECT' || value === null || value === undefined || value === '') return;
+
+    const exists = Array.from(el.options || []).some(opt => opt.value === String(value));
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = value;
+      opt.textContent = value;
+      el.appendChild(opt);
+    }
+  }
+
+  function sincronizarEdicaoCongregacaoPastor() {
+    const setor = document.getElementById('edit-setor');
+    const congregacao = document.getElementById('edit-congregacao');
+
+    if (setor && congregacao) {
+      congregacao.value = setor.value || '';
+    }
+  }
+
+  window.sincronizarEdicaoCongregacaoPastor = sincronizarEdicaoCongregacaoPastor;
+
   function abrirEdicao(id) {
     const m = membrosCache.find(x => x.id === id);
     if (!m) return;
@@ -764,8 +830,12 @@
 
     Object.entries(mapa).forEach(([k, v]) => {
       const el = document.getElementById('edit-' + k);
-      if (el) el.value = v ?? '';
+      if (el) {
+        ensureSelectValue(el, v);
+        el.value = v ?? '';
+      }
     });
+    sincronizarEdicaoCongregacaoPastor();
 
     document.getElementById('edit-id').value = m.id;
     document.getElementById('edit-status').value = m.status || 'Ativo';
@@ -829,6 +899,9 @@
 
     const mAtual = membrosCache.find(x => x.id === id);
 
+    sincronizarEdicaoCongregacaoPastor();
+    const setorEdicao = document.getElementById('edit-setor').value;
+
     const dados = {
       tipo_cadastro: document.querySelector('input[name="edit-tipo"]:checked')?.value || 'Membro',
       status: document.getElementById('edit-status').value,
@@ -853,8 +926,8 @@
       email: document.getElementById('edit-email').value,
       forma_recebimento: document.getElementById('edit-recebimento').value,
       cargo_principal: document.getElementById('edit-cargo').value,
-      setor_igreja: document.getElementById('edit-setor').value,
-      congregacao_igreja: document.getElementById('edit-congregacao').value,
+      setor_igreja: setorEdicao,
+      congregacao_igreja: setorEdicao,
       data_batismo_aguas: document.getElementById('edit-bat-aguas').value || null,
       data_batismo_es: document.getElementById('edit-bat-es').value || null,
       data_aprovacao: document.getElementById('edit-aprovacao').value || null,
@@ -1043,20 +1116,7 @@
     const { data: { session } } = await db.auth.getSession();
 
     if (session) {
-      const userId = session.user.id;
-      const { data: profile } = await db.from('profiles').select('role').eq('id', userId).single();
-
-      if (!profile || profile.role !== 'admin') {
-        alert("⛔ Acesso negado. Apenas administradores.");
-        await db.auth.signOut();
-        mostrarTela('tela-login');
-        return;
-      }
-
-      document.getElementById('header-email').textContent = session.user.email;
-      mostrarTela('tela-principal');
-      carregarLista();
-      iniciarRealtime();
+      await validarAcesso(session);
     } else {
       mostrarTela('tela-login');
     }

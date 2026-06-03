@@ -1521,11 +1521,30 @@
             <option>Reconciliação</option>
           </select>
           <div class="form-row col-2">
-            <div><label class="field-label">Setor</label><input type="text"
-                id="setor_igreja" placeholder="Setor"></div>
+            <div><label class="field-label">Setor</label><select id="setor_igreja" onchange="sincronizarCongregacaoComSetor()">
+                <option value="">Selecione o setor</option>
+                <option>Setor 01: Ponte do Imaruim (Sede)</option>
+                <option>Setor 02: Jardim Eldorado</option>
+                <option>Setor 03: Caminho Novo</option>
+                <option>Setor 04: Guarda do Cubatão</option>
+                <option>Setor 05: Barra do Aririú</option>
+                <option>Setor 06: Alto Aririú</option>
+                <option>Setor 07: Rio Grande</option>
+                <option>Setor 08: Pacheco</option>
+                <option>Setor 09: Bela Vista</option>
+                <option>Setor 10: Madri</option>
+                <option>Setor 11: São Sebastião</option>
+                <option>Setor 12: Pagani</option>
+                <option>Setor 13: Passa Vinte</option>
+                <option>Setor 14: Nova Esperança / Brejaru</option>
+                <option>Setor 15: Pinheira (Baixada do Maciambu e praias)</option>
+                <option>Setor 16: Enseada de Brito</option>
+                <option>Setor 17: Pedra Branca</option>
+                <option>Setor 18: Aririú da Formiga / Loteamentos Recentes</option>
+              </select></div>
             <div><label class="field-label">Congregação</label><input
                 type="text" id="congregacao_igreja"
-                placeholder="Congregação"></div>
+                placeholder="Preenchida pelo setor escolhido" readonly></div>
           </div>
           <div class="form-row col-3">
             <div><label class="field-label">Igreja Anterior</label><input
@@ -1698,4 +1717,3 @@
   </body>
 
 </html>
-  
