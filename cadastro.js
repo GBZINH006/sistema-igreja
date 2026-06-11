@@ -2,8 +2,8 @@
 // Extraído do cadastro.html para arquivo separado.
 
 (function () {
-  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
+  const SB_URL = window.CONFIG.SUPABASE_URL;
+  const SB_KEY = window.CONFIG.SUPABASE_KEY;
 
   const { createClient } = window.supabase;
   const db = createClient(SB_URL, SB_KEY);
