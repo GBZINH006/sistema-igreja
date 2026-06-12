@@ -82,7 +82,16 @@
       </div>
 
       <main id="cadastro-formulario" class="cadastro-flow-hidden">
-        <form id="form-cadastro" onsubmit="event.preventDefault(); return false;">
+        <div id="cadastro-bloqueado-overlay" class="cadastro-bloqueio" style="display:none;">
+          <div class="cadastro-bloqueio-card">
+            <div class="cadastro-bloqueio-title">Escolha o tipo</div>
+            <div class="cadastro-bloqueio-sub">Selecione se é <b>Membro</b> ou <b>Congregado</b> para liberar o formulário.</div>
+            <div class="cadastro-bloqueio-actions">
+              <button type="button" class="btn btn-gold" onclick="document.getElementById('tela-escolha-cadastro').scrollIntoView({ behavior: 'smooth', block: 'start' });">Ir para a escolha</button>
+            </div>
+          </div>
+        </div>
+        <form id="form-cadastro" onsubmit="event.preventDefault(); return false;" oninput="return false;" style="pointer-events:auto;">
 
         <!-- TIPO -->
         <div class="tipo-toggle">
