@@ -2,11 +2,10 @@
 // Extraído do cadastro.html para arquivo separado.
 
 (function () {
-  const SB_URL = 'https://vclqdzvirnafwplivlfc.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc';
-
+  
   const { createClient } = window.supabase;
-  const db = createClient(SB_URL, SB_KEY);
+  const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+
 
   // ── Validações ───────────────────────────────
   function validarNome(input) {
@@ -281,6 +280,11 @@
     const btnSalvar = document.getElementById('btn-salvar');
     if (btnSalvar) btnSalvar.innerHTML = `✝ Enviar Cadastro de ${tipo}`;
 
+    // Libera o formulário somente após escolher
+    const overlay = document.getElementById('cadastro-bloqueado-overlay');
+    if (overlay) overlay.style.display = 'none';
+
+    // O form/fluxo fica visível
     setFluxoCadastroVisivel(true);
     calcProgress();
 
@@ -289,9 +293,14 @@
     }
   }
 
+
   function escolherTipoCadastro(tipo) {
+    // Bloqueia até a escolha ficar definida (UX)
+    const overlay = document.getElementById('cadastro-bloqueado-overlay');
+    if (overlay) overlay.style.display = 'none';
     aplicarTipoCadastro(tipo, { resetar: true });
   }
+
 
   window.setTipo = aplicarTipoCadastro;
   window.escolherTipoCadastro = escolherTipoCadastro;
@@ -1193,9 +1202,14 @@
       btnSalvar.disabled = false;
     }
 
+    // volta para escolha e bloqueia formulário até selecionar tipo
+    const overlay = document.getElementById('cadastro-bloqueado-overlay');
+    if (overlay) overlay.style.display = '';
+
     mostrarTelaEscolhaCadastro();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
 
   window.novoCadastro = iniciarNovoCadastro;
 

@@ -2,8 +2,8 @@
 // Extraído do admin.html para arquivo separado.
 
 (function () {
-  const SUPABASE_URL = "https://vclqdzvirnafwplivlfc.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjbHFkenZpcm5hZndwbGl2bGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5NjY1ODIsImV4cCI6MjA5NDU0MjU4Mn0.KFl1WiE4TU20YfD6SRI57HTDJbnaUNsCn3zww8Usdqc";
+  const SUPABASE_URL = window.CONFIG.SUPABASE_URL;
+  const SUPABASE_KEY = window.CONFIG.SUPABASE_KEY;
 
   const { createClient } = window.supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
