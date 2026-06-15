@@ -1248,3 +1248,276 @@ input.invalid {
     flex-direction: column;
   }
 }
+
+/* SaaS multi-step layer */
+body {
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 28rem),
+    linear-gradient(315deg, rgba(124, 58, 237, 0.08), transparent 26rem),
+    var(--bg);
+}
+
+.hero {
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  pointer-events: none;
+}
+
+.side-nav {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.side-link {
+  position: relative;
+}
+
+.side-link::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.side-link.active {
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 16px 34px rgba(15, 23, 42, 0.16);
+}
+
+.progress-wrap {
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.04);
+}
+
+.header-copy {
+  min-width: 0;
+}
+
+.header-actions::before {
+  content: "Secretaria AD";
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.step {
+  cursor: pointer;
+}
+
+.step.done {
+  border-color: rgba(16, 185, 129, 0.34);
+  background: rgba(16, 185, 129, 0.08);
+  color: #047857;
+}
+
+.step.done i {
+  color: var(--success);
+}
+
+#form-cadastro {
+  display: grid;
+  gap: 18px;
+}
+
+.form-step {
+  display: none;
+}
+
+.form-step.step-active {
+  display: block;
+  animation: fadeUp 0.34s ease both;
+}
+
+.tipo-toggle.form-step.step-active {
+  display: inline-grid;
+}
+
+.step-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.step-panel-heading h3 {
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  line-height: 1.2;
+}
+
+.step-panel-heading p {
+  max-width: 650px;
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.step-panel-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(124, 58, 237, 0.12));
+  color: var(--primary-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.input-shell {
+  position: relative;
+}
+
+.input-shell > i {
+  position: absolute;
+  left: 14px;
+  bottom: 16px;
+  z-index: 1;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.input-shell input,
+.input-shell select,
+.input-shell textarea {
+  padding-left: 42px;
+}
+
+.input-shell textarea + i,
+.input-shell > textarea ~ i {
+  bottom: auto;
+  top: 48px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.02);
+}
+
+.foto-box {
+  min-height: 220px;
+}
+
+.foto-box::after {
+  content: "Solte o arquivo aqui";
+  color: #94a3b8;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.foto-box.tem-foto::after {
+  content: "Arquivo anexado";
+  color: var(--success);
+}
+
+.submit-wrap .inner {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.34fr) minmax(160px, 0.5fr) minmax(220px, 1fr);
+  gap: 12px;
+}
+
+.btn-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 58px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+}
+
+.btn-step:hover {
+  border-color: rgba(37, 99, 235, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-step-next {
+  color: #fff;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.btn-step[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#btn-salvar {
+  display: none;
+}
+
+body.step-last #btn-salvar {
+  display: flex;
+}
+
+body.step-last #btn-step-next {
+  display: none;
+}
+
+body.step-first #btn-step-back {
+  opacity: 0.45;
+}
+
+@media (max-width: 820px) {
+  .header-actions::before {
+    display: none;
+  }
+
+  .step-panel-heading {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .submit-wrap .inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.step-last .submit-wrap .inner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .btn-submit {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 540px) {
+  .submit-wrap .inner,
+  body.step-last .submit-wrap .inner {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-step,
+  .btn-submit {
+    min-height: 52px;
+  }
+}

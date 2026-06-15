@@ -1106,7 +1106,11 @@
 
     if (!validar(dados)) {
       toast('⚠️ Preencha os campos obrigatórios.', 'erro');
-      document.querySelector('.invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const invalido = document.querySelector('.invalid');
+      const etapaInvalida = invalido?.closest('.form-step')?.dataset.step;
+      if (etapaInvalida !== undefined) irParaEtapaCadastro(Number(etapaInvalida), { scroll: false });
+      if (!invalido && !assinadoPeloMenos) irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
+      invalido?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       if (!assinadoPeloMenos) document.getElementById('canvas-assinatura').scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -1213,6 +1217,250 @@
 
   window.novoCadastro = iniciarNovoCadastro;
 
+  const etapasCadastro = [
+    {
+      titulo: 'Identificacao',
+      descricao: 'Comece pelo tipo de cadastro, foto e dados pessoais essenciais.',
+      icone: 'fa-user',
+      cards: ['box-foto-membro', 'nome']
+    },
+    {
+      titulo: 'Contato',
+      descricao: 'Informe endereco, telefones, e-mail e dados profissionais.',
+      icone: 'fa-address-book',
+      cards: ['cep', 'ocupacao']
+    },
+    {
+      titulo: 'Documentos',
+      descricao: 'Anexe certidoes, comprovantes e arquivos exigidos para a ficha.',
+      icone: 'fa-file-shield',
+      cards: ['box-certidao-nasc']
+    },
+    {
+      titulo: 'Igreja e familia',
+      descricao: 'Complete dados ministeriais, cargos, familiares e recursos.',
+      icone: 'fa-church',
+      cards: ['forma_recebimento', 'cargo_principal', 'qtd_filhos', 'talentos']
+    },
+    {
+      titulo: 'Assinatura',
+      descricao: 'Revise a declaracao e registre a assinatura digital para concluir.',
+      icone: 'fa-signature',
+      cards: ['canvas-assinatura']
+    }
+  ];
+
+  let etapaAtualCadastro = 0;
+
+  function cardPorCampo(id) {
+    const el = document.getElementById(id);
+    return el?.closest('.section-card') || null;
+  }
+
+  function prepararEtapasCadastro() {
+    const form = document.getElementById('form-cadastro');
+    if (!form || form.dataset.stepsReady === 'true') return;
+
+    const titulo = document.createElement('div');
+    titulo.className = 'step-panel-heading';
+    titulo.id = 'step-panel-heading';
+    titulo.innerHTML = `
+      <div>
+        <h3 id="step-panel-title"></h3>
+        <p id="step-panel-description"></p>
+      </div>
+      <span class="step-panel-badge" id="step-panel-badge"></span>
+    `;
+
+    const tipoToggle = form.querySelector('.tipo-toggle');
+    form.insertBefore(titulo, tipoToggle || form.firstChild);
+
+    etapasCadastro.forEach((etapa, index) => {
+      etapa.cards.forEach(id => {
+        const card = cardPorCampo(id);
+        if (!card) return;
+        card.classList.add('form-step');
+        card.dataset.step = String(index);
+      });
+    });
+
+    if (tipoToggle) {
+      tipoToggle.classList.add('form-step');
+      tipoToggle.dataset.step = '0';
+    }
+
+    form.querySelectorAll('.section-card:not(.form-step)').forEach(card => {
+      card.classList.add('form-step');
+      card.dataset.step = '0';
+    });
+
+    document.querySelectorAll('.step').forEach((step, index) => {
+      step.type = 'button';
+      step.setAttribute('role', 'button');
+      step.setAttribute('tabindex', '0');
+      step.addEventListener('click', () => irParaEtapaCadastro(index));
+      step.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          irParaEtapaCadastro(index);
+        }
+      });
+    });
+
+    document.querySelectorAll('.side-link').forEach((link, index) => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        irParaEtapaCadastro(index);
+      });
+    });
+
+    document.getElementById('btn-step-back')?.addEventListener('click', () => {
+      if (etapaAtualCadastro > 0) irParaEtapaCadastro(etapaAtualCadastro - 1);
+    });
+
+    document.getElementById('btn-step-next')?.addEventListener('click', () => {
+      if (etapaAtualCadastro < etapasCadastro.length - 1) irParaEtapaCadastro(etapaAtualCadastro + 1);
+    });
+
+    aprimorarCamposComIcones();
+    form.dataset.stepsReady = 'true';
+    irParaEtapaCadastro(0, { scroll: false });
+  }
+
+  function etapaTemConteudoVisivel(index) {
+    const cards = Array.from(document.querySelectorAll(`.form-step[data-step="${index}"]`));
+    return cards.some(card => {
+      if (card.style.display === 'none') return false;
+      if (document.body.classList.contains('modo-congregado') && card.classList.contains('somente-membro')) return false;
+      return true;
+    });
+  }
+
+  function resolverEtapaDisponivel(index) {
+    const total = etapasCadastro.length;
+    const alvo = Math.max(0, Math.min(index, total - 1));
+    if (etapaTemConteudoVisivel(alvo)) return alvo;
+
+    const direcao = alvo >= etapaAtualCadastro ? 1 : -1;
+    for (let i = alvo + direcao; i >= 0 && i < total; i += direcao) {
+      if (etapaTemConteudoVisivel(i)) return i;
+    }
+
+    for (let i = alvo - direcao; i >= 0 && i < total; i -= direcao) {
+      if (etapaTemConteudoVisivel(i)) return i;
+    }
+
+    return 0;
+  }
+
+  function aprimorarCamposComIcones() {
+    const mapaIcones = {
+      nome: 'fa-user',
+      rg: 'fa-id-card',
+      cpf: 'fa-fingerprint',
+      dataNasc: 'fa-calendar-days',
+      idade: 'fa-hourglass-half',
+      tipo_sanguineo: 'fa-droplet',
+      escolaridade: 'fa-graduation-cap',
+      estadoCivil: 'fa-heart',
+      conjuge_nome: 'fa-user-group',
+      dataCasamento: 'fa-ring',
+      cep: 'fa-map-pin',
+      bairro: 'fa-map',
+      endereco: 'fa-road',
+      sel_estado: 'fa-location-dot',
+      sel_cidade: 'fa-city',
+      fone_res: 'fa-phone',
+      fone_com: 'fa-briefcase',
+      celular: 'fa-mobile-screen',
+      email: 'fa-envelope',
+      ocupacao: 'fa-briefcase',
+      empresa: 'fa-building',
+      forma_recebimento: 'fa-hands-praying',
+      setor_igreja: 'fa-sitemap',
+      congregacao_igreja: 'fa-church',
+      igreja_anterior: 'fa-landmark',
+      igreja_cidade: 'fa-city',
+      igreja_pastor: 'fa-user-tie',
+      data_batismo_aguas: 'fa-water',
+      data_batismo_es: 'fa-fire-flame-curved',
+      data_aprovacao: 'fa-circle-check',
+      cargo_principal: 'fa-award',
+      outras_funcoes: 'fa-list-check',
+      qtd_filhos: 'fa-children',
+      nome_dep1: 'fa-user',
+      parentesco_dep1: 'fa-link',
+      nome_dep2: 'fa-user',
+      parentesco_dep2: 'fa-link',
+      nome_dep3: 'fa-user',
+      parentesco_dep3: 'fa-link',
+      talentos: 'fa-wand-magic-sparkles'
+    };
+
+    Object.entries(mapaIcones).forEach(([id, icon]) => {
+      const campo = document.getElementById(id);
+      if (!campo || campo.closest('.input-shell')) return;
+      const parent = campo.parentElement;
+      if (!parent) return;
+
+      const shell = document.createElement('div');
+      shell.className = 'input-shell';
+      parent.insertBefore(shell, campo);
+      shell.appendChild(campo);
+
+      const i = document.createElement('i');
+      i.className = `fa-solid ${icon}`;
+      shell.appendChild(i);
+
+      let next = shell.nextSibling;
+      while (next && next.nodeType === Node.TEXT_NODE && !next.textContent.trim()) {
+        next = next.nextSibling;
+      }
+      if (next?.classList?.contains('hint') || next?.classList?.contains('cep-loading')) {
+        parent.insertBefore(next, shell.nextSibling);
+      }
+    });
+  }
+
+  function irParaEtapaCadastro(index, opcoes = {}) {
+    prepararEtapasCadastro();
+    const total = etapasCadastro.length;
+    etapaAtualCadastro = resolverEtapaDisponivel(index);
+    const etapa = etapasCadastro[etapaAtualCadastro];
+
+    document.querySelectorAll('.form-step').forEach(card => {
+      card.classList.toggle('step-active', Number(card.dataset.step) === etapaAtualCadastro);
+    });
+
+    document.querySelectorAll('.step').forEach((step, i) => {
+      step.classList.toggle('active', i === etapaAtualCadastro);
+      step.classList.toggle('done', i < etapaAtualCadastro);
+    });
+
+    document.querySelectorAll('.side-link').forEach((link, i) => {
+      link.classList.toggle('active', i === etapaAtualCadastro);
+    });
+
+    document.body.classList.toggle('step-first', etapaAtualCadastro === 0);
+    document.body.classList.toggle('step-last', etapaAtualCadastro === total - 1);
+
+    const back = document.getElementById('btn-step-back');
+    if (back) back.disabled = etapaAtualCadastro === 0;
+
+    const title = document.getElementById('step-panel-title');
+    const desc = document.getElementById('step-panel-description');
+    const badge = document.getElementById('step-panel-badge');
+    if (title) title.textContent = etapa.titulo;
+    if (desc) desc.textContent = etapa.descricao;
+    if (badge) badge.innerHTML = `<i class="fa-solid ${etapa.icone}"></i> Etapa ${etapaAtualCadastro + 1} de ${total}`;
+
+    if (opcoes.scroll !== false) {
+      document.getElementById('cadastro-formulario')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  window.irParaEtapaCadastro = irParaEtapaCadastro;
+
   function prepararUploadsDragDrop() {
     document.querySelectorAll('.foto-box').forEach(box => {
       const input = box.querySelector('input[type="file"]:not([capture])') || box.querySelector('input[type="file"]');
@@ -1245,6 +1493,7 @@
   }
 
   prepararUploadsDragDrop();
+  prepararEtapasCadastro();
 
 })();
 
