@@ -1213,5 +1213,38 @@
 
   window.novoCadastro = iniciarNovoCadastro;
 
+  function prepararUploadsDragDrop() {
+    document.querySelectorAll('.foto-box').forEach(box => {
+      const input = box.querySelector('input[type="file"]:not([capture])') || box.querySelector('input[type="file"]');
+      if (!input) return;
+
+      ['dragenter', 'dragover'].forEach(evt => {
+        box.addEventListener(evt, event => {
+          event.preventDefault();
+          box.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach(evt => {
+        box.addEventListener(evt, event => {
+          event.preventDefault();
+          box.classList.remove('dragover');
+        });
+      });
+
+      box.addEventListener('drop', event => {
+        const file = event.dataTransfer?.files?.[0];
+        if (!file) return;
+
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        input.files = transfer.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+  }
+
+  prepararUploadsDragDrop();
+
 })();
 

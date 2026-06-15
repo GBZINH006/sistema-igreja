@@ -13,7 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="cadastro.css">
@@ -38,18 +38,25 @@
     <div id="app">
 
       <!-- HERO -->
-      <div class="hero">
+      <aside class="hero" aria-label="Navegacao do cadastro">
         <div class="hero-shimmer"></div>
         <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista"
           class="hero-logo"
           onerror="this.style.display='none';document.getElementById('hero-fallback').style.display='block'">
-        <h1>Ficha de Cadastro</h1>
+        <h1>AD Bela-Vista</h1>
         <div class="hero-sub">Igreja AD BELA-VISTA — 2026</div>
         <div class="hero-address"><i class="fa-solid fa-location-dot"
             style="color: #ef4444;  "></i> Rua Frei Lauro, 44 · Ponte do Imaruim
           · Palhoça - SC</div>
+        <nav class="side-nav" aria-label="Etapas do formulario">
+          <a href="#form-cadastro" class="side-link active"><i class="fa-solid fa-user"></i><span>Dados pessoais</span></a>
+          <a href="#endereco" class="side-link"><i class="fa-solid fa-address-book"></i><span>Contato</span></a>
+          <a href="#box-certidao-nasc" class="side-link"><i class="fa-solid fa-file-shield"></i><span>Documentos</span></a>
+          <a href="#forma_recebimento" class="side-link"><i class="fa-solid fa-church"></i><span>Igreja</span></a>
+          <a href="#canvas-assinatura" class="side-link"><i class="fa-solid fa-signature"></i><span>Assinatura</span></a>
+        </nav>
         <div class="hero-divider"></div>
-      </div>
+      </aside>
 
       <section id="tela-escolha-cadastro" class="cadastro-start">
         <div class="cadastro-start-card">
@@ -72,14 +79,40 @@
       </section>
 
       <!-- PROGRESSO -->
-      <div class="progress-wrap cadastro-flow-hidden">
+      <header class="progress-wrap cadastro-flow-hidden">
+        <div class="header-copy">
+          <span class="eyebrow">Cadastro de membro</span>
+          <h2>Cadastro de Membro</h2>
+          <p>Preencha as informações principais para manter a ficha da igreja atualizada.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="support-btn"><i class="fa-solid fa-circle-question"></i><span>Suporte</span></button>
+          <div class="avatar" aria-label="Usuario secretaria">AD</div>
+        </div>
+        <div class="privacy-ticker" aria-label="Aviso de privacidade e seguranca">
+          <div class="privacy-track">
+            <span><i class="fa-solid fa-shield-halved"></i> Seus dados são guardados com seguranca e usados somente para o cadastro da igreja.</span>
+            <span><i class="fa-solid fa-lock"></i> As informações enviadas ficam protegidas no sistema da secretaria.</span>
+            <span><i class="fa-solid fa-user-shield"></i> Este site utiliza conexão segura e trata seus dados com responsabilidade.</span>
+            <span><i class="fa-solid fa-shield-halved"></i> Seus dados são guardados com seguranca e usados somente para o cadastro da igreja.</span>
+          </div>
+        </div>
+        <div class="stepper" aria-label="Progresso das etapas">
+          <div class="step active"><i class="fa-solid fa-user"></i><span>Dados pessoais</span></div>
+          <div class="step"><i class="fa-solid fa-phone"></i><span>Contato</span></div>
+          <div class="step"><i class="fa-solid fa-file-lines"></i><span>Documentos</span></div>
+          <div class="step"><i class="fa-solid fa-church"></i><span>Igreja</span></div>
+          <div class="step"><i class="fa-solid fa-signature"></i><span>Assinatura</span></div>
+        </div>
+        <div class="progress-meter">
         <div class="progress-bar">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
         <span class="progress-label" id="progress-label">Preencha o
           formulário</span>
         <span class="progress-pct" id="progress-pct"></span>
-      </div>
+        </div>
+      </header>
 
       <main id="cadastro-formulario" class="cadastro-flow-hidden">
         <div id="cadastro-bloqueado-overlay" class="cadastro-bloqueio" style="display:none;">
