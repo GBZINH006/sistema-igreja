@@ -278,6 +278,10 @@
         console.log("Novo membro detectado via Realtime:", payload.new);
         const m = payload.new;
         membrosCache.unshift(m);
+
+        // Atualiza indicador principal de “Último cadastro”
+        atualizarUltimoCadastro(m);
+
         renderStats();
         popularFiltroSetor();
         popularFiltroCargo();
@@ -342,6 +346,29 @@
 
   window.editPreviewFoto = editPreviewFoto;
 
+  function fmtDataHoraISO(v){
+    try{
+      if(!v) return null;
+      const d = new Date(v);
+      if(isNaN(d.getTime())) return null;
+      return d.toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    }catch(e){
+      return null;
+    }
+  }
+
+  function atualizarUltimoCadastro(m){
+    const nomeEl = document.getElementById('last-cadastro-nome');
+    const quandoEl = document.getElementById('last-cadastro-quando');
+    if(!nomeEl || !quandoEl) return;
+
+    const nome = m?.nome || '—';
+    const quando = fmtDataHoraISO(m?.created_at) || fmtDataHoraISO(m?.commit_timestamp) || new Date().toLocaleString('pt-BR');
+
+    nomeEl.textContent = nome;
+    quandoEl.textContent = `Em ${quando}`;
+  }
+
   async function carregarLista() {
     document.getElementById('corpo-lista').innerHTML =
       `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2.5rem;"><span class="loading" style="border-color:rgba(201,168,76,0.3);border-top-color:var(--gold);"></span><span style="margin-left:10px;">Carregando…</span></td></tr>`;
@@ -350,6 +377,14 @@
     if (error) { toast('❌ Erro ao carregar.'); return; }
     membrosCache = data || [];
     primeiraLeitura = false;
+
+    // Atualiza painel do “último cadastro”
+    const maisRecente = [...membrosCache].sort((a,b)=>{
+      const da = new Date(a?.created_at || a?.commit_timestamp || 0).getTime();
+      const dbb = new Date(b?.created_at || b?.commit_timestamp || 0).getTime();
+      return dbb - da;
+    })[0];
+    if (maisRecente) atualizarUltimoCadastro(maisRecente);
 
     renderStats();
     popularFiltroSetor();

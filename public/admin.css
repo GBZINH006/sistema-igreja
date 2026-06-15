@@ -1500,6 +1500,54 @@ tr.novo-destaque {
   }
 }
 
+/* ── ÚLTIMO CADASTRO ───────────────────────────────── */
+.last-cadastro{
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(201,168,76,0.25);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+
+.last-cadastro-kicker{
+  font-family: 'Syne', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(232,201,76,0.95);
+  margin-bottom: 6px;
+}
+
+.last-cadastro-main{
+  display:flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.last-cadastro-nome{
+  font-family:'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.last-cadastro-quando{
+  font-size: 0.78rem;
+  color: var(--muted);
+  background: rgba(201,168,76,0.10);
+  border: 1px solid rgba(201,168,76,0.25);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+  .last-cadastro-main{ justify-content: flex-start; }
+}
+
 .aniv-body#graficos-body > div {
   position: relative !important;
   width: 100% !important;
