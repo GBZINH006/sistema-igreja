@@ -1012,3 +1012,10 @@ input.invalid {
   border-color: #e74c3c !important;
   background: #fff5f5 !important;
 }
+
+@media(max-width:480px) {
+  .dep-row {
+    grid-template-columns: 1fr;
+  }
+}
+
