@@ -71,7 +71,7 @@
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="busca-global" type="text" placeholder="Buscar por nome, CPF, celular ou e-mail">
         </label>
-        <button class="btn btn-ghost btn-sm support-action" type="button" onclick="toast('Suporte acionado. A secretaria recebera sua solicitacao.')" title="Suporte">
+        <button class="btn btn-ghost btn-sm support-action" type="button" onclick="window.open('suporte.html','_blank','noopener,noreferrer')" title="Suporte">
           <i class="fa-solid fa-headset"></i><span class="btn-text">Suporte</span>
         </button>`);
       document.getElementById('busca-global').addEventListener('input', (event) => {

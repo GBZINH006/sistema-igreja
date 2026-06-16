@@ -1,20 +1,14 @@
-# TODO - Sistema Igreja
+# TODO — Central de Ajuda AD Bela-Vista
 
-## Agora (feito)
-- ✅ Liberar indexação (robots.txt)
-- ✅ Congregado: valida apenas campos mínimos (Nome, CPF/CRNM, Celular, Estado Civil + assinatura obrigatória)
-- ✅ Congregado: tenta esconder/limpar campos extras ao alternar
-- ✅ Bloqueio UX: overlay até escolher Membro/Congregado
-- ✅ Cadastro.js: corrigido para usar window.CONFIG (sem process.env / SB_URL / SB_KEY)
+- [ ] Atualizar `public/suporte.html` para ficar 100% fiel ao SPEC-DRIVEN:
+  - [ ] Ajustar textos do Hero e do Card de Suporte exatamente conforme SPEC
+  - [ ] Ajustar ícones/labels do Sidebar para corresponder ao SPEC (Headphones, MessageSquare, HelpCircle, PlayCircle)
+  - [ ] Implementar Busca Global unificada (FAQ + Tutoriais + Respostas automáticas/quick actions + temas do sistema)
+  - [ ] Criar seção real de **Tutoriais** (cards/lista) conforme SPEC
+  - [ ] Transformar “Respostas automáticas” em ações que alimentam o chat da IA (mensagem nova com animação)
+  - [ ] Melhorar microinterações (fadeIn/slideUp na IA ao enviar mensagens)
+  - [ ] Revisar link e mensagem do WhatsApp para bater com `https://wa.me/5548996839730?text=...`
+  - [ ] Ajustar layout responsivo (FAQ 70% / IA 30% no desktop) conforme SPEC
 
-## Próximo (necessário para não “misturar” preenchimentos)
-- ⏳ Garantir que ao voltar pra trocar o tipo, limpar TODOS os campos do formulário (já há resetarCampos, mas revisar fluxo completo)
+- [ ] Validar manualmente abrindo `public/suporte.html` no navegador
 
-## PDF (ficha)
-- ⏳ Implementar geração da ficha PDF com layout retangular e campos completos conforme modelo.
-- ⏳ Atualizar Supabase/SQL somente com campos necessários.
-
-## Supabase Admin (IMPORTANTE)
-- ✅ Admin login: falha por credenciais inválidas (AuthApiError: Invalid login credentials)
-- ⏳ Para destravar admin/secretaria: garantir que exista `public.profiles` no banco (admin.js e secretario.js usam `db.from('profiles')`).
-- ⏳ Rodar SQL do arquivo `supabase-secretario.sql` para criar `public.profiles` e policies.
