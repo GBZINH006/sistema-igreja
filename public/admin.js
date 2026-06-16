@@ -28,6 +28,109 @@
 
   window.mostrarTela = mostrarTela;
 
+  function prepararPainelPremium() {
+    const tela = document.getElementById('tela-principal');
+    const header = tela?.querySelector('header');
+    const main = tela?.querySelector('main');
+    if (!tela || !header || !main || document.getElementById('admin-sidebar')) return;
+
+    tela.classList.add('admin-premium');
+    tela.insertAdjacentHTML('afterbegin', `
+      <aside class="admin-sidebar" id="admin-sidebar">
+        <div class="sidebar-brand">
+          <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista" class="sidebar-logo">
+          <div><strong>AD Bela-Vista</strong><span>Gestao de Membros</span></div>
+        </div>
+        <nav class="sidebar-nav" aria-label="Navegacao principal">
+          <a class="side-link active" href="#dashboard-top"><i class="fa-solid fa-table-columns"></i><span>Dashboard</span></a>
+          <a class="side-link" href="#graficos-body"><i class="fa-solid fa-chart-line"></i><span>Crescimento</span></a>
+          <a class="side-link" href="#aniv-body"><i class="fa-solid fa-cake-candles"></i><span>Aniversarios</span></a>
+          <a class="side-link" href="#corpo-lista"><i class="fa-solid fa-users"></i><span>Membros</span></a>
+          <a class="side-link" href="#activity-timeline"><i class="fa-solid fa-bolt"></i><span>Atividades</span></a>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="realtime-dot"></span>
+          <div><strong>Tempo real ativo</strong><small>Supabase conectado</small></div>
+        </div>
+      </aside>`);
+
+    main.id = 'dashboard-top';
+    const headerTitle = header.querySelector('.header-title');
+    const headerSub = header.querySelector('.header-sub');
+    if (headerTitle) headerTitle.textContent = 'Painel Administrativo';
+    if (headerSub) headerSub.textContent = 'AD Bela-Vista - Gestao de Membros';
+    header.insertAdjacentHTML('afterbegin', `
+      <button class="mobile-menu" type="button" onclick="document.body.classList.toggle('sidebar-open')" aria-label="Abrir menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>`);
+
+    const actions = header.querySelector(':scope > div:last-child');
+    if (actions && !document.getElementById('busca-global')) {
+      actions.insertAdjacentHTML('afterbegin', `
+        <label class="header-search" aria-label="Busca global">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="busca-global" type="text" placeholder="Buscar por nome, CPF, celular ou e-mail">
+        </label>
+        <button class="btn btn-ghost btn-sm support-action" type="button" onclick="toast('Suporte acionado. A secretaria recebera sua solicitacao.')" title="Suporte">
+          <i class="fa-solid fa-headset"></i><span class="btn-text">Suporte</span>
+        </button>`);
+      document.getElementById('busca-global').addEventListener('input', (event) => {
+        const busca = document.getElementById('busca');
+        if (busca) busca.value = event.target.value;
+        renderLista();
+      });
+    }
+
+    const graficosCard = document.getElementById('graficos-body')?.closest('.aniv-card');
+    if (graficosCard) {
+      graficosCard.classList.add('charts-panel');
+      const chartTitles = graficosCard.querySelectorAll('#graficos-body span');
+      if (chartTitles[0]) chartTitles[0].textContent = 'Crescimento de Membros';
+      if (chartTitles[1]) chartTitles[1].textContent = 'Distribuicao dos Membros';
+      if (chartTitles[2]) chartTitles[2].textContent = 'Membros por Setor';
+      const headerGraf = graficosCard.querySelector('.aniv-header');
+      if (headerGraf && !document.getElementById('filtro-periodo')) {
+        headerGraf.insertAdjacentHTML('beforeend', `
+          <select class="filtro period-filter" id="filtro-periodo" onclick="event.stopPropagation()" onchange="renderGraficos()">
+            <option value="7">Ultimos 7 dias</option>
+            <option value="30">Ultimos 30 dias</option>
+            <option value="180">Ultimos 6 meses</option>
+            <option value="365" selected>Ultimos 12 meses</option>
+          </select>`);
+      }
+    }
+    const aniversariosCard = document.getElementById('aniv-body')?.closest('.aniv-card');
+    if (aniversariosCard) aniversariosCard.classList.add('birthdays-panel');
+
+    const tableWrap = document.querySelector('.table-wrap');
+    if (tableWrap && !document.getElementById('activity-timeline')) {
+      const thead = tableWrap.querySelector('thead tr');
+      if (thead) {
+        thead.innerHTML = '<th>Foto</th><th>Nome</th><th>CPF</th><th>Tipo</th><th>Status</th><th>Ministerio</th><th>Celular</th><th>Acoes</th>';
+      }
+      tableWrap.insertAdjacentHTML('beforebegin', `
+        <section class="activity-panel" id="activity-timeline">
+          <div class="aniv-header"><div class="aniv-title"><i class="fa-solid fa-bolt"></i> Centro de Atividades</div></div>
+          <div class="timeline">
+            <div class="timeline-item"><span></span><div><strong>Novo membro cadastrado</strong><small id="activity-last-name">Aguardando dados</small></div><em id="activity-last-time">-</em></div>
+            <div class="timeline-item"><span></span><div><strong>Atualizacao de cadastro</strong><small>Dados pastorais revisados</small></div><em>Hoje</em></div>
+            <div class="timeline-item"><span></span><div><strong>Documento enviado</strong><small>Ficha com anexo recebido</small></div><em>Recente</em></div>
+            <div class="timeline-item"><span></span><div><strong>Mudanca de ministerio</strong><small>Organizacao ministerial atualizada</small></div><em>Semana</em></div>
+          </div>
+        </section>`);
+    }
+
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+      if (card.querySelector('.sparkline')) return;
+      const icons = ['fa-users', 'fa-cake-candles', 'fa-user-group', 'fa-user-check', 'fa-user-plus'];
+      const labels = ['Total de Membros', 'Aniversariantes', 'Congregados', 'Membros Ativos', 'Novos Cadastros'];
+      const lbl = card.querySelector('.stat-lbl');
+      if (lbl) lbl.textContent = labels[index] || lbl.textContent;
+      card.insertAdjacentHTML('afterbegin', `<div class="stat-icon"><i class="fa-solid ${icons[index] || 'fa-chart-simple'}"></i></div>`);
+      card.insertAdjacentHTML('beforeend', `<svg class="sparkline" viewBox="0 0 120 34" aria-hidden="true"><path d="M2 25 C16 12 28 26 42 15 S68 7 84 14 102 5 118 10"/></svg>`);
+    });
+  }
+
   async function obterPerfil(userId) {
     const { data, error } = await db
       .from('profiles')
@@ -367,11 +470,15 @@
 
     nomeEl.textContent = nome;
     quandoEl.textContent = `Em ${quando}`;
+    const activityName = document.getElementById('activity-last-name');
+    const activityTime = document.getElementById('activity-last-time');
+    if (activityName) activityName.textContent = nome;
+    if (activityTime) activityTime.textContent = quando;
   }
 
   async function carregarLista() {
     document.getElementById('corpo-lista').innerHTML =
-      `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:2.5rem;"><span class="loading" style="border-color:rgba(201,168,76,0.3);border-top-color:var(--gold);"></span><span style="margin-left:10px;">Carregando…</span></td></tr>`;
+      `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2.5rem;"><span class="loading" style="border-color:rgba(201,168,76,0.3);border-top-color:var(--gold);"></span><span style="margin-left:10px;">Carregando…</span></td></tr>`;
 
     const { data, error } = await db.from('membros').select('*').order('nome');
     if (error) { toast('❌ Erro ao carregar.'); return; }
@@ -399,6 +506,11 @@
     const membros = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length;
     const congregados = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length;
     const ativos = membrosCache.filter(m => !m.status || m.status === 'Ativo').length;
+    const aniversariantes = membrosCache.filter(m => {
+      if (!m.data_nasc || (m.status && m.status !== 'Ativo')) return false;
+      const d = new Date(m.data_nasc);
+      return d.getMonth() === new Date().getMonth();
+    }).length;
 
     const agora = new Date();
     const doMes = membrosCache.filter(m => {
@@ -418,7 +530,7 @@
     };
 
     setNum('stat-total', total);
-    setNum('stat-membros', membros);
+    setNum('stat-membros', aniversariantes);
     setNum('stat-congregados', congregados);
     setNum('stat-ativos', ativos);
     setNum('stat-mes', doMes);
@@ -467,19 +579,29 @@
     const ctxCrescimento = document.getElementById('chart-crescimento')?.getContext('2d');
     if (ctxCrescimento) {
       if (chartCrescimento) chartCrescimento.destroy();
+      const periodo = parseInt(document.getElementById('filtro-periodo')?.value || '180', 10);
+      const passos = periodo <= 30 ? Math.min(periodo, 30) : periodo <= 180 ? 6 : 12;
       const mesesLabels = [];
       const contagemMeses = {};
-      for (let i = 5; i >= 0; i--) {
+      for (let i = passos - 1; i >= 0; i--) {
         const d = new Date();
-        d.setMonth(d.getMonth() - i);
-        const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
+        if (periodo <= 30) d.setDate(d.getDate() - i);
+        else d.setMonth(d.getMonth() - i);
+        const label = periodo <= 30
+          ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+          : d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
         mesesLabels.push(label);
         contagemMeses[label] = 0;
       }
       membrosCache.forEach(m => {
         if (!m.created_at) return;
         const d = new Date(m.created_at);
-        const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
+        const limite = new Date();
+        limite.setDate(limite.getDate() - periodo);
+        if (d < limite) return;
+        const label = periodo <= 30
+          ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+          : d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
         if (contagemMeses[label] !== undefined) contagemMeses[label]++;
       });
       chartCrescimento = new Chart(ctxCrescimento, {
@@ -488,9 +610,12 @@
           labels: mesesLabels,
           datasets: [{
             data: mesesLabels.map(l => contagemMeses[l]),
-            borderColor: '#3b82f6',
-            backgroundColor: 'rgba(59, 130, 246, 0.08)',
-            borderWidth: 2.5,
+            borderColor: '#6D4CFF',
+            backgroundColor: 'rgba(109, 76, 255, 0.12)',
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#6D4CFF',
+            pointHoverRadius: 6,
+            borderWidth: 3,
             tension: 0.4,
             fill: true
           }]
@@ -500,7 +625,7 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', stepSize: 1 } },
+            y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.75)' }, ticks: { color: '#64748b', stepSize: 1 } },
             x: { grid: { display: false }, ticks: { color: '#64748b' } }
           }
         }
@@ -511,16 +636,23 @@
     const ctxTipo = document.getElementById('chart-tipo')?.getContext('2d');
     if (ctxTipo) {
       if (chartTipo) chartTipo.destroy();
-      const totalM = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length;
-      const totalC = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length;
+      const faixas = {
+        'Criancas': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) <= 12).length,
+        'Jovens': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 13 && Number(m.idade) <= 29).length,
+        'Adultos': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 30 && Number(m.idade) <= 59).length,
+        'Casais': membrosCache.filter(m => (m.estado_civil || '').toLowerCase().includes('casad')).length,
+        'Idosos': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 60).length
+      };
       chartTipo = new Chart(ctxTipo, {
         type: 'doughnut',
         data: {
-          labels: ['Membros', 'Congregados'],
+          labels: Object.keys(faixas),
           datasets: [{
-            data: [totalM, totalC],
-            backgroundColor: ['#c9a84c', '#06b6d4'],
-            borderWidth: 0
+            data: Object.values(faixas),
+            backgroundColor: ['#8B6CFF', '#22C55E', '#6D4CFF', '#F59E0B', '#EF4444'],
+            hoverOffset: 10,
+            borderColor: '#ffffff',
+            borderWidth: 4
           }]
         },
         options: {
@@ -529,7 +661,7 @@
           plugins: {
             legend: {
               position: 'bottom',
-              labels: { color: '#e2e8f0', boxWidth: 10, font: { size: 9.5 } }
+              labels: { color: '#475569', boxWidth: 10, font: { size: 11 } }
             }
           }
         }
@@ -552,8 +684,8 @@
           labels: sorted.map(x => x[0]),
           datasets: [{
             data: sorted.map(x => x[1]),
-            backgroundColor: 'rgba(201, 168, 76, 0.7)',
-            borderRadius: 4
+            backgroundColor: 'rgba(109, 76, 255, 0.78)',
+            borderRadius: 10
           }]
         },
         options: {
@@ -561,8 +693,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', stepSize: 1 } },
-            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 8 } } }
+            y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.75)' }, ticks: { color: '#64748b', stepSize: 1 } },
+            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } }
           }
         }
       });
@@ -695,22 +827,24 @@
     const pagina = filtrados.slice(inicio, inicio + POR_PAGINA);
 
     if (!filtrados.length) {
-      corpo.innerHTML = `<tr><td colspan="6"><div class="empty"><div class="e-icon">📭</div><p>Nenhum membro encontrado.</p></div></td></tr>`;
+      corpo.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="e-icon"><i class="fa-solid fa-inbox"></i></div><p>Nenhum membro encontrado.</p></div></td></tr>`;
       document.getElementById('paginacao').innerHTML = '';
       return;
     }
 
     corpo.innerHTML = pagina.map(m => `<tr id="row-${m.id}" class="${m.id === novoId ? 'novo-destaque' : ''}">
-      <td><div style="display:flex;align-items:center;gap:8px;">${avatarImg(m, 32)}<div><strong style="font-size:0.88rem;">${m.nome}</strong><div style="font-size:0.72rem;color:var(--muted);">${m.cpf || '—'}</div></div></div></td>
+      <td>${avatarImg(m, 42)}</td>
+      <td><strong class="member-name">${m.nome}</strong><div class="member-sub">${m.email || m.setor_igreja || '-'}</div></td>
+      <td>${m.cpf || '-'}</td>
       <td><span class="badge badge-${m.tipo_cadastro === 'Membro' ? 'membro' : 'congregado'}">${m.tipo_cadastro}</span></td>
       <td>${statusBadge(m.status)}</td>
-      <td style="font-size:0.85rem;">${m.celular || '—'}</td>
-      <td style="color:var(--muted);font-size:0.8rem;">${m.setor_igreja || '—'}</td>
+      <td style="color:var(--muted);font-size:0.8rem;">${m.cargo_principal || m.setor_igreja || '-'}</td>
+      <td style="font-size:0.85rem;">${m.celular || '-'}</td>
       <td><div class="td-actions">
-        <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${m.id}')">👁</button>
-        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${m.id}')" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
         ${whatsappLink(m.celular)}
-        <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}')">✕</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
       </div></td></tr>`).join('');
 
     const pag = document.getElementById('paginacao');
@@ -1148,6 +1282,7 @@
   window.imprimirFicha = imprimirFicha;
 
   document.addEventListener('DOMContentLoaded', async () => {
+    prepararPainelPremium();
     const { data: { session } } = await db.auth.getSession();
 
     if (session) {
