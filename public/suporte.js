@@ -338,6 +338,19 @@
     $("#ai-send").textContent = busy ? "Pensando..." : "Perguntar";
   }
 
+  function getAiEndpoint() {
+    if (window.CONFIG?.SUPPORT_AI_ENDPOINT) {
+      return window.CONFIG.SUPPORT_AI_ENDPOINT;
+    }
+
+    const isStaticLiveServer = ["127.0.0.1", "localhost"].includes(window.location.hostname)
+      && ["5500", "5501", "5502"].includes(window.location.port);
+
+    return isStaticLiveServer
+      ? "http://localhost:3000/api/assistente-suporte"
+      : "/api/assistente-suporte";
+  }
+
   async function sendAiPrompt(promptText) {
     const prompt = String(promptText || $("#ai-input").value || "").trim();
     if (!prompt || state.aiBusy) return;
