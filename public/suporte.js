@@ -361,7 +361,7 @@
     setAiBusy(true);
 
     try {
-      const response = await fetch("/api/assistente-suporte", {
+      const response = await fetch(getAiAssistantUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: state.aiMessages })
