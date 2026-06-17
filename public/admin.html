@@ -35,7 +35,7 @@
       <!-- Troca "login-logo-placeholder" pela logo real quando tiver o arquivo -->
       <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista" class="login-logo"
         onerror="this.style.display='none';document.getElementById('login-icon-fb').style.display='block'">
-      <span id="login-icon-fb" class="login-logo-placeholder" style="display:none;">⛪</span>
+      <span id="login-icon-fb" class="login-logo-placeholder" style="display:none;"></span>
 
       <h1>Painel do Pastor</h1>
       <div class="login-church">Igreja AD Bela-Vista · Área Restrita</div>
@@ -63,7 +63,7 @@
       <div class="header-left">
         <img src="images-removebg-preview.png" alt="Logo" class="header-logo"
           onerror="this.style.display='none';document.getElementById('header-icon-fb').style.display='block'">
-        <span id="header-icon-fb" class="header-logo-placeholder" style="display:none;">⛪</span>
+        <span id="header-icon-fb" class="header-logo-placeholder" style="display:none;"></span>
         <div class="header-info">
           <span class="header-title">Gestão de Membros</span>
           <span class="header-sub">AD Bela-Vista · Palhoça - SC</span>
@@ -87,27 +87,62 @@
 
     <main>
       <div class="stats-grid">
-        <div class="stat-card azul">
+        <div class="stat-card azul" data-metric="total">
           <div class="stat-num" id="stat-total">—</div>
           <div class="stat-lbl">Total</div>
         </div>
-        <div class="stat-card ciano">
+        <div class="stat-card ciano" data-metric="membros">
           <div class="stat-num" id="stat-membros">—</div>
           <div class="stat-lbl">Membros</div>
         </div>
-        <div class="stat-card ouro">
+        <div class="stat-card ouro" data-metric="congregados">
           <div class="stat-num" id="stat-congregados">—</div>
           <div class="stat-lbl">Congregados</div>
         </div>
-        <div class="stat-card verde">
+        <div class="stat-card verde" data-metric="ativos">
           <div class="stat-num" id="stat-ativos">—</div>
           <div class="stat-lbl">Ativos</div>
         </div>
-        <div class="stat-card roxo">
+        <div class="stat-card roxo" data-metric="mes">
           <div class="stat-num" id="stat-mes">—</div>
           <div class="stat-lbl">Este mês</div>
         </div>
+        <div class="stat-card rosa" data-metric="aniversariantes">
+          <div class="stat-num" id="stat-aniversariantes">—</div>
+          <div class="stat-lbl">Aniversariantes</div>
+        </div>
       </div>
+
+      <section class="metric-detail-panel" id="metric-detail-panel" aria-live="polite">
+        <div class="metric-detail-head">
+          <div>
+            <span class="metric-kicker">Indicador selecionado</span>
+            <h2 id="metric-title">Total</h2>
+            <p id="metric-subtitle">Registros cadastrados</p>
+          </div>
+          <div class="metric-actions">
+            <label class="metric-view-label" for="metric-view-type">Visualização</label>
+            <select class="filtro metric-view-select" id="metric-view-type" onchange="alterarVisualizacaoIndicador(this.value)">
+              <option value="line">Linha</option>
+              <option value="bar" selected>Barra</option>
+              <option value="pie">Pizza</option>
+              <option value="doughnut">Donut</option>
+              <option value="text">Texto resumido</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="exportarIndicadorPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportarIndicadorPNG()"><i class="fa-solid fa-image"></i> PNG</button>
+            <button class="btn btn-ghost btn-sm" onclick="alterarVisualizacaoIndicador('text')"><i class="fa-solid fa-align-left"></i> Texto</button>
+            <button class="btn btn-danger btn-sm" onclick="fecharPainelIndicador()"><i class="fa-solid fa-xmark"></i> Fechar</button>
+          </div>
+        </div>
+        <div class="metric-detail-body">
+          <div class="metric-chart-wrap">
+            <canvas id="metric-chart"></canvas>
+            <div class="metric-text-view" id="metric-text-view"></div>
+          </div>
+          <div class="metric-summary" id="metric-summary"></div>
+        </div>
+      </section>
 
       <div class="last-cadastro">
         <div class="last-cadastro-kicker">📌 Último cadastro</div>
@@ -118,7 +153,7 @@
       </div>
 
       <!-- GRÁFICOS DO DASHBOARD -->
-      <div class="aniv-card" style="margin-bottom:1.5rem;">
+      <div class="aniv-card legacy-charts-card" style="margin-bottom:1.5rem;">
         <div class="aniv-header" onclick="toggleGraficos()" style="cursor:pointer;">
           <div class="aniv-title">📊 Estatísticas e Gráficos do Templo</div>
           <span id="graficos-chevron" style="color:var(--muted);">▼</span>
@@ -168,10 +203,13 @@
           <option value="Transferido">Transferidos</option>
           <option value="Falecido">Falecidos</option>
         </select>
-        <select class="filtro" id="filtro-setor" onchange="renderLista()">
+        <button class="btn btn-ghost btn-sm btn-filtros-avancados" type="button" onclick="toggleFiltrosAvancados()">
+          <i class="fa-solid fa-sliders"></i> Filtros avançados
+        </button>
+        <select class="filtro filtro-avancado" id="filtro-setor" onchange="renderLista()">
           <option value="">Todos os setores</option>
         </select>
-        <select class="filtro" id="filtro-idade" onchange="renderLista()">
+        <select class="filtro filtro-avancado" id="filtro-idade" onchange="renderLista()">
           <option value="">Todas as idades</option>
           <option value="crianca">Crianças (0-12)</option>
           <option value="adolescente">Adolescentes (13-17)</option>
@@ -179,7 +217,7 @@
           <option value="adulto">Adultos (30-59)</option>
           <option value="idoso">Idosos (60+)</option>
         </select>
-        <select class="filtro" id="filtro-cargo" onchange="renderLista()">
+        <select class="filtro filtro-avancado" id="filtro-cargo" onchange="renderLista()">
           <option value="">Todos os cargos</option>
         </select>
       </div>

@@ -5,1009 +5,195 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
-  <title>Central de Ajuda AD Bela-Vista</title>
+  <title>Central de Suporte - AD Bela-Vista</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #6D5DFC;
-      --primary-light: #8B7CFF;
-      --primary-dark: #4F46E5;
-      --background: #F8FAFC;
-      --surface: #FFFFFF;
-      --border: #E5E7EB;
-      --text-primary: #0F172A;
-      --text-secondary: #64748B;
-      --success: #22C55E;
-      --warning: #F59E0B;
-      --danger: #EF4444;
-      --shadow: 0 22px 60px rgba(15, 23, 42, 0.10);
-      --radius: 24px;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      min-height: 100vh;
-      background: linear-gradient(180deg, #ffffff 0%, var(--background) 100%);
-      color: var(--text-primary);
-      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    .support-layout {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 24px 20px 32px;
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 24px;
-    }
-
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-      padding: 28px 24px;
-      border-radius: 32px;
-      background: linear-gradient(180deg, #5B4DFF 8%, #4732D8 100%);
-      color: #fff;
-      box-shadow: var(--shadow);
-    }
-
-    .brand-mark {
-      width: 56px;
-      height: 56px;
-      display: grid;
-      place-items: center;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.16);
-      color: #fff;
-      font-weight: 800;
-      letter-spacing: -0.04em;
-    }
-
-    .brand-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .brand-copy {
-      margin-top: 10px;
-      font-size: 0.95rem;
-      line-height: 1.75;
-      color: rgba(255, 255, 255, 0.78);
-    }
-
-    .sidebar__menu {
-      display: grid;
-      gap: 10px;
-    }
-
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 18px;
-      border-radius: 20px;
-      color: var(--text-secondary);
-      border: 1px solid transparent;
-      transition: all 0.25s ease;
-    }
-
-    .menu-item:hover,
-    .menu-item.active {
-      color: var(--primary);
-      background: rgba(109, 92, 255, 0.08);
-      border-color: rgba(109, 92, 255, 0.16);
-    }
-
-    .menu-item i {
-      width: 20px;
-      text-align: center;
-    }
-
-    .sidebar__support {
-      padding: 22px;
-      border-radius: 28px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      box-shadow: 0 18px 44px rgba(15, 23, 42, 0.06);
-    }
-
-    .support-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.16);
-      color: #fff;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-
-    .support-card-title {
-      margin: 18px 0 10px;
-      font-size: 1.18rem;
-      font-weight: 700;
-      line-height: 1.3;
-      color: #fff;
-    }
-
-    .support-card-text {
-      margin-bottom: 18px;
-      color: rgba(255, 255, 255, 0.78);
-      line-height: 1.8;
-      font-size: 0.96rem;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      min-height: 52px;
-      padding: 0 18px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text-primary);
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
-    }
-
-    .btn-primary {
-      border-color: transparent;
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      color: #fff;
-      box-shadow: 0 18px 42px rgba(109, 92, 255, 0.24);
-    }
-
-    .whatsapp-label {
-      margin-top: 12px;
-      color: rgba(255, 255, 255, 0.88);
-      font-size: 0.92rem;
-      line-height: 1.7;
-    }
-
-    .main {
-      display: grid;
-      gap: 24px;
-    }
-
-    .hero {
-      padding: 32px 34px;
-      border-radius: 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      display: grid;
-      gap: 24px;
-    }
-
-    .hero-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 24px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 16px;
-      border-radius: 999px;
-      background: rgba(109, 92, 255, 0.08);
-      color: var(--primary);
-      font-size: 0.85rem;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-    }
-
-    .hero-copy {
-      display: grid;
-      gap: 18px;
-      max-width: 760px;
-    }
-
-    .hero-copy h1 {
-      font-size: clamp(2.1rem, 2.8vw, 3.6rem);
-      line-height: 1.02;
-    }
-
-    .hero-copy p {
-      max-width: 680px;
-      color: var(--text-secondary);
-      font-size: 1rem;
-      line-height: 1.8;
-    }
-
-    .hero-visual {
-      position: relative;
-      min-width: 220px;
-      min-height: 240px;
-      border-radius: 32px;
-      background: linear-gradient(135deg, rgba(109, 92, 255, 0.16), rgba(109, 92, 255, 0.04));
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-    }
-
-    .hero-visual::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.72), transparent 42%);
-    }
-
-    .robot-card {
-      position: relative;
-      z-index: 1;
-      width: 180px;
-      height: 180px;
-      border-radius: 28px;
-      background: linear-gradient(180deg, #fff, #eef2ff);
-      display: grid;
-      place-items: center;
-      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
-      animation: float 6s ease-in-out infinite;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .robot-icon {
-      font-size: 4.4rem;
-      color: var(--primary);
-    }
-
-    .robot-label {
-      margin-top: 14px;
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--text-primary);
-    }
-
-    .robot-sub {
-      margin-top: 6px;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      line-height: 1.6;
-      padding: 0 6px;
-    }
-
-    @keyframes float {
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-10px);
-      }
-    }
-
-    .search-panel {
-      display: grid;
-      gap: 18px;
-      padding: 26px 28px;
-      border-radius: 28px;
-      background: #fff;
-      border: 1px solid var(--border);
-      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
-    }
-
-    .search-input {
-      width: 100%;
-      min-height: 56px;
-      padding: 0 18px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: var(--background);
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
-
-    .search-input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .search-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .tag,
-    .category-pill {
-      padding: 10px 16px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .tag.active,
-    .category-pill.active,
-    .tag:hover,
-    .category-pill:hover {
-      border-color: rgba(109, 92, 255, 0.35);
-      background: rgba(109, 92, 255, 0.1);
-      color: var(--primary);
-    }
-
-    .dashboard-grid {
-      display: grid;
-      grid-template-columns: 1.4fr 0.95fr;
-      gap: 24px;
-    }
-
-    .card {
-      padding: 26px;
-      border-radius: 32px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      box-shadow: 0 24px 50px rgba(15, 23, 42, 0.05);
-    }
-
-    .faq-panel {
-      display: grid;
-      gap: 18px;
-    }
-
-    .category-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-
-    .accordion {
-      display: grid;
-      gap: 12px;
-    }
-
-    .accordion-item {
-      overflow: hidden;
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      background: #fff;
-      transition: transform 0.25s ease;
-    }
-
-    .accordion-item:hover {
-      transform: translateY(-1px);
-    }
-
-    .accordion-header {
-      width: 100%;
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      text-align: left;
-    }
-
-    .accordion-header strong {
-      font-size: 1rem;
-      color: var(--text-primary);
-    }
-
-    .accordion-header span {
-      color: var(--text-secondary);
-    }
-
-    .accordion-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.32s ease, padding 0.32s ease;
-    }
-
-    .accordion-body p {
-      padding: 0 22px 18px;
-      color: var(--text-secondary);
-      line-height: 1.8;
-      font-size: 0.95rem;
-    }
-
-    .accordion-item.open .accordion-body {
-      max-height: 220px;
-      padding-top: 0.5rem;
-    }
-
-    .ai-panel {
-      display: grid;
-      gap: 20px;
-    }
-
-    .ai-card {
-      display: grid;
-      gap: 20px;
-      padding: 22px;
-      border-radius: 28px;
-      background: linear-gradient(180deg, #fff, #f8faff);
-      border: 1px solid rgba(109, 92, 255, 0.15);
-    }
-
-    .ai-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .ai-title {
-      display: grid;
-      gap: 6px;
-    }
-
-    .ai-title h3 {
-      font-size: 1.1rem;
-    }
-
-    .badge-alt {
-      display: inline-flex;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(109, 92, 255, 0.12);
-      color: var(--primary);
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
-    .ai-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--success);
-      font-size: 0.92rem;
-      font-weight: 700;
-    }
-
-    .ai-status::before {
-      content: "";
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--success);
-    }
-
-    .ai-message {
-      padding: 18px;
-      border-radius: 24px;
-      background: #fff;
-      color: var(--text-primary);
-      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.05);
-    }
-
-    .ai-message p {
-      line-height: 1.8;
-      font-size: 0.95rem;
-    }
-
-    .quick-actions {
-      display: grid;
-      gap: 12px;
-    }
-
-    .quick-btn {
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: #fff;
-      color: var(--text-primary);
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.25s ease;
-    }
-
-    .quick-btn:hover {
-      transform: translateY(-2px);
-      border-color: rgba(109, 92, 255, 0.25);
-      box-shadow: 0 12px 28px rgba(109, 92, 255, 0.1);
-    }
-
-    .chat-window {
-      display: grid;
-      gap: 12px;
-    }
-
-    .chat-bubble {
-      max-width: 100%;
-      padding: 16px 18px;
-      border-radius: 22px;
-      position: relative;
-      line-height: 1.6;
-      font-size: 0.95rem;
-      animation: fadeInUp 0.35s ease;
-    }
-
-    .chat-bubble.user {
-      align-self: flex-end;
-      background: var(--primary);
-      color: #fff;
-      border-bottom-right-radius: 6px;
-    }
-
-    .chat-bubble.ai {
-      background: #fff;
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-      border-bottom-left-radius: 6px;
-    }
-
-    .chat-bubble::after {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      width: 14px;
-      height: 14px;
-      transform: rotate(45deg);
-    }
-
-    .chat-bubble.user::after {
-      right: 18px;
-      background: var(--primary);
-    }
-
-    .chat-bubble.ai::after {
-      left: 18px;
-      background: #fff;
-      border-left: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .bottom-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .info-card {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 22px;
-      border-radius: 28px;
-      background: #fff;
-      border: 1px solid var(--border);
-      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.04);
-    }
-
-    .info-card i {
-      font-size: 1.35rem;
-      color: var(--primary);
-      margin-top: 4px;
-    }
-
-    .info-card strong {
-      display: block;
-      font-size: 0.98rem;
-      margin-bottom: 6px;
-    }
-
-    .info-card span {
-      color: var(--text-secondary);
-      line-height: 1.7;
-      font-size: 0.9rem;
-    }
-
-    @media (max-width: 1200px) {
-      .support-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .dashboard-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .bottom-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 900px) {
-      .hero {
-        padding: 24px;
-      }
-
-      .hero-top {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .hero-visual {
-        min-height: 220px;
-      }
-
-      .support-layout {
-        padding: 20px 16px 28px;
-      }
-
-      .sidebar {
-        padding: 24px;
-      }
-
-      .bottom-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 720px) {
-      .support-layout {
-        gap: 18px;
-      }
-
-      .hero-copy h1 {
-        font-size: 2.4rem;
-      }
-
-      .search-panel {
-        padding: 22px;
-      }
-
-      .menu-item {
-        padding: 14px 16px;
-      }
-
-      .support-card-title {
-        font-size: 1.1rem;
-      }
-
-      .info-card {
-        padding: 18px;
-      }
-    }
-
-    @media (max-width: 540px) {
-      .support-layout {
-        padding: 16px 12px;
-      }
-
-      .hero {
-        border-radius: 24px;
-      }
-
-      .hero-visual {
-        border-radius: 28px;
-      }
-
-      .accordion-header {
-        padding: 16px 18px;
-      }
-
-      .accordion-body p {
-        font-size: 0.92rem;
-      }
-
-      .chat-bubble {
-        padding: 14px 16px;
-      }
-
-      .btn {
-        width: 100%;
-      }
-
-      .sidebar {
-        border-radius: 24px;
-      }
-
-      .sidebar__menu {
-        gap: 10px;
-      }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="suporte.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
 </head>
 
 <body>
-  <main class="support-layout">
-    <aside class="sidebar" aria-label="Navegação da Central de Ajuda">
-      <div>
-        <div class="brand-mark">AD</div>
-        <div class="brand-title">AD Bela-Vista</div>
-        <p class="brand-copy">Igreja AD BELA-VISTA — 2026<br>Central de Ajuda para administradores, secretários e pastores.</p>
+  <div class="support-app">
+    <header class="support-header">
+      <a class="brand" href="admin.html" aria-label="Voltar ao painel">
+        <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista">
+        <span>
+          <strong>AD Bela-Vista</strong>
+          <small>Central de Suporte</small>
+        </span>
+      </a>
+
+      <div class="header-actions">
+        <span class="status-pill"><span></span> Online</span>
+        <button class="icon-button" id="refresh-btn" type="button" title="Atualizar chamados">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <a class="button ghost" href="suporte-admin.html">
+          <i class="fa-solid fa-headset"></i>
+          Atendimento
+        </a>
+        <a class="button" href="admin.html">
+          <i class="fa-solid fa-arrow-left"></i>
+          Voltar
+        </a>
       </div>
+    </header>
 
-      <nav class="sidebar__menu" aria-label="Menu principal">
-        <a class="menu-item active" href="#"><i class="fa-solid fa-headphones"></i><span>Central de Ajuda</span></a>
-        <a class="menu-item" href="#"><i class="fa-regular fa-comment-dots"></i><span>Conversas</span></a>
-        <a class="menu-item" href="#"><i class="fa-regular fa-circle-question"></i><span>Perguntas Frequentes</span></a>
-        <a class="menu-item" href="#"><i class="fa-solid fa-play-circle"></i><span>Tutoriais</span></a>
-      </nav>
-
-      <div class="sidebar__support" aria-label="Cartão de suporte">
-        <span class="support-label"><i class="fa-solid fa-headset"></i> Fale com o suporte</span>
-        <div class="support-card-title">Atendimento rápido pelo WhatsApp.</div>
-        <p class="support-card-text">Atendimento rápido pelo WhatsApp.</p>
-        <a id="whatsapp-link" class="btn btn-primary" href="#" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Chamar no WhatsApp</a>
-        <p class="whatsapp-label">Número: <strong>(48) 99683-9730</strong></p>
-      </div>
-    </aside>
-
-    <section class="main">
-      <section class="hero" aria-label="Introdução da Central de Ajuda">
-        <div class="hero-top">
-          <div class="hero-copy">
-            <span class="badge">CENTRAL DE AJUDA</span>
-            <h1>Como podemos te ajudar?</h1>
-            <p>Encontre respostas rápidas para suas dúvidas.</p>
-          </div>
-          <div class="hero-visual" aria-hidden="true">
-            <div class="robot-card">
-              <i class="fa-solid fa-robot robot-icon"></i>
-              <p class="robot-label">Assistente AD IA</p>
-              <span class="robot-sub">Um robo inteligente pronto para responder em instantes.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="search-panel" aria-label="Busca global da Central de Ajuda">
-          <input type="search" class="search-input" id="global-search" placeholder="Buscar por perguntas, palavras-chave ou tópicos..." aria-label="Busca por perguntas frequentes">
-          <div class="search-tags" aria-label="Tópicos de pesquisa">
-            <button class="tag active" data-category="Todas" type="button">Todas</button>
-            <button class="tag" data-category="Cadastros" type="button">Cadastros</button>
-            <button class="tag" data-category="Membros" type="button">Membros</button>
-            <button class="tag" data-category="Relatórios" type="button">Relatórios</button>
-            <button class="tag" data-category="Acesso" type="button">Acesso</button>
-            <button class="tag" data-category="Sistema" type="button">Sistema</button>
-            <button class="tag" data-category="Exportações" type="button">Exportações</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="dashboard-grid">
-        <article class="card faq-panel" aria-label="Perguntas frequentes">
-          <div class="category-row" aria-label="Categorias de FAQ">
-            <button class="category-pill active" data-category="Todas" type="button">Todas</button>
-            <button class="category-pill" data-category="Cadastros" type="button">Cadastros</button>
-            <button class="category-pill" data-category="Membros" type="button">Membros</button>
-            <button class="category-pill" data-category="Relatórios" type="button">Relatórios</button>
-            <button class="category-pill" data-category="Acesso" type="button">Acesso</button>
-            <button class="category-pill" data-category="Sistema" type="button">Sistema</button>
-            <button class="category-pill" data-category="Exportações" type="button">Exportações</button>
+    <main class="support-layout">
+      <section class="ticket-column" aria-label="Criar chamado">
+        <article class="ai-widget">
+          <div>
+            <span class="eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i> Assistente Inteligente</span>
+            <h1>Como podemos ajudar?</h1>
           </div>
 
-          <div class="accordion" id="faq-list">
-            <div class="accordion-item open" data-category="Cadastros">
-              <button class="accordion-header" type="button">
-                <strong>Como cadastrar um novo membro?</strong>
-                <span>Veja a resposta</span>
-              </button>
-              <div class="accordion-body">
-                <p>Clique em Novo Cadastro e preencha todas as informações obrigatórias.</p>
-              </div>
-            </div>
+          <div class="ai-input-row">
+            <input id="ai-input" type="text" maxlength="900" placeholder="Descreva sua dúvida">
+            <button class="button primary" id="ai-send" type="button">Perguntar</button>
+          </div>
 
-            <div class="accordion-item" data-category="Cadastros">
-              <button class="accordion-header" type="button">
-                <strong>Como editar um membro?</strong>
-                <span>Clique para saber como</span>
-              </button>
-              <div class="accordion-body">
-                <p>Clique no ícone de lápis na tabela para editar os dados do membro.</p>
-              </div>
-            </div>
-
-            <div class="accordion-item" data-category="Cadastros">
-              <button class="accordion-header" type="button">
-                <strong>Como excluir um membro?</strong>
-                <span>Veja o passo a passo</span>
-              </button>
-              <div class="accordion-body">
-                <p>Clique no ícone de exclusão e confirme para remover o membro.</p>
-              </div>
-            </div>
-
-            <div class="accordion-item" data-category="Relatórios">
-              <button class="accordion-header" type="button">
-                <strong>Como exportar PDF?</strong>
-                <span>Saiba como exportar</span>
-              </button>
-              <div class="accordion-body">
-                <p>Clique no botão PDF para gerar o relatório e salvar o arquivo.</p>
-              </div>
-            </div>
-
-            <div class="accordion-item" data-category="Relatórios">
-              <button class="accordion-header" type="button">
-                <strong>Como exportar Excel?</strong>
-                <span>Exporte em poucos cliques</span>
-              </button>
-              <div class="accordion-body">
-                <p>Clique no botão Excel para baixar os dados em planilha.</p>
-              </div>
-            </div>
-
-            <div class="accordion-item" data-category="Sistema">
-              <button class="accordion-header" type="button">
-                <strong>Como visualizar estatísticas?</strong>
-                <span>Aprenda a acessar</span>
-              </button>
-              <div class="accordion-body">
-                <p>Acesse o Dashboard principal para ver estatísticas atualizadas.</p>
-              </div>
-            </div>
-
-            <div class="accordion-item" data-category="Sistema">
-              <button class="accordion-header" type="button">
-                <strong>Como visualizar aniversariantes?</strong>
-                <span>Localize a seção</span>
-              </button>
-              <div class="accordion-body">
-                <p>Role até a seção de aniversariantes para ver a lista do mês.</p>
-              </div>
-            </div>
+          <div class="quick-prompts" aria-label="Perguntas rápidas">
+            <button type="button" data-ai-prompt="Nao consigo entrar no sistema. O que devo conferir?">Login</button>
+            <button type="button" data-ai-prompt="Como cadastro ou atualizo os dados de um membro?">Cadastro</button>
+            <button type="button" data-ai-prompt="Meu relatorio ou exportacao em PDF ou Excel deu erro. Como resolver?">Relatórios</button>
+            <button type="button" data-ai-prompt="Preciso de ajuda com permissoes de acesso no painel administrativo.">Permissões</button>
           </div>
         </article>
 
-        <aside class="card ai-panel" aria-label="Assistente inteligente">
-          <div class="ai-card">
-            <div class="ai-header">
-              <div class="ai-title">
-                <h3>Assistente AD IA</h3>
-                <span class="badge-alt">IA</span>
-              </div>
-              <span class="ai-status">Online agora</span>
+        <form class="panel ticket-form" id="ticket-form">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">Novo chamado</span>
+              <h2>Enviar solicitação</h2>
             </div>
+            <span class="small-pill">Sem login</span>
+          </div>
 
-            <div class="ai-message">
-              <p>Olá! Sou o Assistente AD Bela-Vista. Posso ajudar com:</p>
-              <ul style="margin:14px 0 0 18px;color:var(--text-secondary);line-height:1.8;">
-                <li>Cadastro</li>
-                <li>Relatórios</li>
-                <li>Dashboard</li>
-                <li>Exportações</li>
-                <li>Fotos</li>
-                <li>Documentos</li>
-                <li>Login</li>
-              </ul>
+          <label class="field">
+            <span>Nome</span>
+            <input id="requester-name" type="text" maxlength="120" placeholder="Seu nome completo" required>
+          </label>
+
+          <label class="field">
+            <span>Telefone</span>
+            <input id="requester-phone" type="tel" maxlength="20" placeholder="(48) 99999-9999">
+          </label>
+
+          <label class="field">
+            <span>E-mail</span>
+            <input id="requester-email" type="email" maxlength="160" placeholder="seuemail@exemplo.com">
+          </label>
+
+          <div class="split-fields">
+            <label class="field">
+              <span>Categoria</span>
+              <select id="ticket-category" required></select>
+            </label>
+
+            <label class="field">
+              <span>Prioridade</span>
+              <select id="ticket-priority" required>
+                <option>Baixa</option>
+                <option selected>Normal</option>
+                <option>Alta</option>
+                <option>Urgente</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Assunto</span>
+            <input id="ticket-subject" type="text" maxlength="120" placeholder="Ex.: Não consigo exportar relatório" required>
+          </label>
+
+          <label class="field">
+            <span>Mensagem</span>
+            <textarea id="ticket-description" maxlength="3000" placeholder="Descreva o problema com detalhes." required></textarea>
+          </label>
+
+          <label class="file-field">
+            <input id="ticket-attachment" type="file" accept="image/*,.pdf">
+            <span id="ticket-file-name"><i class="fa-solid fa-paperclip"></i> Anexar imagem ou PDF</span>
+          </label>
+
+          <button class="button primary block" type="submit">
+            <i class="fa-solid fa-paper-plane"></i>
+            Enviar chamado
+          </button>
+
+          <div class="form-message success" id="success-box"></div>
+          <div class="form-message warning" id="member-warning"></div>
+        </form>
+      </section>
+
+      <section class="conversation-column" aria-label="Conversa do chamado">
+        <div class="panel conversation-shell">
+          <header class="conversation-header">
+            <div>
+              <span class="eyebrow">Histórico</span>
+              <h2 id="chat-title">Selecione um chamado</h2>
+              <p id="chat-subtitle">Acompanhe as respostas da equipe por aqui.</p>
             </div>
+            <span class="status-badge" id="chat-status">Nenhum chamado</span>
+          </header>
 
-            <div class="quick-actions">
-              <button class="quick-btn" type="button">Como cadastrar um novo membro?</button>
-              <button class="quick-btn" type="button">Como exportar relatórios?</button>
-              <button class="quick-btn" type="button">Como alterar minha senha?</button>
-              <button class="quick-btn" type="button">Como adicionar foto do membro?</button>
-              <button class="quick-btn" type="button">Falar com suporte humano</button>
-            </div>
-
-            <div class="chat-window" aria-label="Exemplo de conversa com IA">
-              <div class="chat-bubble user">Olá, preciso ver o relatório de membros ativos.</div>
-              <div class="chat-bubble ai">Acesse a área de Relatórios e selecione o filtro de membros ativos. Posso enviar um passo a passo se precisar.</div>
+          <div class="conversation-body" id="messages">
+            <div class="empty-state">
+              <i class="fa-regular fa-comments"></i>
+              <strong>Nenhuma conversa aberta</strong>
+              <span>Envie um chamado ou abra um chamado desta sessão.</span>
             </div>
           </div>
+
+          <footer class="conversation-composer">
+            <textarea id="reply-text" placeholder="Digite uma nova mensagem..." disabled></textarea>
+            <label class="icon-button" title="Anexar arquivo">
+              <i class="fa-solid fa-paperclip"></i>
+              <input id="reply-attachment" type="file" accept="image/*,.pdf" hidden>
+            </label>
+            <button class="button primary" id="send-message" type="button" disabled>
+              <i class="fa-solid fa-paper-plane"></i>
+              Enviar
+            </button>
+          </footer>
+        </div>
+
+        <aside class="panel session-panel">
+          <div class="panel-heading compact">
+            <div>
+              <span class="eyebrow">Sessão atual</span>
+              <h2>Chamados enviados</h2>
+            </div>
+          </div>
+          <div class="session-list" id="member-ticket-list"></div>
         </aside>
       </section>
+    </main>
+  </div>
 
-      <section class="bottom-grid" aria-label="Cartões informativos">
-        <article class="info-card">
-          <i class="fa-solid fa-headphones"></i>
-          <div>
-            <strong>Atendimento via WhatsApp</strong>
-            <span>Suporte humano rápido para dúvidas administrativas.</span>
-          </div>
-        </article>
+  <div class="ai-drawer" id="ai-drawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-close-ai></div>
+    <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="ai-drawer-title">
+      <header>
+        <div>
+          <span class="eyebrow">Assistente Inteligente</span>
+          <h2 id="ai-drawer-title">Resposta da IA</h2>
+        </div>
+        <button class="icon-button" type="button" data-close-ai title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="drawer-messages" id="ai-messages"></div>
+      <button class="button primary block" id="ai-fill-ticket" type="button">
+        <i class="fa-regular fa-clipboard"></i>
+        Usar conversa no chamado
+      </button>
+    </aside>
+  </div>
 
-        <article class="info-card">
-          <i class="fa-solid fa-clock"></i>
-          <div>
-            <strong>Segunda a Sexta</strong>
-            <span>08h às 18h</span>
-          </div>
-        </article>
-
-        <article class="info-card">
-          <i class="fa-solid fa-bolt"></i>
-          <div>
-            <strong>Respostas instantâneas</strong>
-            <span>IA pronta para resolver dúvidas com rapidez.</span>
-          </div>
-        </article>
-
-        <article class="info-card">
-          <i class="fa-solid fa-users"></i>
-          <div>
-            <strong>Suporte humano</strong>
-            <span>Equipe disponível quando necessário.</span>
-          </div>
-        </article>
-      </section>
-    </section>
-  </main>
-
-  <script>
-    const SUPPORT_NUMBER = "5548996839730";
-    const SUPPORT_MESSAGE = encodeURIComponent(
-      "Olá!\n\nPreciso de ajuda no Sistema AD Bela-Vista.\n\nMinha dúvida é:"
-    );
-    const link = document.getElementById("whatsapp-link");
-    if (link) {
-      link.href = `https://wa.me/${SUPPORT_NUMBER}?text=${SUPPORT_MESSAGE}`;
-    }
-
-    const accordionHeaders = document.querySelectorAll(".accordion-header");
-    accordionHeaders.forEach(header => {
-      header.addEventListener("click", () => {
-        const item = header.closest(".accordion-item");
-        const openItem = document.querySelector(".accordion-item.open");
-        if (openItem && openItem !== item) {
-          openItem.classList.remove("open");
-        }
-        item.classList.toggle("open");
-      });
-    });
-
-    const categoryButtons = document.querySelectorAll(".category-pill, .tag");
-    const faqItems = document.querySelectorAll(".accordion-item");
-
-    function filterFaq(category) {
-      faqItems.forEach(item => {
-        item.style.display = category === "Todas" || item.dataset.category === category ? "block" : "none";
-      });
-    }
-
-    categoryButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        categoryButtons.forEach(btn => btn.classList.remove("active"));
-        button.classList.add("active");
-        filterFaq(button.dataset.category);
-      });
-    });
-
-    const quickButtons = document.querySelectorAll(".quick-btn");
-    quickButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const search = document.getElementById("global-search");
-        search.value = btn.textContent.trim();
-        search.focus();
-      });
-    });
-  </script>
+  <div id="toast-stack" aria-live="polite"></div>
+  <script src="suporte.js"></script>
 </body>
 
 </html>
-
