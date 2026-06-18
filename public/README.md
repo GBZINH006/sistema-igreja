@@ -1,536 +1,621 @@
-SPEC DRIVEN — CENTRAL DE SUPORTE ADMINISTRATIVO AD BELA-VISTA
+# Sistema de Gestao de Membros AD Bela-Vista
 
-OBJETIVO
+Sistema web para cadastro, organizacao, consulta, relatorios e suporte interno da Igreja AD Bela-Vista, em Palhoca - SC. O projeto foi construido como uma aplicacao estatica em HTML, CSS e JavaScript, integrada ao Supabase para autenticacao, banco de dados, storage e recursos em tempo real, com deploy pensado para Vercel.
 
-Criar um sistema profissional de suporte interno integrado ao Sistema de Gestão de Membros AD Bela-Vista.
+O foco principal do sistema e manter uma base organizada de membros e congregados, permitir que a secretaria e o pastor acompanhem os cadastros, emitir exportacoes administrativas e centralizar pedidos de suporte.
 
-Os usuários poderão abrir chamados diretamente pelo sistema.
+## Sumario
 
-Os chamados serão enviados para um painel exclusivo do administrador responsável pelo suporte.
+- [Visao geral](#visao-geral)
+- [Principais modulos](#principais-modulos)
+- [Arquitetura do projeto](#arquitetura-do-projeto)
+- [Tecnologias e dependencias](#tecnologias-e-dependencias)
+- [Rotas e telas](#rotas-e-telas)
+- [Banco de dados e storage](#banco-de-dados-e-storage)
+- [Permissoes e seguranca](#permissoes-e-seguranca)
+- [Configuracao do ambiente](#configuracao-do-ambiente)
+- [Como executar localmente](#como-executar-localmente)
+- [Deploy](#deploy)
+- [Operacao do sistema](#operacao-do-sistema)
+- [Documentacao complementar](#documentacao-complementar)
+- [Pontos de atencao](#pontos-de-atencao)
 
-Tempo estimado de resposta:
+## Visao Geral
 
-Até 30 minutos.
+O sistema atende quatro necessidades centrais:
 
----
+1. Cadastrar membros e congregados por meio de uma ficha digital responsiva.
+2. Gerenciar registros em paineis restritos para pastor, administracao e secretaria.
+3. Consultar indicadores, aniversariantes e relatorios exportaveis em PDF, Excel e PNG.
+4. Oferecer uma central de suporte com chamados, chat, anexos e assistente inteligente.
 
-CONCEITO
+A tela inicial (`public/index.html`) redireciona automaticamente para `public/cadastro.html`, tornando o cadastro a entrada publica principal.
 
-Inspirado em:
+## Principais Modulos
 
-- Zendesk
-- Intercom
-- Freshdesk
-- Discord ModMail
-- Jira Service Desk
+### Cadastro de membros e congregados
 
-O sistema deve transmitir:
+Arquivos principais:
 
-- Organização
-- Profissionalismo
-- Rapidez
-- Segurança
-- Facilidade de comunicação
+- `public/cadastro.html`
+- `public/cadastro.js`
+- `public/cadastro.css`
 
----
+Funcionalidades:
 
-FLUXO
+- Escolha inicial entre `Membro` e `Congregado`.
+- Fluxo por etapas com indicador visual de progresso.
+- Campos de identificacao, contato, documentos, dados da igreja, familia, talentos e assinatura.
+- Validacao de nome, CPF/CRNM, RG, telefone e assinatura digital.
+- Upload de foto, documento, certidoes, diploma, comprovante e assinatura.
+- Busca de CEP e preenchimento auxiliar de endereco.
+- Envio dos dados para a tabela `membros`.
+- Envio de anexos para buckets do Supabase Storage.
 
-USUÁRIO
+O modo `Congregado` usa um fluxo mais enxuto. O modo `Membro` abre a ficha completa.
 
-↓
+### Painel do Pastor/Admin
 
-Abre chamado
+Arquivos principais:
 
-↓
+- `public/admin.html`
+- `public/admin.js`
+- `public/admin.css`
 
-Administrador recebe notificação
+Funcionalidades:
 
-↓
+- Login via Supabase Auth.
+- Validacao de perfil `admin` na tabela `profiles`.
+- Dashboard com cards de total, membros, congregados, ativos, cadastros do mes e aniversariantes.
+- Indicador de ultimo cadastro.
+- Graficos com Chart.js.
+- Lista de membros com busca por nome, CPF ou celular.
+- Filtros por tipo, status, setor, faixa de idade e cargo.
+- Modal de detalhes do cadastro.
+- Edicao completa de cadastro.
+- Exclusao de registros.
+- Exportacao de relatorios em PDF e Excel.
+- Notificacoes de novos cadastros via canal realtime `novos-membros`.
 
-Administrador responde
+### Painel da Secretaria
 
-↓
+Arquivos principais:
 
-Usuário recebe resposta
+- `public/secretario.html`
+- `public/secretario.js`
+- `public/secretario.css`
 
-↓
+Funcionalidades:
 
-Chamado encerrado
+- Login via Supabase Auth.
+- Validacao de perfil `secretario` ou perfil permitido conforme policies/funcoes.
+- Busca limitada por nome, CPF ou CRNM usando a funcao `buscar_membros_secretaria`.
+- Visualizacao dos resultados encontrados.
+- Modal de detalhes.
+- Edicao de dados cadastrais.
+- Upload de arquivos para `membros-docs`.
 
----
+O painel da secretaria foi pensado para consulta controlada, evitando leitura direta irrestrita da tabela inteira.
 
-TELA DO USUÁRIO
+### Relatorios
 
-CABEÇALHO
+Arquivos principais:
 
-Título:
+- `public/relatorios.html`
+- `public/admin-pages.js`
+- `public/admin-pages.css`
 
-Central de Suporte
+Funcionalidades:
 
-Subtítulo:
+- Area restrita para admin.
+- Leitura da tabela `membros`.
+- Cards de resumo.
+- Previa da lista de membros.
+- Exportacao em PDF com `jsPDF` e `autoTable`.
+- Exportacao em Excel com `xlsx`.
 
-Está com alguma dúvida ou problema? Abra um chamado e nossa equipe responderá em até 30 minutos.
+### Indicadores
 
----
+Arquivos principais:
 
-CARD INFORMATIVO
+- `public/indicadores.html`
+- `public/admin-pages.js`
+- `public/admin-pages.css`
 
-Tempo médio:
+Funcionalidades:
 
-30 minutos
+- Area restrita para admin.
+- Indicadores de total, cadastros do mes, ativos e aniversariantes.
+- Graficos por crescimento mensal, tipo de cadastro, status e setor.
+- Alternancia entre barra, linha, pizza e donut.
+- Exportacao do grafico em PNG.
+
+### Configuracoes
+
+Arquivos principais:
+
+- `public/configuracoes.html`
+- `public/admin-pages.js`
+- `public/admin-pages.css`
+
+Funcionalidades:
+
+- Preferencias administrativas salvas no `localStorage`.
+- Opcoes para realtime, aniversariantes, confirmacao de exclusao, exportacoes completas, grafico padrao e itens por pagina.
+- Area restrita para admin.
+
+### Central de Suporte do Usuario
+
+Arquivos principais:
+
+- `public/suporte.html`
+- `public/suporte.js`
+- `public/suporte.css`
+
+Funcionalidades:
 
-Status:
+- Abertura de chamado sem login.
+- Campos de nome, telefone, e-mail, categoria, prioridade, assunto e mensagem.
+- Upload de imagem ou PDF para o bucket `support-attachments-public`.
+- Protocolo gerado no banco no formato `SUP-YYYY-NNNN`.
+- Lista de chamados enviados na sessao atual usando `sessionStorage`.
+- Chat do chamado com mensagens e anexos.
+- Assistente inteligente com perguntas rapidas.
+- Integracao com endpoint de IA em `/api/assistente-suporte` ou com `window.CONFIG.SUPPORT_AI_ENDPOINT`, quando configurado.
+
+### Painel de Atendimento de Suporte
+
+Arquivos principais:
+
+- `public/suporte-admin.html`
+- `public/suporte-admin.js`
+- `public/suporte-admin.css`
+
+Funcionalidades:
+
+- Login via Supabase Auth.
+- Validacao de perfil em `profiles`.
+- Dashboard de chamados pendentes, em analise, respondidos e urgentes.
+- Fila de chamados com busca e filtros por status.
+- Visualizacao de dados do solicitante.
+- Chat administrativo.
+- Resposta do suporte.
+- Alteracao de status para `Em analise`, `Urgente`, `Respondido` e `Encerrado`.
+- Realtime em `support_tickets` e `support_messages`.
+
+### Assistente Inteligente de Suporte
+
+Arquivos principais:
+
+- `public/api/assistente-suporte.js`
+- `api/assistente-suporte.js`
+
+O arquivo em `api/assistente-suporte.js` apenas reexporta o handler de `public/api/assistente-suporte.js`, mantendo compatibilidade com a estrutura de funcoes serverless da Vercel.
+
+Funcionalidades:
+
+- Endpoint `GET` para teste de disponibilidade.
+- Endpoint `POST` recebendo `{ messages: [...] }`.
+- Uso da variavel de ambiente server-side `GROQ_API_KEY`.
+- Modelo `llama-3.3-70b-versatile`.
+- Respostas em portugues do Brasil, focadas em login, cadastro, documentos, relatorios, exportacoes, permissoes e uso geral do sistema.
+- Validacao de origem, limite de requisicoes, limite de mensagens, limite de tamanho do JSON e timeout para evitar travamentos.
+- Respostas sempre em JSON.
+
+## Arquitetura do Projeto
+
+```text
+sistema-igreja/
+├── api/
+│   └── assistente-suporte.js
+├── public/
+│   ├── api/
+│   │   └── assistente-suporte.js
+│   ├── index.html
+│   ├── cadastro.html / cadastro.js / cadastro.css
+│   ├── admin.html / admin.js / admin.css
+│   ├── secretario.html / secretario.js / secretario.css
+│   ├── suporte.html / suporte.js / suporte.css
+│   ├── suporte-admin.html / suporte-admin.js / suporte-admin.css
+│   ├── relatorios.html
+│   ├── indicadores.html
+│   ├── configuracoes.html
+│   ├── admin-pages.js / admin-pages.css
+│   ├── config.js
+│   ├── supabase-secretario.sql
+│   ├── supabase-suporte.sql
+│   ├── vercel.json
+│   └── imagens e assets
+├── ADMINISTRATOR_MANUAL_AD_BELA-VISTA_PTBR.md
+├── DATABASE_DOCUMENTATION_AD_BELA-VISTA_PTBR.md
+├── DEPLOYMENT_GUIDE_AD_BELA-VISTA_PTBR.md
+├── SYSTEM_REQUIREMENTS_AD_BELA-VISTA_PTBR.md
+├── USER_MANUAL_AD_BELA-VISTA_PTBR.md
+└── README.md
+```
+
+## Tecnologias e Dependencias
+
+O projeto nao possui `package.json` na raiz. A interface e carregada diretamente por arquivos estaticos e CDNs.
+
+Dependencias usadas no navegador:
+
+- Supabase JS v2: autenticacao, banco, storage e realtime.
+- Font Awesome: icones.
+- Google Fonts: tipografia.
+- Chart.js: graficos.
+- jsPDF: exportacao PDF.
+- jsPDF AutoTable: tabelas em PDF.
+- xlsx: exportacao Excel.
+
+Dependencia serverless:
+
+- API nativa da Groq via `fetch` no endpoint `public/api/assistente-suporte.js`.
+
+## Rotas e Telas
+
+| Caminho | Finalidade | Acesso |
+|---|---|---|
+| `public/index.html` | Redireciona para cadastro | Publico |
+| `public/cadastro.html` | Ficha de cadastro | Publico |
+| `public/admin.html` | Painel do pastor/admin | Restrito a `admin` |
+| `public/secretario.html` | Busca e manutencao pela secretaria | Restrito a usuario autenticado com permissao |
+| `public/relatorios.html` | Relatorios e exportacoes | Restrito a `admin` |
+| `public/indicadores.html` | Graficos e indicadores | Restrito a `admin` |
+| `public/configuracoes.html` | Preferencias locais do painel | Restrito a `admin` |
+| `public/suporte.html` | Central de suporte do usuario | Publico |
+| `public/suporte-admin.html` | Atendimento de chamados | Restrito a perfis de suporte/admin |
+| `/api/assistente-suporte` | Assistente de IA | Serverless |
+
+## Banco de Dados e Storage
+
+### Tabela `membros`
+
+Entidade principal do cadastro. Os scripts usam campos como:
+
+- `id`
+- `nome`
+- `tipo_cadastro`
+- `status`
+- `cpf`
+- `rg`
+- `tipo_cpf`
+- `data_nasc`
+- `idade`
+- `sexo`
+- `tipo_sanguineo`
+- `escolaridade`
+- `estado_civil`
+- `conjuge_nome`
+- `data_casamento`
+- `cep`
+- `bairro`
+- `endereco`
+- `cidade_estado`
+- `fone_res`
+- `fone_com`
+- `celular`
+- `email`
+- `ocupacao`
+- `empresa`
+- `forma_recebimento`
+- `setor_igreja`
+- `congregacao_igreja`
+- `igreja_anterior`
+- `igreja_cidade`
+- `igreja_pastor`
+- `data_batismo_aguas`
+- `data_batismo_es`
+- `data_aprovacao`
+- `cargo_principal`
+- `outras_funcoes`
+- `qtd_filhos`
+- `nome_dep1`, `parentesco_dep1`
+- `nome_dep2`, `parentesco_dep2`
+- `nome_dep3`, `parentesco_dep3`
+- `talentos`
+- `tem_computador`
+- `tem_internet`
+- URLs de midia, como `foto_url`, `doc_url`, `assinatura_url` e anexos relacionados.
+
+### Tabela `profiles`
+
+Criada e mantida pelo SQL de secretaria/suporte. Controla autorizacao por usuario autenticado.
+
+Campos principais:
+
+- `id`: referencia `auth.users(id)`.
+- `role`: perfil de acesso.
+- `created_at`: data de criacao.
+
+Roles usadas no projeto:
+
+- `admin`
+- `secretario`
+- `pastor`
+- `suporte`
+
+O painel admin principal exige explicitamente `role = 'admin'`.
+
+### Funcoes do Supabase
+
+Funcoes definidas nos SQLs:
+
+- `tem_role(roles text[])`: helper para policies por perfil.
+- `buscar_membros_secretaria(...)`: busca limitada para a secretaria.
+- `support_is_admin_or_support()`: valida perfis administrativos no suporte.
+- `support_set_updated_at()`: atualiza `updated_at` em chamados.
+- `support_generate_protocol()`: gera protocolo `SUP-YYYY-NNNN`.
+- `support_notify_on_new_message()`: cria notificacoes quando ha mensagens.
+- `support_log_ticket_insert()`: registra criacao de chamado.
+- `support_log_ticket_update()`: registra mudancas relevantes no chamado.
+- `support_open_public_ticket(...)`: abre chamado publico e cria a primeira mensagem.
+
+### Tabelas de suporte
+
+Definidas em `public/supabase-suporte.sql`:
+
+- `support_tickets`: chamado principal.
+- `support_messages`: mensagens do chamado.
+- `support_notifications`: notificacoes de suporte.
+- `support_logs`: historico tecnico do chamado.
+
+Campos importantes de `support_tickets`:
+
+- `id`
+- `protocol`
+- `user_id`
+- `user_name`
+- `user_phone`
+- `user_email`
+- `subject`
+- `category`
+- `description`
+- `priority`
+- `status`
+- `rating`
+- `rating_comment`
+- `created_at`
+- `updated_at`
+- `last_message_at`
+
+Campos importantes de `support_messages`:
+
+- `id`
+- `ticket_id`
+- `sender_id`
+- `sender_name`
+- `sender_type`
+- `sender_role`
+- `message`
+- `attachment_url`
+- `created_at`
+
+### Buckets de Storage
+
+Buckets usados ou esperados pelo codigo:
+
+| Bucket | Uso |
+|---|---|
+| `membros-docs` | Uploads do cadastro, assinatura e arquivos da secretaria |
+| `membros-public` | Uploads publicos do cadastro quando aplicavel |
+| `membros` | Uploads/remoção referenciados pelo painel admin |
+| `support-attachments-public` | Anexos de chamados de suporte |
+
+Ponto importante: o cadastro e a secretaria usam `membros-docs`, mas `admin.js` referencia o bucket `membros`. Antes de operar em producao, confirme se os buckets existem e se as policies permitem as leituras/escritas esperadas.
+
+## Permissoes e Seguranca
+
+O projeto usa Supabase Auth e Row Level Security.
+
+Regras principais:
+
+- Cadastro publico pode inserir registros na tabela `membros`.
+- Admin pode visualizar, inserir, atualizar e excluir membros.
+- Secretaria pode buscar membros pela funcao controlada e atualizar registros.
+- Suporte/admin pode visualizar e responder chamados.
+- Chamados publicos podem ser abertos sem login via funcao `support_open_public_ticket`.
+- Anexos de suporte ficam em bucket publico, conforme SQL atual.
+
+Boas praticas:
+
+- Nao compartilhe credenciais entre usuarios.
+- Revogue acessos quando houver troca de equipe.
+- Garanta que cada usuario autenticado tenha uma linha correta em `profiles`.
+- Mantenha RLS habilitado nas tabelas sensiveis.
+- Evite expor dados pessoais fora dos paineis restritos.
+
+Observacao: a chave anon do Supabase em `public/config.js` e normal em projetos frontend, mas a seguranca depende diretamente das policies de RLS e das funcoes protegidas no banco.
 
-🟢 Atendimento Online
+## Configuracao do Ambiente
 
-Chamados resolvidos:
+### Supabase
 
-Contador em tempo real
+Edite `public/config.js`:
 
----
+```js
+window.CONFIG = {
+  SUPABASE_URL: "https://seu-projeto.supabase.co",
+  SUPABASE_KEY: "sua-chave-anon"
+};
+```
+
+Opcionalmente, para o assistente:
+
+```js
+window.CONFIG.SUPPORT_AI_ENDPOINT = "/api/assistente-suporte";
+```
+
+### SQL necessario
+
+Execute no SQL Editor do Supabase:
+
+1. Estrutura principal da tabela `membros`, caso ainda nao exista.
+2. `public/supabase-secretario.sql` para perfis, roles, policies e busca da secretaria.
+3. `public/supabase-suporte.sql` para suporte, tickets, mensagens, notificacoes, logs e bucket de anexos.
+
+Depois crie usuarios em Authentication e associe perfis:
+
+```sql
+insert into public.profiles (id, role)
+select id, 'admin'
+from auth.users
+where email = 'email-do-admin@exemplo.com'
+on conflict (id) do update set role = excluded.role;
+
+insert into public.profiles (id, role)
+select id, 'secretario'
+from auth.users
+where email = 'email-da-secretaria@exemplo.com'
+on conflict (id) do update set role = excluded.role;
+```
+
+Para atendimento de suporte, use roles como `admin`, `pastor`, `secretario` ou `suporte`, conforme `support_is_admin_or_support()`.
+
+### Vercel e Groq
+
+Para usar o assistente inteligente, configure variaveis no ambiente da Vercel:
+
+| Variavel | Obrigatoria | Finalidade |
+|---|---|---|
+| `GROQ_API_KEY` | Sim | Chave da API da Groq usada somente no backend |
+| `SUPPORT_AI_ALLOWED_ORIGINS` | Nao | Lista de origens permitidas separadas por virgula, util para dominios customizados |
+
+Sem `GROQ_API_KEY`, o endpoint retorna erro informando que o assistente esta indisponivel.
 
-FORMULÁRIO DE SUPORTE
+Nunca coloque `GROQ_API_KEY` em arquivos dentro de `public/`, HTML, CSS ou JavaScript do navegador. Configure a variavel em Vercel Project Settings > Environment Variables e, localmente, use `.env` fora do controle de versao.
 
-Campos:
+## Como Executar Localmente
 
-Categoria
+Como o projeto e estatico, ha duas formas simples:
+
+### Abrir direto no navegador
 
-Assunto
+Abra:
 
-Descrição
+```text
+public/cadastro.html
+```
 
-Prioridade
+Esse modo funciona para telas estaticas e chamadas diretas ao Supabase, mas pode ter limitacoes com rotas serverless e CORS dependendo do navegador.
 
-Anexar imagem
-
----
-
-Categorias
-
-Cadastro de Membros
-
-Documentos
-
-Relatórios
-
-Exportação PDF
-
-Exportação Excel
-
-Permissões
-
-Login
-
-Erro do Sistema
-
-Sugestão
-
-Outros
-
----
-
-Prioridade
-
-Baixa
-
-Normal
-
-Alta
-
-Urgente
-
----
-
-Botão
-
-Enviar Chamado
-
----
-
-APÓS ENVIAR
-
-Exibir:
-
-✅ Chamado enviado com sucesso
-
-Protocolo:
-
-SUP-2026-0001
-
-Mensagem:
-
-Nossa equipe responderá em até 30 minutos.
-
----
-
-ÁREA MEUS CHAMADOS
-
-Tabela
-
-Protocolo
-
-Assunto
-
-Categoria
-
-Data
-
-Status
-
-Ações
-
----
-
-Status
-
-🟡 Aguardando
-
-🔵 Em análise
-
-🟢 Respondido
-
-⚫ Encerrado
-
-🔴 Urgente
-
----
-
-CHAT DO CHAMADO
-
-Ao abrir um chamado.
-
-Visual estilo WhatsApp.
-
-Mensagens do usuário:
-
-lado direito
-
-Mensagens do suporte:
-
-lado esquerdo
-
----
-
-Recursos
-
-Enviar mensagens
-
-Enviar imagens
-
-Enviar PDFs
-
-Visualizar histórico
-
-Notificações em tempo real
-
----
-
-PAINEL DO ADMINISTRADOR
-
-ACESSO EXCLUSIVO
-
-Cargo:
-
-Administrador
-
-Pastor
-
-Suporte
-
----
-
-DASHBOARD
-
-Cards
-
-Chamados Hoje
-
-Pendentes
-
-Urgentes
-
-Resolvidos
-
-Tempo Médio
-
-Taxa de Resolução
-
----
-
-LISTA DE CHAMADOS
-
-Tabela profissional
-
-Protocolo
-
-Usuário
-
-Categoria
-
-Assunto
-
-Data
-
-Prioridade
-
-Status
-
----
-
-Filtros
-
-Todos
-
-Pendentes
-
-Respondidos
-
-Urgentes
-
-Encerrados
-
----
-
-VISUALIZAÇÃO DO CHAMADO
-
-Ao clicar.
-
-Abre painel lateral.
-
----
-
-Informações
-
-Nome
-
-Telefone
-
-E-mail
-
-Data
-
-Categoria
-
-Prioridade
-
----
-
-Histórico completo
-
-Mensagens
-
-Arquivos enviados
-
-Logs
-
----
-
-RESPOSTA DO SUPORTE
-
-Campo grande
-
-Placeholder:
-
-Digite sua resposta...
-
----
-
-Botões
-
-Responder
-
-Encerrar
-
-Transferir
-
-Marcar urgente
-
----
-
-NOTIFICAÇÕES EM TEMPO REAL
-
-Administrador recebe:
-
-🔔 Novo chamado recebido
-
-🔔 Nova mensagem
-
-🔔 Chamado urgente
-
-🔔 Avaliação recebida
-
----
-
-Exemplo
-
-Novo chamado criado por:
-
-Gabriel Dutra
-
-Categoria:
-
-Exportação PDF
-
-Há poucos segundos
-
----
-
-SISTEMA DE AVALIAÇÃO
-
-Após encerramento.
-
-Usuário avalia:
-
-⭐
-⭐⭐
-⭐⭐⭐
-⭐⭐⭐⭐
-⭐⭐⭐⭐⭐
-
-Comentário opcional
-
----
-
-AUTOMAÇÕES
-
-Mensagem automática:
-
-Chamado recebido.
-
-Mensagem automática:
-
-Chamado em análise.
-
-Mensagem automática:
-
-Chamado respondido.
-
-Mensagem automática:
-
-Chamado encerrado.
-
----
-
-BANCO DE DADOS
-
-Tabela:
-
-support_tickets
-
-id
-
-protocol
-
-user_id
-
-subject
-
-category
-
-priority
-
-status
-
-created_at
-
-updated_at
-
----
-
-Tabela:
-
-support_messages
-
-id
-
-ticket_id
-
-sender_id
-
-message
-
-attachment_url
-
-created_at
-
----
-
-Tabela:
-
-support_notifications
-
-id
-
-user_id
-
-title
-
-message
-
-read
-
-created_at
-
----
-
-ANIMAÇÕES
-
-Notificações:
-
-slide-in
-
-Mensagens:
-
-fade-in
-
-Cards:
-
-hover premium
-
-Indicador online:
-
-pulse animation
-
----
-
-CORES
-
-Mesmo padrão do sistema
-
-Background:
-#020B26
-
-Cards:
-#08132E
-
-Dourado:
-#D4AF37
-
-Azul:
-#22D3EE
-
-Roxo:
-#8B5CF6
-
-Verde:
-#10B981
-
-Vermelho:
-#EF4444
-
----
-
-RESULTADO ESPERADO
-
-Um sistema de suporte profissional integrado ao AD Bela-Vista.
-
-O usuário não precisa sair do sistema para pedir ajuda.
-
-O administrador recebe tudo em tempo real.
-
-Controle total dos atendimentos.
-
-Histórico completo.
-
-Experiência semelhante a plataformas SaaS profissionais.
+### Servir a pasta `public`
+
+Use qualquer servidor estatico. Exemplos:
+
+```powershell
+npx serve public
+```
+
+ou:
+
+```powershell
+python -m http.server 5500 -d public
+```
+
+Depois acesse:
+
+```text
+http://localhost:5500/cadastro.html
+```
+
+Para testar `/api/assistente-suporte` localmente como funcao serverless, use o ambiente da Vercel CLI ou publique em um preview da Vercel com as variaveis configuradas.
+
+## Deploy
+
+O projeto inclui `public/vercel.json` com rewrites:
+
+- `/api/(.*)` para manter endpoints serverless.
+- `/(.*)` para direcionar rotas para `index.html`.
+
+Passos recomendados:
+
+1. Configure `public/config.js` com URL e chave anon do Supabase.
+2. Crie/valide tabelas, funcoes, triggers, buckets e policies no Supabase.
+3. Configure usuarios e roles em `profiles`.
+4. Configure `GROQ_API_KEY` na Vercel se o assistente for usado.
+5. Publique a pasta do projeto na Vercel.
+6. Teste as telas principais:
+   - `cadastro.html`
+   - `admin.html`
+   - `secretario.html`
+   - `relatorios.html`
+   - `indicadores.html`
+   - `suporte.html`
+   - `suporte-admin.html`
+7. Valide uploads, assinatura, exportacoes, realtime e abertura de chamados.
+
+## Operacao do Sistema
+
+### Rotina diaria
+
+- Conferir novos cadastros no painel admin.
+- Validar indicador de ultimo cadastro.
+- Verificar aniversariantes do mes.
+- Responder chamados pendentes.
+- Revisar dados incompletos ou anexos faltantes.
+
+### Rotina mensal
+
+- Exportar PDF/Excel para controle administrativo.
+- Conferir consistencia de setores, cargos e status.
+- Verificar se fotos, documentos e assinaturas continuam acessiveis.
+- Revisar usuarios ativos e roles na tabela `profiles`.
+- Avaliar chamados recorrentes para melhorar orientacoes internas.
+
+### Status usados em membros
+
+- `Ativo`
+- `Inativo`
+- `Transferido`
+- `Falecido`
+
+### Tipos de cadastro
+
+- `Membro`
+- `Congregado`
+
+### Prioridades de suporte
+
+- `Baixa`
+- `Normal`
+- `Alta`
+- `Urgente`
+
+### Status de suporte
+
+- `Pendente`
+- `Em analise`
+- `Respondido`
+- `Urgente`
+- `Encerrado`
+
+## Documentacao Complementar
+
+Arquivos ja existentes no repositorio:
+
+| Arquivo | Conteudo |
+|---|---|
+| `USER_MANUAL_AD_BELA-VISTA_PTBR.md` | Manual de uso para equipe |
+| `ADMINISTRATOR_MANUAL_AD_BELA-VISTA_PTBR.md` | Procedimentos administrativos |
+| `DEPLOYMENT_GUIDE_AD_BELA-VISTA_PTBR.md` | Guia de publicacao |
+| `SYSTEM_REQUIREMENTS_AD_BELA-VISTA_PTBR.md` | Requisitos do sistema |
+| `DATABASE_DOCUMENTATION_AD_BELA-VISTA_PTBR.md` | Modelo de dados descritivo |
+| `README_DOCUMENTACAO_AD_BELA-VISTA.md` | Indice antigo da documentacao |
+| `TODO.md` | Pendencias gerais da central de suporte |
+| `public/TODO.md` | Pendencias especificas da central de ajuda |
+
+## Pontos de Atencao
+
+- Alguns documentos antigos do repositorio parecem ter sido salvos com codificacao quebrada. Este README foi reescrito como referencia limpa.
+- Nao ha `package.json` na raiz, apesar de existir `node_modules`. O projeto, no estado atual, depende principalmente de arquivos estaticos e CDNs.
+- Confirme a existencia dos buckets `membros-docs`, `membros-public`, `membros` e `support-attachments-public`.
+- Confirme se a tabela `membros` possui todos os campos usados pelos formularios antes de colocar em producao.
+- Realtime precisa estar habilitado no Supabase para as tabelas usadas por notificacoes e suporte.
+- O bucket `support-attachments-public` e publico no SQL atual. Se anexos de suporte forem sensiveis, troque para bucket privado e adapte o front-end para URLs assinadas.
+- O painel admin exige `role = 'admin'`; outros perfis nao passam nessa tela mesmo que existam em `profiles`.
+- O assistente de IA nao altera dados no sistema. Ele apenas orienta o usuario e sugere abertura de chamado quando necessario.
+
+## Licenca e Uso
+
+Este projeto e direcionado ao uso interno da Igreja AD Bela-Vista. Antes de reutilizar em outro contexto, revise dados, identidade visual, URLs, chaves, policies de seguranca e textos operacionais.

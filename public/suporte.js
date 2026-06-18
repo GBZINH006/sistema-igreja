@@ -13,6 +13,8 @@
   ];
 
   const SESSION_TICKETS_KEY = "ad_bela_vista_support_submitted";
+  const AI_MESSAGE_LIMIT = 10;
+  const AI_MESSAGE_CHAR_LIMIT = 1200;
 
   const state = {
     db: null,
@@ -338,6 +340,16 @@
     $("#ai-send").textContent = busy ? "Pensando..." : "Perguntar";
   }
 
+  function getAiPayloadMessages() {
+    return state.aiMessages
+      .slice(-AI_MESSAGE_LIMIT)
+      .map(message => ({
+        role: message.role === "assistant" ? "assistant" : "user",
+        content: String(message.content || "").trim().slice(0, AI_MESSAGE_CHAR_LIMIT)
+      }))
+      .filter(message => message.content);
+  }
+
   function getAiEndpoint() {
     if (window.CONFIG?.SUPPORT_AI_ENDPOINT) {
       return window.CONFIG.SUPPORT_AI_ENDPOINT;
@@ -361,19 +373,21 @@
     setAiBusy(true);
 
     try {
-      const response = await fetch(getAiAssistantUrl(), {
+      const response = await fetch(getAiEndpoint(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: state.aiMessages })
+        body: JSON.stringify({ messages: getAiPayloadMessages() })
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível consultar a IA.");
       state.aiMessages.push({ role: "assistant", content: data.answer || "Não consegui responder agora." });
+      state.aiMessages = state.aiMessages.slice(-AI_MESSAGE_LIMIT);
     } catch (error) {
       state.aiMessages.push({
         role: "assistant",
         content: `${error.message || "Assistente indisponível."} Você pode abrir um chamado com os detalhes abaixo.`
       });
+      state.aiMessages = state.aiMessages.slice(-AI_MESSAGE_LIMIT);
     } finally {
       setAiBusy(false);
       renderAiMessages();

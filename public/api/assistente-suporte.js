@@ -1,56 +1,208 @@
-const DEFAULT_MODEL = "gpt-4.1-mini";
+const GROQ_CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 
-function json(status, body) {
-  return { status, body };
+const MAX_MESSAGES = 10;
+const MAX_MESSAGE_CHARS = 1200;
+const MAX_TOTAL_CHARS = 6000;
+const MAX_BODY_BYTES = 24 * 1024;
+const REQUEST_TIMEOUT_MS = 12000;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_REQUESTS = 20;
+
+const rateLimitStore = new Map();
+
+const SYSTEM_PROMPT = [
+  "Voce e o Assistente Oficial da AD Bela-Vista.",
+  "Ajude usuarios com cadastro de membros, login, relatorios, exportacao PDF, exportacao Excel, fotos, documentos, permissoes e utilizacao geral do sistema.",
+  "Responda sempre em portugues do Brasil.",
+  "Se nao souber a resposta ou identificar possivel erro do sistema, oriente o usuario a abrir um chamado para o suporte.",
+  "Nunca invente informacoes.",
+  "Nunca solicite senhas.",
+  "Nunca afirme que realizou alteracoes no sistema.",
+].join(" ");
+
+function sendJson(response, status, body) {
+  return response.status(status).json(body);
 }
 
-function getTextFromResponse(data) {
-  if (typeof data?.output_text === "string" && data.output_text.trim()) {
-    return data.output_text.trim();
+function getHeader(request, name) {
+  const value = request.headers?.[name.toLowerCase()] || request.headers?.[name];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function getRequestOrigin(request) {
+  const origin = getHeader(request, "origin");
+  return typeof origin === "string" ? origin : "";
+}
+
+function getExpectedOrigin(request) {
+  const host = getHeader(request, "x-forwarded-host") || getHeader(request, "host");
+  const proto = getHeader(request, "x-forwarded-proto") || "https";
+  return host ? `${proto}://${host}` : "";
+}
+
+function getAllowedOrigins(request) {
+  const configured = String(process.env.SUPPORT_AI_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  const expected = getExpectedOrigin(request);
+  const localOrigins = [
+    "http://localhost:3000",
+    "http://localhost:5500",
+    "http://localhost:5501",
+    "http://localhost:5502",
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5501",
+    "http://127.0.0.1:5502",
+  ];
+
+  return new Set([expected, ...configured, ...localOrigins].filter(Boolean));
+}
+
+function applyCors(request, response) {
+  const origin = getRequestOrigin(request);
+  const allowedOrigins = getAllowedOrigins(request);
+
+  response.setHeader("vary", "Origin");
+  response.setHeader("allow", "GET,POST,OPTIONS");
+  response.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
+  response.setHeader("access-control-allow-headers", "Content-Type");
+
+  if (!origin || allowedOrigins.has(origin)) {
+    if (origin) {
+      response.setHeader("access-control-allow-origin", origin);
+    }
+    return true;
   }
 
-  const output = Array.isArray(data?.output) ? data.output : [];
+  return false;
+}
 
-  return output
-    .flatMap((item) => (Array.isArray(item.content) ? item.content : []))
-    .map((part) => part.text || part.content || "")
-    .join("\n")
-    .trim();
+function getClientId(request) {
+  const forwardedFor = getHeader(request, "x-forwarded-for");
+  const ip = typeof forwardedFor === "string" ? forwardedFor.split(",")[0].trim() : "";
+  return ip || request.socket?.remoteAddress || "unknown";
+}
+
+function isRateLimited(request) {
+  const clientId = getClientId(request);
+  const now = Date.now();
+  const current = rateLimitStore.get(clientId);
+
+  if (!current || now - current.startedAt > RATE_LIMIT_WINDOW_MS) {
+    rateLimitStore.set(clientId, { count: 1, startedAt: now });
+    return false;
+  }
+
+  current.count += 1;
+  return current.count > RATE_LIMIT_MAX_REQUESTS;
+}
+
+function pruneRateLimitStore() {
+  const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS;
+  for (const [key, value] of rateLimitStore.entries()) {
+    if (value.startedAt < cutoff) {
+      rateLimitStore.delete(key);
+    }
+  }
 }
 
 async function readBody(request) {
+  const contentLength = Number(getHeader(request, "content-length") || 0);
+  if (contentLength > MAX_BODY_BYTES) {
+    const error = new Error("Payload muito grande.");
+    error.status = 413;
+    throw error;
+  }
+
   if (request.body && typeof request.body === "object" && !Buffer.isBuffer(request.body)) {
     return request.body;
   }
 
   if (typeof request.body === "string") {
+    if (Buffer.byteLength(request.body, "utf8") > MAX_BODY_BYTES) {
+      const error = new Error("Payload muito grande.");
+      error.status = 413;
+      throw error;
+    }
     return JSON.parse(request.body);
   }
 
   if (Buffer.isBuffer(request.body)) {
+    if (request.body.length > MAX_BODY_BYTES) {
+      const error = new Error("Payload muito grande.");
+      error.status = 413;
+      throw error;
+    }
     return JSON.parse(request.body.toString("utf8"));
   }
 
   const chunks = [];
+  let size = 0;
 
   for await (const chunk of request) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+
+    if (size > MAX_BODY_BYTES) {
+      const error = new Error("Payload muito grande.");
+      error.status = 413;
+      throw error;
+    }
+
+    chunks.push(buffer);
   }
 
   const raw = Buffer.concat(chunks).toString("utf8");
   return raw ? JSON.parse(raw) : {};
 }
 
+function sanitizeMessages(messages) {
+  if (!Array.isArray(messages)) {
+    return [];
+  }
+
+  const cleanMessages = [];
+  let totalChars = 0;
+
+  for (const message of messages.slice(-MAX_MESSAGES)) {
+    const role = message?.role === "assistant" ? "assistant" : "user";
+    const content = String(message?.content || "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, MAX_MESSAGE_CHARS);
+
+    if (!content) {
+      continue;
+    }
+
+    totalChars += content.length;
+
+    if (totalChars > MAX_TOTAL_CHARS) {
+      break;
+    }
+
+    cleanMessages.push({ role, content });
+  }
+
+  return cleanMessages;
+}
+
+function getGroqAnswer(data) {
+  const answer = data?.choices?.[0]?.message?.content;
+  return typeof answer === "string" ? answer.trim() : "";
+}
+
 module.exports = async function handler(request, response) {
   response.setHeader("content-type", "application/json; charset=utf-8");
   response.setHeader("cache-control", "no-store");
-  response.setHeader("allow", "GET,POST,OPTIONS");
-  response.setHeader("access-control-allow-origin", "*");
-  response.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
-  response.setHeader("access-control-allow-headers", "Content-Type, Authorization");
+  response.setHeader("x-content-type-options", "nosniff");
+  response.setHeader("referrer-policy", "no-referrer");
 
-  function send(result) {
-    return response.status(result.status).json(result.body);
+  if (!applyCors(request, response)) {
+    return sendJson(response, 403, { ok: false, error: "Origem nao autorizada." });
   }
 
   if (request.method === "OPTIONS") {
@@ -58,28 +210,35 @@ module.exports = async function handler(request, response) {
   }
 
   if (request.method === "GET") {
-    return send(
-      json(200, {
-        ok: true,
-        message:
-          "Assistente de suporte online. Envie uma requisicao POST com { messages: [...] }.",
-      })
-    );
+    return sendJson(response, 200, {
+      ok: true,
+      service: "assistente-suporte",
+      provider: "groq",
+      model: GROQ_MODEL,
+      message: "Envie uma requisicao POST com { messages: [...] }.",
+    });
   }
 
   if (request.method !== "POST") {
-    return send(json(405, { error: "Metodo nao permitido. Use POST." }));
+    return sendJson(response, 405, { ok: false, error: "Metodo nao permitido. Use POST." });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  pruneRateLimitStore();
+
+  if (isRateLimited(request)) {
+    return sendJson(response, 429, {
+      ok: false,
+      error: "Muitas solicitacoes em pouco tempo. Aguarde um minuto e tente novamente.",
+    });
+  }
+
+  const apiKey = process.env.GROQ_API_KEY;
 
   if (!apiKey) {
-    return send(
-      json(503, {
-        error:
-          "Assistente indisponivel. Configure OPENAI_API_KEY no ambiente da Vercel.",
-      })
-    );
+    return sendJson(response, 503, {
+      ok: false,
+      error: "Assistente indisponivel. Configure GROQ_API_KEY no ambiente da Vercel.",
+    });
   }
 
   let body;
@@ -87,82 +246,72 @@ module.exports = async function handler(request, response) {
   try {
     body = await readBody(request);
   } catch (error) {
-    return send(json(400, { error: "JSON invalido." }));
+    return sendJson(response, error.status || 400, {
+      ok: false,
+      error: error.status === 413 ? error.message : "JSON invalido.",
+    });
   }
 
-  const messages = Array.isArray(body?.messages) ? body.messages : [];
-
-  const cleanMessages = messages
-    .map((message) => ({
-      role: message.role === "assistant" ? "assistant" : "user",
-      content: String(message.content || "").slice(0, 1600),
-    }))
-    .filter((message) => message.content.trim())
-    .slice(-10);
+  const cleanMessages = sanitizeMessages(body?.messages);
 
   if (!cleanMessages.length) {
-    return send(json(400, { error: "Envie pelo menos uma mensagem." }));
+    return sendJson(response, 400, {
+      ok: false,
+      error: "Envie pelo menos uma mensagem valida.",
+    });
   }
 
-  const systemPrompt = [
-    "Voce e o assistente de suporte da AD Bela-Vista.",
-    "Responda em portugues do Brasil, com tom cordial, simples e objetivo.",
-    "Ajude membros e administradores com login, cadastro de membros, documentos, relatorios, exportacao PDF/Excel, permissoes e uso geral do sistema da igreja.",
-    "Se faltar informacao, faca no maximo uma pergunta clara por vez.",
-    "Quando parecer bug, acesso bloqueado, dados sensiveis ou algo que exija acao humana, oriente a abrir um chamado e liste quais detalhes anexar.",
-    "Nao invente dados internos, nao prometa que ja alterou algo no sistema e nao solicite senhas ou codigos completos.",
-  ].join(" ");
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
   try {
-    const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
+    const groqResponse = await fetch(GROQ_CHAT_COMPLETIONS_URL, {
       method: "POST",
+      signal: controller.signal,
       headers: {
         authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || DEFAULT_MODEL,
-        instructions: systemPrompt,
-        input: cleanMessages
-          .map(
-            (message) =>
-              `${message.role === "assistant" ? "Assistente" : "Usuario"}: ${
-                message.content
-              }`
-          )
-          .join("\n\n"),
-        max_output_tokens: 650,
+        model: GROQ_MODEL,
+        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...cleanMessages],
+        max_completion_tokens: 650,
+        temperature: 0.2,
       }),
     });
 
-    const data = await openaiResponse.json().catch(() => ({}));
+    const data = await groqResponse.json().catch(() => ({}));
 
-    if (!openaiResponse.ok) {
-      return send(
-        json(openaiResponse.status, {
-          error:
-            data?.error?.message ||
-            "Nao foi possivel consultar a IA agora.",
-        })
-      );
+    if (!groqResponse.ok) {
+      return sendJson(response, groqResponse.status, {
+        ok: false,
+        error: data?.error?.message || "Nao foi possivel consultar a IA agora.",
+      });
     }
 
-    const answer = getTextFromResponse(data);
+    const answer = getGroqAnswer(data);
 
     if (!answer) {
-      return send(
-        json(502, {
-          error: "A IA nao retornou uma resposta valida.",
-        })
-      );
+      return sendJson(response, 502, {
+        ok: false,
+        error: "A IA nao retornou uma resposta valida.",
+      });
     }
 
-    return send(json(200, { answer }));
+    return sendJson(response, 200, {
+      ok: true,
+      answer,
+      model: data.model || GROQ_MODEL,
+    });
   } catch (error) {
-    return send(
-      json(500, {
-        error: "Falha ao conectar com o assistente de IA.",
-      })
-    );
+    const timedOut = error?.name === "AbortError";
+    return sendJson(response, timedOut ? 504 : 502, {
+      ok: false,
+      error: timedOut
+        ? "Tempo limite excedido ao consultar a IA."
+        : "Falha ao conectar com o assistente de IA.",
+    });
+  } finally {
+    clearTimeout(timeout);
   }
 };
