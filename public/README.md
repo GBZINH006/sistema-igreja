@@ -454,6 +454,14 @@ Execute no SQL Editor do Supabase:
 2. `public/supabase-secretario.sql` para perfis, roles, policies e busca da secretaria.
 3. `public/supabase-suporte.sql` para suporte, tickets, mensagens, notificacoes, logs e bucket de anexos.
 
+O script de suporte tambem cria as funcoes publicas seguras usadas pela pagina do membro:
+
+- `support_open_public_ticket(...)`: abre chamado sem expor inserts diretos.
+- `support_get_public_ticket(...)`: consulta protocolo com ticket/id ou protocolo + contato.
+- `support_add_public_message(...)`: adiciona resposta do membro sem liberar insert anonimo direto na tabela.
+
+Depois de atualizar esse arquivo, rode novamente `public/supabase-suporte.sql` no SQL Editor do Supabase para aplicar as novas RLS, validacoes e funcoes RPC.
+
 Depois crie usuarios em Authentication e associe perfis:
 
 ```sql

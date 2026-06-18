@@ -8,6 +8,8 @@
 -- - support-attachments-public (publico, para anexos simples no navegador)
 -- Se preferir privado, ajuste o front para signed URLs.
 
+create extension if not exists pgcrypto;
+
 insert into storage.buckets (id, name, public)
 values ('support-attachments-public', 'support-attachments-public', true)
 on conflict (id) do update set public = true;
@@ -24,7 +26,16 @@ create policy "support_attachments_public_insert"
 on storage.objects
 for insert
 to anon, authenticated
-with check (bucket_id = 'support-attachments-public');
+with check (
+  bucket_id = 'support-attachments-public'
+  and lower(coalesce(metadata->>'mimetype', '')) in ('image/jpeg', 'image/png', 'image/webp', 'application/pdf')
+  and case
+    when coalesce(metadata->>'size', '') ~ '^[0-9]+$'
+      then (metadata->>'size')::bigint <= 5242880
+    else false
+  end
+  and name like 'support/%'
+);
 
 create table if not exists public.support_tickets (
   id uuid primary key default gen_random_uuid(),
@@ -82,6 +93,17 @@ alter table public.support_tickets add column if not exists rating integer check
 alter table public.support_tickets add column if not exists rating_comment text;
 alter table public.support_tickets alter column user_id drop not null;
 alter table public.support_tickets alter column protocol set default '';
+alter table public.support_tickets alter column status set default 'Aguardando';
+
+alter table public.support_tickets drop constraint if exists support_tickets_priority_check;
+alter table public.support_tickets
+  add constraint support_tickets_priority_check
+  check (priority in ('Baixa', 'Normal', 'Alta', 'Urgente'));
+
+alter table public.support_tickets drop constraint if exists support_tickets_status_check;
+alter table public.support_tickets
+  add constraint support_tickets_status_check
+  check (status in ('Aguardando', 'Pendente', 'Em analise', 'Em análise', 'Respondido', 'Encerrado', 'Urgente'));
 
 alter table public.support_messages add column if not exists sender_name text;
 alter table public.support_messages add column if not exists sender_type text not null default 'user';
@@ -111,6 +133,31 @@ $$;
 
 revoke all on function public.support_is_admin_or_support() from public;
 grant execute on function public.support_is_admin_or_support() to authenticated;
+
+create or replace function public.support_contact_matches(
+  p_email text,
+  p_phone text,
+  p_contact text
+)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    length(trim(coalesce(p_contact, ''))) >= 4
+    and (
+      lower(trim(coalesce(p_email, ''))) = lower(trim(coalesce(p_contact, '')))
+      or (
+        char_length(regexp_replace(coalesce(p_contact, ''), '\D', '', 'g')) >= 8
+        and regexp_replace(coalesce(p_phone, ''), '\D', '', 'g') = regexp_replace(coalesce(p_contact, ''), '\D', '', 'g')
+      )
+    );
+$$;
+
+revoke all on function public.support_contact_matches(text, text, text) from public;
+grant execute on function public.support_contact_matches(text, text, text) to anon, authenticated;
 
 create or replace function public.support_set_updated_at()
 returns trigger
@@ -279,6 +326,49 @@ as $$
 declare
   v_ticket public.support_tickets;
 begin
+  if char_length(trim(coalesce(p_user_name, ''))) < 3 then
+    raise exception 'Nome obrigatorio.';
+  end if;
+
+  if char_length(trim(coalesce(p_user_email, ''))) = 0
+     and char_length(regexp_replace(coalesce(p_user_phone, ''), '\D', '', 'g')) < 8 then
+    raise exception 'Informe telefone ou email.';
+  end if;
+
+  if char_length(trim(coalesce(p_user_email, ''))) > 0
+     and trim(p_user_email) !~* '^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$' then
+    raise exception 'Email invalido.';
+  end if;
+
+  if trim(coalesce(p_category, '')) not in (
+    'Cadastro de Membros',
+    'Documentos',
+    'Relatorios',
+    'Relatórios',
+    'Exportacao PDF',
+    'Exportação PDF',
+    'Exportacao Excel',
+    'Exportação Excel',
+    'Permissoes',
+    'Permissões',
+    'Login',
+    'Erro do Sistema',
+    'Sugestao',
+    'Sugestão',
+    'Outros'
+  ) then
+    raise exception 'Categoria invalida.';
+  end if;
+
+  if coalesce(nullif(trim(p_priority), ''), 'Normal') not in ('Baixa', 'Normal', 'Alta', 'Urgente') then
+    raise exception 'Prioridade invalida.';
+  end if;
+
+  if char_length(trim(coalesce(p_subject, ''))) < 5
+     or char_length(trim(coalesce(p_description, ''))) < 10 then
+    raise exception 'Assunto ou mensagem muito curto.';
+  end if;
+
   insert into public.support_tickets (
     user_id,
     user_name,
@@ -292,14 +382,14 @@ begin
   )
   values (
     null,
-    nullif(trim(p_user_name), ''),
-    nullif(trim(p_user_phone), ''),
-    nullif(trim(p_user_email), ''),
-    trim(p_subject),
-    trim(p_category),
-    trim(p_description),
+    left(nullif(trim(p_user_name), ''), 120),
+    left(nullif(trim(p_user_phone), ''), 20),
+    left(lower(nullif(trim(p_user_email), '')), 160),
+    left(trim(p_subject), 120),
+    left(trim(p_category), 60),
+    left(trim(p_description), 3000),
     coalesce(nullif(trim(p_priority), ''), 'Normal'),
-    'Pendente'
+    'Aguardando'
   )
   returning * into v_ticket;
 
@@ -342,6 +432,162 @@ $$;
 revoke all on function public.support_open_public_ticket(text, text, text, text, text, text, text, text) from public;
 grant execute on function public.support_open_public_ticket(text, text, text, text, text, text, text, text) to anon, authenticated;
 
+create or replace function public.support_get_public_ticket(
+  p_ticket_id uuid default null,
+  p_protocol text default null,
+  p_contact text default null
+)
+returns table (
+  id uuid,
+  protocol text,
+  user_name text,
+  user_phone text,
+  user_email text,
+  subject text,
+  category text,
+  description text,
+  priority text,
+  status text,
+  created_at timestamptz,
+  updated_at timestamptz,
+  last_message_at timestamptz,
+  messages jsonb
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return query
+  select
+    t.id,
+    t.protocol,
+    t.user_name,
+    t.user_phone,
+    t.user_email,
+    t.subject,
+    t.category,
+    t.description,
+    t.priority,
+    t.status,
+    t.created_at,
+    t.updated_at,
+    t.last_message_at,
+    coalesce(
+      jsonb_agg(
+        jsonb_build_object(
+          'id', m.id,
+          'ticket_id', m.ticket_id,
+          'sender_role', m.sender_role,
+          'sender_type', m.sender_type,
+          'message', m.message,
+          'attachment_url', m.attachment_url,
+          'created_at', m.created_at
+        )
+        order by m.created_at
+      ) filter (where m.id is not null),
+      '[]'::jsonb
+    ) as messages
+  from public.support_tickets t
+  left join public.support_messages m on m.ticket_id = t.id
+  where (
+    (p_ticket_id is not null and t.id = p_ticket_id)
+    or (
+      p_protocol is not null
+      and upper(t.protocol) = upper(trim(p_protocol))
+      and public.support_contact_matches(t.user_email, t.user_phone, p_contact)
+    )
+  )
+  group by t.id
+  limit 1;
+end
+$$;
+
+revoke all on function public.support_get_public_ticket(uuid, text, text) from public;
+grant execute on function public.support_get_public_ticket(uuid, text, text) to anon, authenticated;
+
+create or replace function public.support_add_public_message(
+  p_ticket_id uuid,
+  p_protocol text,
+  p_contact text,
+  p_message text,
+  p_attachment_url text default null
+)
+returns table (
+  id uuid,
+  ticket_id uuid,
+  sender_role text,
+  sender_type text,
+  message text,
+  attachment_url text,
+  created_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_ticket public.support_tickets;
+  v_message public.support_messages;
+begin
+  select *
+    into v_ticket
+  from public.support_tickets t
+  where t.id = p_ticket_id
+    and upper(t.protocol) = upper(trim(p_protocol))
+    and (
+      public.support_contact_matches(t.user_email, t.user_phone, p_contact)
+      or p_ticket_id is not null
+    )
+  limit 1;
+
+  if v_ticket.id is null then
+    raise exception 'Chamado nao encontrado.';
+  end if;
+
+  if v_ticket.status = 'Encerrado' then
+    raise exception 'Chamado encerrado.';
+  end if;
+
+  if char_length(trim(coalesce(p_message, ''))) < 2 and p_attachment_url is null then
+    raise exception 'Mensagem vazia.';
+  end if;
+
+  insert into public.support_messages (
+    ticket_id,
+    sender_id,
+    sender_name,
+    sender_type,
+    sender_role,
+    message,
+    attachment_url
+  )
+  values (
+    v_ticket.id,
+    null,
+    v_ticket.user_name,
+    'user',
+    'user',
+    left(trim(coalesce(p_message, 'Anexo enviado.')), 2000),
+    p_attachment_url
+  )
+  returning * into v_message;
+
+  return query
+  select
+    v_message.id,
+    v_message.ticket_id,
+    v_message.sender_role,
+    v_message.sender_type,
+    v_message.message,
+    v_message.attachment_url,
+    v_message.created_at;
+end
+$$;
+
+revoke all on function public.support_add_public_message(uuid, text, text, text, text) from public;
+grant execute on function public.support_add_public_message(uuid, text, text, text, text) to anon, authenticated;
+
 alter table public.support_tickets enable row level security;
 alter table public.support_messages enable row level security;
 alter table public.support_notifications enable row level security;
@@ -357,11 +603,12 @@ using (public.support_is_admin_or_support());
 
 drop policy if exists "support_tickets_insert_own" on public.support_tickets;
 drop policy if exists "support_tickets_insert_public" on public.support_tickets;
-create policy "support_tickets_insert_public"
+drop policy if exists "support_tickets_insert_admin" on public.support_tickets;
+create policy "support_tickets_insert_admin"
 on public.support_tickets
 for insert
-to anon, authenticated
-with check (user_id is null or user_id = auth.uid());
+to authenticated
+with check (public.support_is_admin_or_support());
 
 drop policy if exists "support_tickets_update_admin" on public.support_tickets;
 create policy "support_tickets_update_admin"
@@ -381,22 +628,18 @@ to authenticated
 using (public.support_is_admin_or_support());
 
 drop policy if exists "support_messages_insert" on public.support_messages;
-create policy "support_messages_insert"
+drop policy if exists "support_messages_insert_admin" on public.support_messages;
+create policy "support_messages_insert_admin"
 on public.support_messages
 for insert
-to anon, authenticated
+to authenticated
 with check (
   exists (
     select 1
     from public.support_tickets t
     where t.id = support_messages.ticket_id
-      and (
-        (coalesce(sender_type, sender_role) = 'user' and sender_id is null)
-        or
-        (sender_id = auth.uid() and public.support_is_admin_or_support())
-        or
-        (coalesce(sender_type, sender_role) = 'system' and sender_id = auth.uid() and public.support_is_admin_or_support())
-      )
+      and public.support_is_admin_or_support()
+      and sender_id = auth.uid()
   )
 );
 

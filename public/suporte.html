@@ -16,11 +16,11 @@
 <body>
   <div class="support-app">
     <header class="support-header">
-      <a class="brand" href="admin.html" aria-label="Voltar ao painel">
+      <a class="brand" href="cadastro.html" aria-label="Voltar ao cadastro">
         <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista">
         <span>
           <strong>AD Bela-Vista</strong>
-          <small>Central de Suporte</small>
+          <small>Suporte do Membro</small>
         </span>
       </a>
 
@@ -29,11 +29,7 @@
         <button class="icon-button" id="refresh-btn" type="button" title="Atualizar chamados">
           <i class="fa-solid fa-rotate-right"></i>
         </button>
-        <a class="button ghost" href="suporte-admin.html">
-          <i class="fa-solid fa-headset"></i>
-          Atendimento
-        </a>
-        <a class="button" href="admin.html">
+        <a class="button" href="cadastro.html">
           <i class="fa-solid fa-arrow-left"></i>
           Voltar
         </a>
@@ -162,8 +158,29 @@
         <aside class="panel session-panel">
           <div class="panel-heading compact">
             <div>
-              <span class="eyebrow">Sessão atual</span>
-              <h2>Chamados enviados</h2>
+              <span class="eyebrow">Consultar protocolo</span>
+              <h2>Buscar atendimento</h2>
+            </div>
+          </div>
+          <form class="lookup-form" id="lookup-form">
+            <label class="field">
+              <span>Protocolo</span>
+              <input id="lookup-protocol" type="text" maxlength="20" placeholder="SUP-2026-0001" autocomplete="off">
+            </label>
+            <label class="field">
+              <span>Telefone ou e-mail</span>
+              <input id="lookup-contact" type="text" maxlength="160" placeholder="Contato usado no chamado">
+            </label>
+            <button class="button ghost block" id="lookup-ticket-btn" type="submit">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              Consultar
+            </button>
+            <div class="form-message warning" id="lookup-warning"></div>
+          </form>
+          <div class="panel-heading compact history-heading">
+            <div>
+              <span class="eyebrow">Histórico local</span>
+              <h2>Chamados carregados</h2>
             </div>
           </div>
           <div class="session-list" id="member-ticket-list"></div>

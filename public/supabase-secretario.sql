@@ -21,19 +21,10 @@
   alter table public.profiles
     alter column role set not null;
 
-  do $$
-  begin
-    if not exists (
-      select 1
-      from pg_constraint
-      where conname = 'profiles_role_check'
-        and conrelid = 'public.profiles'::regclass
-    ) then
-      alter table public.profiles
-        add constraint profiles_role_check
-        check (role in ('admin', 'secretario'));
-    end if;
-  end $$;
+  alter table public.profiles drop constraint if exists profiles_role_check;
+  alter table public.profiles
+    add constraint profiles_role_check
+    check (role in ('admin', 'pastor', 'secretario', 'suporte'));
 
   alter table public.profiles enable row level security;
 
@@ -49,7 +40,7 @@
       select 1
       from public.profiles p
       where p.id = auth.uid()
-        and p.role = any(roles)
+      and p.role = any(roles)
     );
   $$;
 
@@ -68,7 +59,7 @@
   on public.profiles
   for select
   to authenticated
-  using (public.tem_role(array['admin']));
+  using (public.tem_role(array['admin', 'pastor']));
 
   drop policy if exists "Admin gerencia perfis" on public.profiles;
   create policy "Admin gerencia perfis"
@@ -101,7 +92,7 @@
     select m.*
     from public.membros m
     cross join entrada e
-    where public.tem_role(array['admin', 'secretario'])
+    where public.tem_role(array['admin', 'pastor', 'secretario'])
       and (
         (char_length(e.t) >= 3 and m.nome ilike ('%' || replace(replace(e.t, '%', ''), ',', '') || '%'))
         or (char_length(e.t) >= 3 and coalesce(m.cpf, '') ilike ('%' || replace(replace(e.t, '%', ''), ',', '') || '%'))
@@ -125,7 +116,7 @@
   on public.membros
   for select
   to authenticated
-  using (public.tem_role(array['admin']));
+  using (public.tem_role(array['admin', 'pastor']));
 
   drop policy if exists "Cadastro publico insere membros" on public.membros;
   create policy "Cadastro publico insere membros"
@@ -139,15 +130,15 @@
   on public.membros
   for insert
   to authenticated
-  with check (public.tem_role(array['admin', 'secretario']));
+  with check (public.tem_role(array['admin', 'pastor', 'secretario']));
 
   drop policy if exists "Admin e secretaria atualizam membros" on public.membros;
   create policy "Admin e secretaria atualizam membros"
   on public.membros
   for update
   to authenticated
-  using (public.tem_role(array['admin', 'secretario']))
-  with check (public.tem_role(array['admin', 'secretario']));
+  using (public.tem_role(array['admin', 'pastor', 'secretario']))
+  with check (public.tem_role(array['admin', 'pastor', 'secretario']));
 
   drop policy if exists "Admin exclui membros" on public.membros;
   create policy "Admin exclui membros"
@@ -165,7 +156,7 @@
   to authenticated
   with check (
     bucket_id = 'membros-docs'
-    and public.tem_role(array['admin', 'secretario'])
+    and public.tem_role(array['admin', 'pastor', 'secretario'])
   );
 
   drop policy if exists "Secretaria le arquivos membros-docs" on storage.objects;
@@ -175,7 +166,7 @@
   to authenticated
   using (
     bucket_id = 'membros-docs'
-    and public.tem_role(array['admin', 'secretario'])
+    and public.tem_role(array['admin', 'pastor', 'secretario'])
   );
 
   -- 5) Transformar usuarios em admin/secretario.
