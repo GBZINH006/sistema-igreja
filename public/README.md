@@ -144,13 +144,30 @@ Funcionalidades:
 - Opcoes para realtime, aniversariantes, confirmacao de exclusao, exportacoes completas, grafico padrao e itens por pagina.
 - Area restrita para admin.
 
-### Central de Suporte do Usuario
+### Assistente IA
 
 Arquivos principais:
 
-- `public/suporte.html`
-- `public/suporte.js`
-- `public/suporte.css`
+- `public/suporte-ia.html`
+- `public/suporte-ia.js`
+- `public/suporte-ia.css`
+
+Funcionalidades:
+
+- Chat moderno com IA via `/api/assistente-suporte`.
+- Historico local da conversa.
+- Respostas formatadas com titulos, listas, passos e avisos.
+- Sugestoes rapidas.
+- Indicador de digitacao e loading.
+- Botao para abrir chamado transferindo o resumo para o modulo do membro.
+
+### Suporte do Membro
+
+Arquivos principais:
+
+- `public/suporte-membro.html`
+- `public/suporte-membro.js`
+- `public/suporte-membro.css`
 
 Funcionalidades:
 
@@ -158,10 +175,11 @@ Funcionalidades:
 - Campos de nome, telefone, e-mail, categoria, prioridade, assunto e mensagem.
 - Upload de imagem ou PDF para o bucket `support-attachments-public`.
 - Protocolo gerado no banco no formato `SUP-YYYY-NNNN`.
-- Lista de chamados enviados na sessao atual usando `sessionStorage`.
+- Consulta por protocolo e contato.
+- Lista de chamados carregados no navegador usando `sessionStorage`.
 - Chat do chamado com mensagens e anexos.
-- Assistente inteligente com perguntas rapidas.
-- Integracao com endpoint de IA em `/api/assistente-suporte` ou com `window.CONFIG.SUPPORT_AI_ENDPOINT`, quando configurado.
+- Status: `Aguardando`, `Em analise`, `Respondido`, `Encerrado` e `Urgente`.
+- Tempo medio exibido: ate 30 minutos.
 
 ### Painel de Atendimento de Suporte
 
@@ -215,7 +233,9 @@ sistema-igreja/
 │   ├── cadastro.html / cadastro.js / cadastro.css
 │   ├── admin.html / admin.js / admin.css
 │   ├── secretario.html / secretario.js / secretario.css
-│   ├── suporte.html / suporte.js / suporte.css
+│   ├── suporte-ia.html / suporte-ia.js / suporte-ia.css
+│   ├── suporte-membro.html / suporte-membro.js / suporte-membro.css
+│   ├── suporte.html (redireciona para suporte-ia.html)
 │   ├── suporte-admin.html / suporte-admin.js / suporte-admin.css
 │   ├── relatorios.html
 │   ├── indicadores.html
@@ -263,7 +283,9 @@ Dependencia serverless:
 | `public/relatorios.html` | Relatorios e exportacoes | Restrito a `admin` |
 | `public/indicadores.html` | Graficos e indicadores | Restrito a `admin` |
 | `public/configuracoes.html` | Preferencias locais do painel | Restrito a `admin` |
-| `public/suporte.html` | Central de suporte do usuario | Publico |
+| `public/suporte-ia.html` | Assistente IA de suporte | Publico |
+| `public/suporte-membro.html` | Abertura e acompanhamento de chamados | Publico |
+| `public/suporte.html` | Entrada antiga, redireciona para o assistente IA | Publico |
 | `public/suporte-admin.html` | Atendimento de chamados | Restrito a perfis de suporte/admin |
 | `/api/assistente-suporte` | Assistente de IA | Serverless |
 
@@ -549,7 +571,8 @@ Passos recomendados:
    - `secretario.html`
    - `relatorios.html`
    - `indicadores.html`
-   - `suporte.html`
+   - `suporte-ia.html`
+   - `suporte-membro.html`
    - `suporte-admin.html`
 7. Valide uploads, assinatura, exportacoes, realtime e abertura de chamados.
 

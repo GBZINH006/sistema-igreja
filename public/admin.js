@@ -48,7 +48,7 @@
           <a class="side-link" href="#aniv-body" data-nav="aniversariantes"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
           <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatorios</span></a>
           <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
-          <a class="side-link" href="suporte.html" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
+          <a class="side-link" href="suporte-admin.html" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
           <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configuracoes</span></a>
         </nav>
         <div class="sidebar-footer">

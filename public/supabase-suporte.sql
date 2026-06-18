@@ -491,7 +491,11 @@ begin
   from public.support_tickets t
   left join public.support_messages m on m.ticket_id = t.id
   where (
-    (p_ticket_id is not null and t.id = p_ticket_id)
+    (
+      p_ticket_id is not null
+      and t.id = p_ticket_id
+      and public.support_contact_matches(t.user_email, t.user_phone, p_contact)
+    )
     or (
       p_protocol is not null
       and upper(t.protocol) = upper(trim(p_protocol))
@@ -535,10 +539,7 @@ begin
   from public.support_tickets t
   where t.id = p_ticket_id
     and upper(t.protocol) = upper(trim(p_protocol))
-    and (
-      public.support_contact_matches(t.user_email, t.user_phone, p_contact)
-      or p_ticket_id is not null
-    )
+    and public.support_contact_matches(t.user_email, t.user_phone, p_contact)
   limit 1;
 
   if v_ticket.id is null then

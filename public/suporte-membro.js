@@ -13,8 +13,7 @@
   ];
 
   const SESSION_TICKETS_KEY = "ad_bela_vista_support_submitted";
-  const AI_MESSAGE_LIMIT = 10;
-  const AI_MESSAGE_CHAR_LIMIT = 1200;
+  const AI_DRAFT_KEY = "ad_bela_vista_support_ai_draft";
   const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
   const ALLOWED_ATTACHMENT_TYPES = new Set([
     "image/jpeg",
@@ -39,18 +38,7 @@
     messages: [],
     selectedId: null,
     submittedTickets: readStoredTickets(),
-    aiBusy: false,
     ticketsLoading: false,
-    aiMessages: [
-      {
-        role: "assistant",
-        content: [
-          "# Assistente da AD Bela-Vista",
-          "Descreva sua duvida em poucas palavras. Eu posso orientar sobre cadastro, login, relatorios, exportacoes, fotos, documentos e permissoes.",
-          "Dica: nunca envie senhas pelo chat."
-        ].join("\n\n")
-      }
-    ]
   };
 
   const $ = (selector) => document.querySelector(selector);
@@ -272,81 +260,6 @@
       </div>
     `;
     $("#messages").scrollTop = $("#messages").scrollHeight;
-  }
-
-  function formatAiResponse(content) {
-    const lines = String(content || "").split(/\r?\n/);
-    let html = "";
-    let listType = null;
-
-    function closeList() {
-      if (!listType) return;
-      html += `</${listType}>`;
-      listType = null;
-    }
-
-    lines.forEach((rawLine) => {
-      const line = rawLine.trim();
-      if (!line) {
-        closeList();
-        return;
-      }
-
-      const safe = escapeHtml(line.replace(/^#{1,3}\s*/, ""));
-      const numbered = line.match(/^\d+[\.)]\s+(.+)/);
-      const bullet = line.match(/^[-*]\s+(.+)/);
-      const callout = line.match(/^(Aviso|Atencao|Atenção|Dica|Importante):\s*(.+)$/i);
-
-      if (line.startsWith("#")) {
-        closeList();
-        html += `<h3>${safe}</h3>`;
-      } else if (callout) {
-        closeList();
-        html += `<div class="ai-callout"><strong>${escapeHtml(callout[1])}</strong><span>${escapeHtml(callout[2])}</span></div>`;
-      } else if (numbered) {
-        if (listType !== "ol") {
-          closeList();
-          html += "<ol>";
-          listType = "ol";
-        }
-        html += `<li>${escapeHtml(numbered[1])}</li>`;
-      } else if (bullet) {
-        if (listType !== "ul") {
-          closeList();
-          html += "<ul>";
-          listType = "ul";
-        }
-        html += `<li>${escapeHtml(bullet[1])}</li>`;
-      } else {
-        closeList();
-        html += `<p>${escapeHtml(line)}</p>`;
-      }
-    });
-
-    closeList();
-    return html || "<p>Nao consegui responder agora.</p>";
-  }
-
-  function renderAiMessages() {
-    $("#ai-messages").innerHTML = state.aiMessages.map((message) => {
-      const role = message.role === "user" ? "user" : "assistant";
-      const body = role === "assistant"
-        ? formatAiResponse(message.content)
-        : `<p>${escapeHtml(message.content)}</p>`;
-      return `<div class="ai-message ${role}">${body}</div>`;
-    }).join("");
-    $("#ai-messages").scrollTop = $("#ai-messages").scrollHeight;
-  }
-
-  function openAiDrawer() {
-    $("#ai-drawer").classList.add("open");
-    $("#ai-drawer").setAttribute("aria-hidden", "false");
-    renderAiMessages();
-  }
-
-  function closeAiDrawer() {
-    $("#ai-drawer").classList.remove("open");
-    $("#ai-drawer").setAttribute("aria-hidden", "true");
   }
 
   function validateAttachment(file) {
@@ -591,92 +504,6 @@
     }
   }
 
-  function setAiBusy(busy) {
-    state.aiBusy = busy;
-    $("#ai-send").disabled = busy;
-    $("#ai-input").disabled = busy;
-    $("#ai-send").textContent = busy ? "Pensando..." : "Perguntar";
-  }
-
-  function getAiPayloadMessages() {
-    return state.aiMessages
-      .slice(-AI_MESSAGE_LIMIT)
-      .map((message) => ({
-        role: message.role === "assistant" ? "assistant" : "user",
-        content: sanitizeText(message.content, AI_MESSAGE_CHAR_LIMIT)
-      }))
-      .filter((message) => message.content);
-  }
-
-  function getAiEndpoint() {
-    if (window.CONFIG?.SUPPORT_AI_ENDPOINT) {
-      return window.CONFIG.SUPPORT_AI_ENDPOINT;
-    }
-
-    const isStaticLiveServer = ["127.0.0.1", "localhost"].includes(window.location.hostname)
-      && ["5500", "5501", "5502"].includes(window.location.port);
-
-    return isStaticLiveServer
-      ? "http://localhost:3000/api/assistente-suporte"
-      : "/api/assistente-suporte";
-  }
-
-  async function sendAiPrompt(promptText) {
-    const prompt = sanitizeText(promptText || $("#ai-input").value, 900);
-    if (!prompt || state.aiBusy) return;
-
-    state.aiMessages.push({ role: "user", content: prompt });
-    $("#ai-input").value = "";
-    openAiDrawer();
-    setAiBusy(true);
-
-    try {
-      const response = await fetch(getAiEndpoint(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: getAiPayloadMessages() })
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.error || "Nao foi possivel consultar a IA.");
-      state.aiMessages.push({ role: "assistant", content: data.answer || "Nao consegui responder agora." });
-      state.aiMessages = state.aiMessages.slice(-AI_MESSAGE_LIMIT);
-    } catch (error) {
-      state.aiMessages.push({
-        role: "assistant",
-        content: `# Assistente indisponivel\n\nAviso: ${error.message || "Nao foi possivel consultar a IA agora."}\n\n1. Abra um chamado com os detalhes do problema.\n2. Informe tela, horario aproximado e mensagem de erro.\n3. Nao envie senhas.`
-      });
-      state.aiMessages = state.aiMessages.slice(-AI_MESSAGE_LIMIT);
-    } finally {
-      setAiBusy(false);
-      renderAiMessages();
-    }
-  }
-
-  function fillTicketFromAi() {
-    const hasUserMessage = state.aiMessages.some((message) => message.role === "user");
-    if (!hasUserMessage) {
-      toast("Converse primeiro", "Envie uma pergunta para gerar o resumo.");
-      return;
-    }
-
-    const summary = state.aiMessages
-      .slice(1)
-      .map((message) => `${message.role === "user" ? "Membro" : "Assistente"}: ${message.content}`)
-      .join("\n\n")
-      .slice(-2600);
-
-    if (!$("#ticket-subject").value.trim()) {
-      $("#ticket-subject").value = "Atendimento iniciado pelo assistente de IA";
-    }
-    $("#ticket-description").value = $("#ticket-description").value.trim()
-      ? `${$("#ticket-description").value.trim()}\n\nResumo da conversa com a IA:\n\n${summary}`
-      : `Resumo da conversa com a IA:\n\n${summary}`;
-
-    closeAiDrawer();
-    $("#ticket-form").scrollIntoView({ behavior: "smooth", block: "start" });
-    toast("Resumo adicionado", "Revise os campos antes de enviar.");
-  }
-
   function bindEvents() {
     CATEGORIES.forEach((category) => {
       const option = document.createElement("option");
@@ -689,19 +516,6 @@
     $("#lookup-form").addEventListener("submit", lookupTicket);
     $("#refresh-btn").addEventListener("click", loadTickets);
     $("#send-message").addEventListener("click", sendMessage);
-    $("#ai-send").addEventListener("click", () => sendAiPrompt());
-    $("#ai-input").addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        event.preventDefault();
-        sendAiPrompt();
-      }
-    });
-    $$(".quick-prompts button").forEach((button) => {
-      button.addEventListener("click", () => sendAiPrompt(button.dataset.aiPrompt));
-    });
-    $("[data-close-ai]").addEventListener("click", closeAiDrawer);
-    $$(".drawer-panel [data-close-ai]").forEach((button) => button.addEventListener("click", closeAiDrawer));
-    $("#ai-fill-ticket").addEventListener("click", fillTicketFromAi);
     $("#ticket-attachment").addEventListener("change", (event) => {
       const file = event.target.files[0];
       try {
@@ -732,9 +546,28 @@
     });
   }
 
+  function applyAiDraft() {
+    try {
+      const draft = JSON.parse(localStorage.getItem(AI_DRAFT_KEY) || "null");
+      if (!draft) return;
+
+      if (!$("#ticket-subject").value.trim() && draft.subject) {
+        $("#ticket-subject").value = sanitizeText(draft.subject, 120);
+      }
+      if (!$("#ticket-description").value.trim() && draft.description) {
+        $("#ticket-description").value = String(draft.description || "").slice(0, 3000);
+      }
+
+      localStorage.removeItem(AI_DRAFT_KEY);
+      toast("Resumo da IA adicionado", "Revise a mensagem antes de enviar o chamado.");
+    } catch (error) {
+      localStorage.removeItem(AI_DRAFT_KEY);
+    }
+  }
+
   async function init() {
     bindEvents();
-    renderAiMessages();
+    applyAiDraft();
 
     if (!window.supabase || !window.CONFIG?.SUPABASE_URL || !window.CONFIG?.SUPABASE_KEY) {
       setWarning("#member-warning", "Configuracao do Supabase nao encontrada.");

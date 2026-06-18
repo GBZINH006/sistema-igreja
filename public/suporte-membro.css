@@ -327,6 +327,13 @@ h2 {
   margin-bottom: 12px;
 }
 
+.response-time {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .history-heading {
   margin-top: 18px;
   padding-top: 16px;

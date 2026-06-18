@@ -41,7 +41,7 @@
 
     <section class="dashboard hidden" id="dashboard-view">
       <header class="topbar">
-        <a class="brand" href="suporte.html">
+        <a class="brand" href="suporte-admin.html">
           <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista">
           <span>
             <strong>AD Bela-Vista</strong>
@@ -52,7 +52,8 @@
         <div class="top-actions">
           <span class="status-pill"><span></span> Online</span>
           <button class="icon-button" id="refresh-btn" type="button" title="Atualizar"><i class="fa-solid fa-rotate-right"></i></button>
-          <a class="button" href="suporte.html"><i class="fa-solid fa-arrow-left"></i> Suporte</a>
+          <a class="button ghost" href="suporte-ia.html"><i class="fa-solid fa-wand-magic-sparkles"></i> IA</a>
+          <a class="button" href="suporte-membro.html"><i class="fa-regular fa-life-ring"></i> Membro</a>
           <button class="button ghost" id="logout-btn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
         </div>
       </header>
@@ -69,6 +70,10 @@
         <article class="metric-card">
           <span>Respondidos</span>
           <strong id="stat-answered">0</strong>
+        </article>
+        <article class="metric-card">
+          <span>Encerrados</span>
+          <strong id="stat-closed">0</strong>
         </article>
         <article class="metric-card danger">
           <span>Urgentes</span>

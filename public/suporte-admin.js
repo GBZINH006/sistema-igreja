@@ -213,11 +213,13 @@
     const pending = state.tickets.filter(ticket => normalizeStatus(ticket.status) === STATUS.pending).length;
     const analysis = state.tickets.filter(ticket => normalizeStatus(ticket.status) === STATUS.analysis).length;
     const answered = state.tickets.filter(ticket => normalizeStatus(ticket.status) === STATUS.answered).length;
+    const closed = state.tickets.filter(ticket => normalizeStatus(ticket.status) === STATUS.closed).length;
     const urgent = state.tickets.filter(ticket => ticket.priority === "Urgente" || normalizeStatus(ticket.status) === STATUS.urgent).length;
 
     $("#stat-pending").textContent = pending;
     $("#stat-analysis").textContent = analysis;
     $("#stat-answered").textContent = answered;
+    $("#stat-closed").textContent = closed;
     $("#stat-urgent").textContent = urgent;
   }
 
