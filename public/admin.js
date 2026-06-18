@@ -91,76 +91,81 @@
     const metricCards = {
       total: {
         icon: 'fa-users',
-        title: 'Total de registros',
-        subtitle: 'Todos os cadastros realizados na plataforma.',
-        pill: 'registros cadastrados',
-        trend: '+50% em relacao ao mes passado',
-        visual: 'donut',
+        title: 'Total de Registros',
+        subtitle: 'Pessoas cadastradas no sistema',
+        pill: 'crescimento total',
+        trend: '+12% em relacao ao mes anterior',
+        visual: 'progress',
         tone: 'purple'
       },
       membros: {
-        icon: 'fa-user',
+        icon: 'fa-user-group',
         title: 'Membros recebidos',
-        subtitle: 'Total de membros que ingressaram na plataforma.',
-        pill: 'membros recebidos',
-        trend: '+100% em relacao ao mes passado',
-        visual: 'bars',
+        subtitle: 'Membros oficialmente recebidos pela igreja',
+        pill: 'entradas mensais',
+        trend: '+14% no mes atual',
+        visual: 'member-bars',
         tone: 'blue'
       },
       congregados: {
         icon: 'fa-user-group',
         title: 'Congregados acompanhados',
-        subtitle: 'Total de congregados que estao sendo acompanhados.',
-        pill: 'congregados',
-        trend: '+33% em relacao ao mes passado',
+        subtitle: 'Pessoas em processo de acompanhamento',
+        pill: 'acompanhados',
+        trend: '75% de acompanhamento',
         visual: 'gauge',
         tone: 'amber'
       },
       ativos: {
         icon: 'fa-user-check',
         title: 'Cadastros ativos',
-        subtitle: 'Cadastros que estao ativos na plataforma.',
-        pill: 'ativos',
-        trend: 'registros ativos',
+        subtitle: 'Membros ativos no sistema',
+        pill: 'ativos x inativos',
+        trend: 'Ativos em destaque',
         visual: 'people',
         tone: 'green'
       },
       mes: {
         icon: 'fa-user-plus',
         title: 'Novos este mes',
-        subtitle: 'Novos cadastros realizados neste mes.',
-        pill: 'novos cadastros',
-        trend: '+1 novo em relacao ao mes passado',
-        visual: 'hero',
+        subtitle: 'Evolucao de novos cadastros',
+        pill: 'novos do mes',
+        trend: 'Mostrando os ultimos meses',
+        visual: 'trend-bars',
         tone: 'coral'
       },
       aniversariantes: {
         icon: 'fa-cake-candles',
-        title: 'Aniversariantes do mes',
-        subtitle: 'Membros que fazem aniversario neste mes.',
+        title: 'Aniversariantes',
+        subtitle: 'Celebrações previstas para este mês',
         pill: 'aniversariantes',
-        trend: 'Nenhum aniversariante este mes',
+        trend: 'Nenhum aniversariante este mês',
         visual: 'birthday',
         tone: 'red'
       }
     };
 
     const renderMetricVisual = (metric, config) => {
-      if (config.visual === 'donut') {
+      if (config.visual === 'progress') {
         return `
-          <div class="metric-donut" aria-hidden="true">
-            <span class="donut-icon"><i class="fa-regular fa-file-lines"></i></span>
-            <strong id="metric-total-percent">0%</strong>
-            <small>da meta mensal</small>
+          <div class="metric-progress" aria-hidden="true">
+            <div class="metric-progress-top">
+              <span>Crescimento do cadastro</span>
+              <strong id="metric-total-percent">0%</strong>
+            </div>
+            <div class="metric-progress-track">
+              <div class="metric-progress-fill" id="metric-total-fill" style="width: 0;"></div>
+            </div>
+            <small>Comparado ao mês anterior</small>
           </div>`;
       }
-      if (config.visual === 'bars') {
+      if (config.visual === 'member-bars' || config.visual === 'trend-bars') {
         return `
-          <div class="metric-bars" aria-hidden="true">
-            <span style="--h:28%"><b id="bar-mai">0</b><em>Mai</em></span>
-            <span style="--h:28%"><b id="bar-jun">0</b><em>Jun</em></span>
-            <span style="--h:62%"><b id="bar-jul">1</b><em>Jul</em></span>
-            <span style="--h:92%"><b id="bar-ago">2</b><em>Ago</em></span>
+          <div class="metric-member-bars" aria-hidden="true">
+            <span class="member-bar" id="member-bar-0" style="--h:28%"><i class="fa-solid fa-user"></i><strong>0</strong><em>Mai</em></span>
+            <span class="member-bar" id="member-bar-1" style="--h:28%"><i class="fa-solid fa-user"></i><strong>0</strong><em>Jun</em></span>
+            <span class="member-bar" id="member-bar-2" style="--h:62%"><i class="fa-solid fa-user"></i><strong>1</strong><em>Jul</em></span>
+            <span class="member-bar current" id="member-bar-3" style="--h:92%"><i class="fa-solid fa-user"></i><strong>2</strong><em>Ago</em></span>
           </div>`;
       }
       if (config.visual === 'gauge') {
@@ -173,14 +178,15 @@
       }
       if (config.visual === 'people') {
         return `
-          <div class="metric-people" aria-hidden="true">
-            ${Array.from({ length: 10 }, (_, index) => `<i class="fa-solid fa-user ${index < 3 ? 'on' : ''}"></i>`).join('')}
-          </div>`;
+          <div class="metric-people" aria-hidden="true" id="metric-ativos-people"></div>`;
       }
       if (config.visual === 'birthday') {
         return `
-          <div class="metric-hero-circle" aria-hidden="true">
-            <i class="fa-solid fa-cake-candles"></i>
+          <div class="metric-birthday" aria-hidden="true">
+            <div class="metric-hero-circle">
+              <i class="fa-solid fa-cake-candles"></i>
+            </div>
+            <div class="metric-birthday-state" id="metric-aniversariantes-state">Nenhum aniversariante este mês</div>
           </div>`;
       }
       return `
@@ -705,29 +711,45 @@
     const maiorMes = Math.max(1, ...mesesResumo.map(item => item.count));
 
     setText('metric-total-percent', `${totalPercent}%`);
+    setCssValue('#metric-total-fill', 'width', `${totalPercent}%`);
     setText('metric-congregados-percent', `${congregadosPercent}%`);
-    setCssValue('.metric-donut', '--value', `${totalPercent}%`);
     setCssValue('.metric-gauge', '--gauge-value', `${Math.min(180, Math.round((congregadosPercent / 100) * 180))}deg`);
-    document.querySelectorAll('.metric-bars span').forEach((bar, index) => {
+    document.querySelectorAll('.metric-member-bars .member-bar').forEach((bar, index) => {
       const item = mesesResumo[index];
       if (!item) return;
       bar.style.setProperty('--h', `${Math.max(18, Math.round((item.count / maiorMes) * 92))}%`);
-      const value = bar.querySelector('b');
+      const value = bar.querySelector('strong');
       const label = bar.querySelector('em');
       if (value) value.textContent = item.count;
       if (label) label.textContent = item.label;
+      if (index === mesesResumo.length - 1) bar.classList.add('current');
     });
+
+    const peopleContainer = document.getElementById('metric-ativos-people');
+    if (peopleContainer) {
+      const onCount = Math.min(10, ativos);
+      const icons = Array.from({ length: 10 }, (_, index) => `
+        <i class="fa-solid fa-user ${index < onCount ? 'on' : ''}"></i>`).join('');
+      peopleContainer.innerHTML = icons;
+    }
+
+    const birthdayState = document.getElementById('metric-aniversariantes-state');
+    if (birthdayState) {
+      birthdayState.textContent = aniversariantes
+        ? `${plural(aniversariantes, 'aniversariante ativo', 'aniversariantes ativos')}`
+        : 'Nao ha aniversariantes este mes';
+    }
 
     setText('metric-total-foot-left', `Meta mensal: ${metaMensal} registros`);
     setText('metric-total-foot-right', `${Math.min(doMes, metaMensal)} de ${metaMensal}`);
-    setText('metric-membros-foot-left', `Este mes: ${agora.toLocaleDateString('pt-BR', { month: 'long' })}`);
+    setText('metric-membros-foot-left', `Este mês: ${agora.toLocaleDateString('pt-BR', { month: 'long' })}`);
     setText('metric-membros-foot-right', `Total no ano: ${membros}`);
     setText('metric-congregados-foot-left', `Total de congregados: ${congregados}`);
     setText('metric-congregados-foot-right', `Acompanhados: ${congregados}`);
     setText('metric-ativos-foot-left', `${ativos} de ${total} registros ativos`);
     setText('metric-ativos-foot-right', `${ativosPercent}%`);
     setText('metric-mes-foot-left', `${plural(doMes, 'novo cadastro', 'novos cadastros')}`);
-    setText('metric-mes-foot-right', 'Neste mes');
+    setText('metric-mes-foot-right', `Neste mês`);
     setText('metric-aniversariantes-foot-left', aniversariantes ? `${plural(aniversariantes, 'celebracao prevista', 'celebracoes previstas')}` : 'Nenhum aniversariante este mes');
     setText('metric-aniversariantes-foot-right', agora.toLocaleDateString('pt-BR', { month: 'long' }));
 
