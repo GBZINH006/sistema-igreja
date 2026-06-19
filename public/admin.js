@@ -85,7 +85,6 @@
           <a class="side-link" href="#aniv-body" data-nav="aniversariantes"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
           <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatorios</span></a>
           <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
-          <a class="side-link" href="suporte-admin.html" target="_blank" rel="noopener noreferrer" hidden data-feature="suporte"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
           <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configuracoes</span></a>
         </nav>
         <div class="sidebar-footer">
@@ -456,7 +455,7 @@
         desc: 'Pessoas cadastradas no sistema',
         icon: 'fa-users',
         numberId: 'stat-total',
-        label: 'registros no cadastro',
+        label: 'pessoas cadastradas',
         visual: `
           <div class="carousel-people-bg" aria-hidden="true">${Array.from({ length: 28 }, () => '<i class="fa-solid fa-user"></i>').join('')}</div>
           <div class="carousel-growth-bars" id="ux-total-growth" aria-label="Crescimento acumulado"></div>
@@ -533,7 +532,6 @@
       section.innerHTML = `
         <div class="indicator-carousel-head">
           <div>
-            <span class="indicator-eyebrow">Indicadores da Igreja</span>
             <h2>Indicadores da Igreja</h2>
             <p>Visão geral do crescimento e acompanhamento</p>
           </div>
@@ -546,6 +544,7 @@
           <div class="indicator-carousel-viewport"></div>
         </div>
         <div class="indicator-carousel-dots" id="indicator-carousel-dots" aria-label="Indicador atual"></div>`;
+      section.tabIndex = 0;
       grid.parentNode.insertBefore(section, grid);
       section.querySelector('.indicator-carousel-viewport').appendChild(grid);
       section.querySelector('[data-carousel-prev]')?.addEventListener('click', () => mudarIndicadorCarousel(-1));
@@ -582,6 +581,11 @@
           </div>
         </article>`;
     }).join('');
+
+    grid.querySelectorAll('.indicator-slide').forEach((slide) => {
+      slide.setAttribute('role', 'group');
+      slide.addEventListener('click', () => abrirPainelIndicador(slide.dataset.metric || 'total'));
+    });
 
     const dots = document.getElementById('indicator-carousel-dots');
     if (dots) {
@@ -1154,7 +1158,7 @@
       const slots = 24;
       const inativosSlots = total && inativos ? Math.max(1, Math.round((inativos / total) * slots)) : 0;
       people.innerHTML = Array.from({ length: slots }, (_, index) => {
-        const inactive = index >= slots - inativosSlots;
+        const inactive = !total || index >= slots - inativosSlots;
         return `<span class="${inactive ? 'inactive' : 'active'}"><i class="fa-solid fa-user"></i></span>`;
       }).join('');
     }
@@ -1171,7 +1175,7 @@
       ? `${acompanhados} de ${congregados} congregados acompanhados`
       : 'Nenhum congregado cadastrado ainda');
     setText('ux-secondary-ativos', inativos
-      ? `${plural(inativos, 'cadastro inativo', 'cadastros inativos')} em destaque`
+      ? `${ativos} ativos e ${inativos} inativos`
       : 'Todos os cadastros estão ativos');
     setText('ux-secondary-mes', textoComparacao(doMes, mesAnterior));
     setText('ux-secondary-aniversariantes', aniversariantes
