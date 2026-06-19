@@ -13,6 +13,21 @@
     return document.getElementById(id);
   }
 
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
+  function safeText(value, fallback = '-') {
+    const text = value === null || value === undefined || value === '' ? fallback : value;
+    return escapeHtml(text);
+  }
+
   function toast(msg) {
     const el = $('toast');
     if (!el) return;
@@ -59,12 +74,12 @@
   function rowsForReport(limit = 8) {
     return state.membros.slice(0, limit).map(m => `
       <tr>
-        <td>${fmt(m.nome)}</td>
-        <td>${fmt(m.cpf)}</td>
-        <td>${fmt(m.tipo_cadastro)}</td>
-        <td>${fmt(m.status || 'Ativo')}</td>
-        <td>${fmt(m.celular)}</td>
-        <td>${fmt(m.setor_igreja)}</td>
+        <td>${safeText(m.nome)}</td>
+        <td>${safeText(m.cpf)}</td>
+        <td>${safeText(m.tipo_cadastro)}</td>
+        <td>${safeText(m.status || 'Ativo')}</td>
+        <td>${safeText(m.celular)}</td>
+        <td>${safeText(m.setor_igreja)}</td>
       </tr>
     `).join('');
   }
@@ -205,7 +220,7 @@
     setText('indicator-title', data.title);
     const list = $('indicator-summary');
     if (list) {
-      list.innerHTML = data.labels.map((label, idx) => `<li><span>${label}</span><strong>${data.values[idx]}</strong></li>`).join('');
+      list.innerHTML = data.labels.map((label, idx) => `<li><span>${safeText(label)}</span><strong>${safeText(data.values[idx])}</strong></li>`).join('');
     }
   }
 

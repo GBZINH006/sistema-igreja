@@ -152,28 +152,6 @@
         </div>
       </div>
 
-      <!-- GRÁFICOS DO DASHBOARD -->
-      <div class="aniv-card legacy-charts-card" style="margin-bottom:1.5rem;">
-        <div class="aniv-header" onclick="toggleGraficos()" style="cursor:pointer;">
-          <div class="aniv-title">📊 Estatísticas e Gráficos do Templo</div>
-          <span id="graficos-chevron" style="color:var(--muted);">▼</span>
-        </div>
-        <div class="aniv-body" id="graficos-body" style="padding:1.5rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;transition:all 0.3s ease;">
-          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
-            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Crescimento Mensal</span>
-            <canvas id="chart-crescimento" style="width:100%;height:180px;"></canvas>
-          </div>
-          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
-            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Membros vs Congregados</span>
-            <canvas id="chart-tipo" style="width:100%;height:180px;"></canvas>
-          </div>
-          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:1rem;height:240px;display:flex;flex-direction:column;align-items:center;">
-            <span style="font-size:0.75rem;color:var(--muted);font-weight:bold;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.8rem;">Membros por Setor</span>
-            <canvas id="chart-setor" style="width:100%;height:180px;"></canvas>
-          </div>
-        </div>
-      </div>
-
       <div class="aniv-card">
         <div class="aniv-header" onclick="toggleAniv()">
           <div class="aniv-title">🎂 Aniversariantes do mês <span id="aniv-count"
@@ -189,7 +167,7 @@
       <div class="toolbar">
         <div class="search-wrap">
           <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-          <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderLista()">
+          <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderListaDebounced()">
         </div>
         <select class="filtro" id="filtro-tipo" onchange="renderLista()">
           <option value="">Todos os tipos</option>

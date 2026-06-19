@@ -653,7 +653,7 @@
       selEstado.value = 'SC';
       await carregarCidades('SC');
     } catch (e) {
-      console.error("Erro ao inicializar estados:", e);
+      console.warn("Erro ao inicializar estados:", e);
     }
   }
 
@@ -682,7 +682,7 @@
         selCidade.value = cidadeSelecionar;
       }
     } catch (e) {
-      console.error("Erro ao carregar cidades:", e);
+      console.warn("Erro ao carregar cidades:", e);
       selCidade.innerHTML = '<option value="">Erro ao carregar</option>';
     }
   }
@@ -1147,7 +1147,7 @@
       document.getElementById('tela-sucesso').classList.add('show');
       window.scrollTo(0, 0);
     } catch (e) {
-      console.error(e);
+      console.warn(e);
       toast('❌ Erro ao enviar. Tente novamente.', 'erro');
       btn.innerHTML = '✝ Enviar Cadastro';
       btn.disabled = false;

@@ -111,6 +111,49 @@
   -- Cadastros publicos continuam aceitos, e admin/secretario tambem podem criar cadastros logados.
   alter table public.membros enable row level security;
 
+  -- Defesa extra para cadastros enviados pelo formulario publico.
+  -- RLS controla a permissao; o trigger normaliza e recusa payloads abusivos enviados via DevTools/API.
+  create or replace function public.validar_cadastro_publico_membros()
+  returns trigger
+  language plpgsql
+  security definer
+  set search_path = public
+  as $$
+  begin
+    if auth.role() = 'anon' then
+      new.tipo_cadastro := nullif(trim(coalesce(new.tipo_cadastro, '')), '');
+      new.nome := nullif(trim(coalesce(new.nome, '')), '');
+      new.cpf := nullif(trim(coalesce(new.cpf, '')), '');
+      new.celular := nullif(trim(coalesce(new.celular, '')), '');
+      new.status := 'Ativo';
+
+      if new.tipo_cadastro not in ('Membro', 'Congregado') then
+        raise exception 'Tipo de cadastro invalido.';
+      end if;
+
+      if new.nome is null or length(new.nome) < 3 or length(new.nome) > 160 then
+        raise exception 'Nome obrigatorio ou invalido.';
+      end if;
+
+      if length(regexp_replace(coalesce(new.cpf, ''), '\D', '', 'g')) < 4 then
+        raise exception 'Documento obrigatorio ou invalido.';
+      end if;
+
+      if length(regexp_replace(coalesce(new.celular, ''), '\D', '', 'g')) < 10 then
+        raise exception 'Celular obrigatorio ou invalido.';
+      end if;
+    end if;
+
+    return new;
+  end;
+  $$;
+
+  drop trigger if exists validar_cadastro_publico_membros_trg on public.membros;
+  create trigger validar_cadastro_publico_membros_trg
+  before insert on public.membros
+  for each row
+  execute function public.validar_cadastro_publico_membros();
+
   drop policy if exists "Admin ve todos membros" on public.membros;
   create policy "Admin ve todos membros"
   on public.membros
@@ -123,7 +166,13 @@
   on public.membros
   for insert
   to anon
-  with check (true);
+  with check (
+    tipo_cadastro in ('Membro', 'Congregado')
+    and coalesce(status, 'Ativo') = 'Ativo'
+    and length(trim(coalesce(nome, ''))) between 3 and 160
+    and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
+    and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
+  );
 
   drop policy if exists "Admin e secretaria inserem membros" on public.membros;
   create policy "Admin e secretaria inserem membros"
@@ -149,12 +198,40 @@
 
   -- 4) Storage para arquivos enviados pela secretaria.
   -- Ajuste os buckets se no seu projeto eles tiverem outro nome.
+  insert into storage.buckets (id, name, public)
+  values ('membros-docs', 'membros-docs', false)
+  on conflict (id) do update set public = false;
+
   drop policy if exists "Secretaria envia arquivos membros-docs" on storage.objects;
   create policy "Secretaria envia arquivos membros-docs"
   on storage.objects
   for insert
   to authenticated
   with check (
+    bucket_id = 'membros-docs'
+    and public.tem_role(array['admin', 'pastor', 'secretario'])
+  );
+
+  drop policy if exists "Secretaria atualiza arquivos membros-docs" on storage.objects;
+  create policy "Secretaria atualiza arquivos membros-docs"
+  on storage.objects
+  for update
+  to authenticated
+  using (
+    bucket_id = 'membros-docs'
+    and public.tem_role(array['admin', 'pastor', 'secretario'])
+  )
+  with check (
+    bucket_id = 'membros-docs'
+    and public.tem_role(array['admin', 'pastor', 'secretario'])
+  );
+
+  drop policy if exists "Secretaria remove arquivos membros-docs" on storage.objects;
+  create policy "Secretaria remove arquivos membros-docs"
+  on storage.objects
+  for delete
+  to authenticated
+  using (
     bucket_id = 'membros-docs'
     and public.tem_role(array['admin', 'pastor', 'secretario'])
   );

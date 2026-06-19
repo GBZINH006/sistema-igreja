@@ -320,7 +320,7 @@
     });
 
     if (error) {
-      console.error(error);
+      console.warn(error);
       toast("Erro ao buscar cadastro.");
       membrosCache = [];
       renderResultados();
@@ -632,7 +632,7 @@
       fecharEdicao();
       toast("Cadastro atualizado.");
     } catch (error) {
-      console.error(error);
+      console.warn(error);
       toast("Erro ao salvar alteracoes.");
     } finally {
       btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar alteracoes';

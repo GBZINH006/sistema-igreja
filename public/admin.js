@@ -8,12 +8,47 @@
   const { createClient } = window.supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  let membrosCache = [], paginaAtual = 1, anivAberto = false, graficosAberto = true;
-  let chartCrescimento = null, chartTipo = null, chartSetor = null, metricChart = null;
+  let membrosCache = [], paginaAtual = 1, anivAberto = false;
+  let metricChart = null;
   let indicadorAtivo = null, tipoVisualizacaoIndicador = 'bar';
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
   const ROLE_ADMIN = 'admin';
+  const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    }[char]));
+  }
+
+  function escapeAttr(value) {
+    return escapeHtml(value).replace(/`/g, '&#96;');
+  }
+
+  function jsString(value) {
+    return JSON.stringify(String(value ?? '')).replace(/</g, '\\u003C');
+  }
+
+  function safeText(value, fallback = '—') {
+    const text = value === null || value === undefined || value === '' ? fallback : value;
+    return escapeHtml(text);
+  }
+
+  function safeUrl(value) {
+    if (!value) return '';
+    try {
+      const url = new URL(String(value), window.location.origin);
+      if (!SAFE_URL_PROTOCOLS.has(url.protocol)) return '';
+      return escapeAttr(url.href);
+    } catch (e) {
+      return '';
+    }
+  }
 
   function mostrarTela(id) {
     document.getElementById('tela-carregando').classList.remove('ativa');
@@ -48,7 +83,7 @@
           <a class="side-link" href="#aniv-body" data-nav="aniversariantes"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
           <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatorios</span></a>
           <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
-          <a class="side-link" href="suporte-admin.html" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
+          <a class="side-link" href="suporte-admin.html" target="_blank" rel="noopener noreferrer" hidden data-feature="suporte"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
           <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configuracoes</span></a>
         </nav>
         <div class="sidebar-footer">
@@ -67,11 +102,6 @@
         <i class="fa-solid fa-bars"></i>
       </button>`);
 
-    const graficosCard = document.getElementById('graficos-body')?.closest('.aniv-card');
-    if (graficosCard) {
-      graficosCard.classList.add('legacy-charts-card');
-      graficosCard.hidden = true;
-    }
     const aniversariosCard = document.getElementById('aniv-body')?.closest('.aniv-card');
     if (aniversariosCard) {
       aniversariosCard.classList.add('birthdays-panel');
@@ -265,7 +295,7 @@
       });
       card.dataset.ready = 'true';
     });
-    ensureBirthdayStrip();
+    redesenharCardsIndicadores();
 
     document.querySelectorAll('.side-link[data-nav]').forEach(link => {
       link.addEventListener('click', (event) => {
@@ -277,6 +307,143 @@
         }
         document.body.classList.remove('sidebar-open');
       });
+    });
+  }
+
+  function redesenharCardsIndicadores() {
+    const cards = {
+      total: {
+        title: 'Total de Registros',
+        desc: 'Pessoas cadastradas no sistema',
+        icon: 'fa-users',
+        visual: 'total',
+        numberLabel: 'registros no cadastro',
+        secondary: 'Comparação com mês anterior'
+      },
+      membros: {
+        title: 'Membros Recebidos',
+        desc: 'Membros oficialmente recebidos pela igreja',
+        icon: 'fa-user-group',
+        visual: 'membros',
+        numberLabel: 'membros registrados',
+        secondary: 'Mês atual em destaque'
+      },
+      congregados: {
+        title: 'Congregados Acompanhados',
+        desc: 'Pessoas em processo de acompanhamento',
+        icon: 'fa-hand-holding-heart',
+        visual: 'congregados',
+        numberLabel: 'em acompanhamento',
+        secondary: 'Medidor de cuidado pastoral'
+      },
+      ativos: {
+        title: 'Cadastros Ativos',
+        desc: 'Pessoas aptas para contato e acompanhamento',
+        icon: 'fa-user-check',
+        visual: 'ativos',
+        numberLabel: 'cadastros ativos',
+        secondary: 'Pessoas coloridas representam inativos'
+      },
+      mes: {
+        title: 'Novo Este Mês',
+        desc: 'Evolução recente dos novos cadastros',
+        icon: 'fa-user-plus',
+        visual: 'mes',
+        numberLabel: 'novos neste mês',
+        secondary: 'Evolução dos últimos meses'
+      },
+      aniversariantes: {
+        title: 'Aniversariantes',
+        desc: 'Pessoas para celebrar neste mês',
+        icon: 'fa-cake-candles',
+        visual: 'aniversariantes',
+        numberLabel: 'aniversariantes no mês',
+        secondary: 'Estado atual do mês'
+      }
+    };
+
+    const visualMarkup = (metric, config) => {
+      if (metric === 'total') {
+        return `
+          <div class="ux-growth-path" id="ux-total-growth" aria-hidden="true"></div>`;
+      }
+      if (metric === 'membros') {
+        return `
+          <div class="ux-member-icons" id="ux-membros-icons" aria-hidden="true"></div>
+          <div class="ux-month-bars" id="ux-membros-bars" aria-hidden="true"></div>`;
+      }
+      if (metric === 'congregados') {
+        return `
+          <div class="ux-gauge-wrap">
+            <div class="ux-gauge" id="ux-congregados-gauge" style="--pct:0%;">
+              <div class="ux-gauge-center">
+                <strong id="ux-congregados-percent">0%</strong>
+                <span>acomp.</span>
+              </div>
+            </div>
+            <div class="ux-gauge-facts">
+              <span><strong id="ux-congregados-total">0</strong> congregados</span>
+              <span><strong id="ux-congregados-acompanhados">0</strong> acompanhados</span>
+            </div>
+          </div>`;
+      }
+      if (metric === 'ativos') {
+        return `<div class="ux-human-map" id="ux-ativos-people" aria-hidden="true"></div>`;
+      }
+      if (metric === 'mes') {
+        return `<div class="ux-month-bars ux-month-bars-modern" id="ux-mes-bars" aria-hidden="true"></div>`;
+      }
+      if (metric === 'aniversariantes') {
+        return `
+          <div class="ux-birthday-illustration" aria-hidden="true">
+            <span class="ux-birthday-ring"></span>
+            <span class="ux-birthday-icon"><i class="fa-solid ${config.icon}"></i></span>
+          </div>
+          <div class="ux-birthday-state" id="ux-aniversariantes-state">Carregando estado atual</div>`;
+      }
+      return `<i class="fa-solid ${config.icon}"></i>`;
+    };
+
+    document.querySelector('.stats-grid')?.classList.add('dashboard-metrics', 'ux-dashboard-metrics');
+    document.getElementById('dashboard-birthday-strip')?.remove();
+
+    document.querySelectorAll('.stat-card').forEach((card, index) => {
+      const metric = card.dataset.metric || ['total', 'membros', 'congregados', 'ativos', 'mes', 'aniversariantes'][index] || 'total';
+      const config = cards[metric] || cards.total;
+      const currentNum = card.querySelector('.stat-num');
+      const numId = currentNum?.id || `stat-${metric}`;
+      const currentValue = currentNum?.textContent || '0';
+
+      card.classList.add('premium-metric', 'ux-story-card', `ux-card-${metric}`);
+      card.innerHTML = `
+        <div class="ux-card-head">
+          <span class="ux-card-icon"><i class="fa-solid ${config.icon}"></i></span>
+          <div>
+            <h3>${config.title}</h3>
+            <p>${config.desc}</p>
+          </div>
+        </div>
+        <div class="ux-card-visual ux-visual-${config.visual}">
+          ${visualMarkup(metric, config)}
+        </div>
+        <div class="ux-card-foot">
+          <div>
+            <div class="stat-num" id="${numId}">${currentValue}</div>
+            <div class="stat-lbl">${config.numberLabel}</div>
+          </div>
+          <p class="ux-card-secondary" id="ux-secondary-${metric}">${config.secondary}</p>
+        </div>`;
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.setAttribute('aria-label', `Abrir indicador ${config.title}`);
+      card.onclick = () => abrirPainelIndicador(card.dataset.metric || metric);
+      card.onkeydown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          abrirPainelIndicador(card.dataset.metric || metric);
+        }
+      };
+      card.dataset.ready = 'true';
     });
   }
 
@@ -340,7 +507,6 @@
     btn.disabled = false;
 
     if (error) {
-      console.log("ERRO REAL:", error);
       erro.textContent = "❌ " + error.message;
       erro.classList.add('show');
 
@@ -403,12 +569,12 @@
   }
   window.maskPhone = maskPhone;
 
-  function fmt(v) { return v || '<span style="color:var(--muted)">—</span>'; }
+  function fmt(v) { return v ? safeText(v) : '<span style="color:var(--muted)">—</span>'; }
   function fmtDate(v) { return v ? v.split('-').reverse().join('/') : '<span style="color:var(--muted)">—</span>'; }
 
   function statusBadge(s) {
     const cls = { 'Ativo': 'ativo', 'Inativo': 'inativo', 'Transferido': 'transferido', 'Falecido': 'falecido' }[s] || 'ativo';
-    return `<span class="badge badge-${cls}">${s || 'Ativo'}</span>`;
+    return `<span class="badge badge-${cls}">${safeText(s || 'Ativo')}</span>`;
   }
 
   function whatsappLink(cel) {
@@ -418,7 +584,8 @@
   }
 
   function avatarImg(m, size = 32) {
-    if (m.foto_url) return `<img src="${m.foto_url}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+    const foto = safeUrl(m.foto_url);
+    if (foto) return `<img src="${foto}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;" referrerpolicy="no-referrer">`;
     return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:${Math.round(size * 0.45)}px;flex-shrink:0;">👤</div>`;
   }
 
@@ -469,14 +636,14 @@
         <span style="font-size:0.72rem;color:var(--muted);">${hora}</span>
         <button class="notif-close" onclick="fecharNotif('${id}')">✕</button>
       </div>
-      <div class="notif-nome">${membro.nome}</div>
+      <div class="notif-nome">${safeText(membro.nome)}</div>
       <div class="notif-meta">
-        <span>${membro.tipo_cadastro || 'Membro'}</span>
-        ${membro.celular ? `<span>📱 ${membro.celular}</span>` : ''}
-        ${membro.setor_igreja ? `<span>📍 ${membro.setor_igreja}</span>` : ''}
+        <span>${safeText(membro.tipo_cadastro || 'Membro')}</span>
+        ${membro.celular ? `<span>📱 ${safeText(membro.celular)}</span>` : ''}
+        ${membro.setor_igreja ? `<span>📍 ${safeText(membro.setor_igreja)}</span>` : ''}
       </div>
       <div class="notif-acoes">
-        <button class="notif-btn" onclick="verDetalhes('${membro.id}');fecharNotif('${id}')">👁 Ver ficha</button>
+        <button class="notif-btn" onclick="verDetalhes(${jsString(membro.id)});fecharNotif('${id}')">👁 Ver ficha</button>
         ${tel ? `<a class="notif-btn verde" href="https://wa.me/55${tel}" target="_blank">💬 WhatsApp</a>` : ''}
       </div>`;
 
@@ -500,11 +667,11 @@
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">
         <div style="width:40px;height:40px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">✨</div>
         <div style="flex:1;">
-          <div style="font-weight:700;font-size:0.9rem;">${n.membro.nome}</div>
-          <div style="font-size:0.75rem;color:var(--muted);">${n.membro.tipo_cadastro || '—'}${n.membro.celular ? ' · ' + n.membro.celular : ''} · ${n.hora}</div>
+          <div style="font-weight:700;font-size:0.9rem;">${safeText(n.membro.nome)}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">${safeText(n.membro.tipo_cadastro || '—')}${n.membro.celular ? ' · ' + safeText(n.membro.celular) : ''} · ${safeText(n.hora)}</div>
         </div>
         <div style="display:flex;gap:5px;">
-          <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${n.membro.id}');document.getElementById('hist-overlay').classList.remove('open')">👁</button>
+          <button class="btn btn-ghost btn-sm" onclick="verDetalhes(${jsString(n.membro.id)});document.getElementById('hist-overlay').classList.remove('open')">👁</button>
           ${tel ? `<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬</a>` : ''}
         </div>
       </div>`;
@@ -524,10 +691,8 @@
   window.limparNotificacoes = limparNotificacoes;
 
   function iniciarRealtime() {
-    console.log("Iniciando Realtime para novos membros...");
     const channel = db.channel('novos-membros')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'membros' }, payload => {
-        console.log("Novo membro detectado via Realtime:", payload.new);
         const m = payload.new;
         membrosCache.unshift(m);
 
@@ -542,9 +707,8 @@
         criarNotificacao(m);
       })
       .subscribe((status, err) => {
-        console.log("Status da inscrição Realtime:", status);
         if (err) {
-          console.error("Erro na inscrição Realtime:", err);
+          toast('Tempo real indisponível no momento.');
         }
       });
   }
@@ -648,7 +812,179 @@
     renderLista();
   }
 
+  function renderStoryStats() {
+    const setText = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+    const setNum = (id, val) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.textContent !== String(val)) {
+        el.textContent = val;
+        el.classList.remove('bump');
+        void el.offsetWidth;
+        el.classList.add('bump');
+      }
+    };
+    const plural = (value, single, pluralText) => `${value} ${value === 1 ? single : pluralText}`;
+    const isAtivo = m => !m.status || m.status === 'Ativo';
+    const parseDataLocal = valor => {
+      if (!valor) return null;
+      const partes = String(valor).slice(0, 10).split('-').map(Number);
+      if (partes.length === 3 && partes.every(Boolean)) return new Date(partes[0], partes[1] - 1, partes[2]);
+      const d = new Date(valor);
+      return Number.isNaN(d.getTime()) ? null : d;
+    };
+    const chaveMes = data => `${data.getFullYear()}-${String(data.getMonth() + 1).padStart(2, '0')}`;
+    const meses = Array.from({ length: 6 }, (_, index) => {
+      const data = new Date();
+      data.setDate(1);
+      data.setHours(12, 0, 0, 0);
+      data.setMonth(data.getMonth() - (5 - index));
+      return {
+        key: chaveMes(data),
+        label: data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', ''),
+        nome: data.toLocaleDateString('pt-BR', { month: 'long' }),
+        atual: index === 5
+      };
+    });
+    const contarMeses = lista => {
+      const mapa = Object.fromEntries(meses.map(mes => [mes.key, 0]));
+      lista.forEach(item => {
+        if (!item.created_at) return;
+        const d = new Date(item.created_at);
+        if (Number.isNaN(d.getTime())) return;
+        const key = chaveMes(d);
+        if (mapa[key] !== undefined) mapa[key]++;
+      });
+      return meses.map(mes => mapa[mes.key]);
+    };
+    const textoComparacao = (atual, anterior, nome = 'cadastros') => {
+      const delta = atual - anterior;
+      if (delta > 0) return `+${delta} ${nome} vs mês anterior`;
+      if (delta < 0) return `${Math.abs(delta)} a menos que no mês anterior`;
+      if (atual > 0) return 'Mesmo ritmo do mês anterior';
+      return 'Sem registros nos dois últimos meses';
+    };
+    const alturaBarra = (valor, maximo, min = 16, max = 86) => {
+      if (!maximo) return min;
+      return Math.max(min, Math.round((valor / maximo) * max));
+    };
+
+    const total = membrosCache.length;
+    const membrosLista = membrosCache.filter(m => m.tipo_cadastro === 'Membro');
+    const congregadosLista = membrosCache.filter(m => m.tipo_cadastro === 'Congregado');
+    const ativos = membrosCache.filter(isAtivo).length;
+    const inativos = Math.max(0, total - ativos);
+    const membros = membrosLista.length;
+    const congregados = congregadosLista.length;
+    const registrosMes = contarMeses(membrosCache);
+    const membrosMes = contarMeses(membrosLista);
+    const doMes = registrosMes[registrosMes.length - 1] || 0;
+    const mesAnterior = registrosMes[registrosMes.length - 2] || 0;
+    const membrosAtual = membrosMes[membrosMes.length - 1] || 0;
+    const aniversariantes = membrosCache
+      .filter(m => m.data_nasc && isAtivo(m))
+      .map(m => {
+        const d = parseDataLocal(m.data_nasc);
+        return d ? { ...m, mes: d.getMonth() } : null;
+      })
+      .filter(Boolean)
+      .filter(m => m.mes === new Date().getMonth()).length;
+    const acompanhados = congregadosLista.filter(m =>
+      isAtivo(m) && (m.setor_igreja || m.congregacao_igreja || m.forma_recebimento || m.cargo_principal)
+    ).length;
+    const percentAcompanhados = congregados ? Math.round((acompanhados / congregados) * 100) : 0;
+
+    setNum('stat-total', total);
+    setNum('stat-membros', membros);
+    setNum('stat-congregados', congregados);
+    setNum('stat-ativos', ativos);
+    setNum('stat-mes', doMes);
+    setNum('stat-aniversariantes', aniversariantes);
+
+    const renderBarras = (id, valores) => {
+      const alvo = document.getElementById(id);
+      if (!alvo) return;
+      const maximo = Math.max(1, ...valores);
+      alvo.innerHTML = meses.map((mes, index) => `
+        <span class="ux-month-bar ${mes.atual ? 'current' : ''}" title="${valores[index]} em ${mes.nome}">
+          <i class="ux-bar-fill" style="height:${alturaBarra(valores[index], maximo)}px"></i>
+          <strong>${valores[index]}</strong>
+          <em>${mes.label}</em>
+        </span>`).join('');
+    };
+
+    const totalGrowth = document.getElementById('ux-total-growth');
+    if (totalGrowth) {
+      const anteriores = Math.max(0, total - registrosMes.reduce((acc, value) => acc + value, 0));
+      let acumulado = anteriores;
+      const progressao = registrosMes.map(value => {
+        acumulado += value;
+        return acumulado;
+      });
+      const maximo = Math.max(1, ...progressao);
+      totalGrowth.innerHTML = meses.map((mes, index) => `
+        <span class="ux-growth-step ${mes.atual ? 'current' : ''}" title="${progressao[index]} registros acumulados">
+          <i class="ux-growth-fill" style="height:${alturaBarra(progressao[index], maximo)}px"></i>
+          <b><i class="fa-solid ${mes.atual ? 'fa-user-check' : 'fa-user-plus'}"></i></b>
+          <em>${mes.label}</em>
+        </span>`).join('');
+    }
+
+    const membrosIcons = document.getElementById('ux-membros-icons');
+    if (membrosIcons) {
+      const maximo = Math.max(1, ...membrosMes);
+      const preenchidos = membrosAtual ? Math.max(1, Math.ceil((membrosAtual / maximo) * 8)) : 0;
+      membrosIcons.innerHTML = Array.from({ length: 8 }, (_, index) =>
+        `<i class="fa-solid fa-user ${index < preenchidos ? 'active' : ''}"></i>`
+      ).join('');
+    }
+
+    renderBarras('ux-membros-bars', membrosMes);
+    renderBarras('ux-mes-bars', registrosMes);
+
+    const gauge = document.getElementById('ux-congregados-gauge');
+    if (gauge) gauge.style.setProperty('--pct', `${percentAcompanhados}%`);
+    setText('ux-congregados-percent', `${percentAcompanhados}%`);
+    setText('ux-congregados-total', congregados);
+    setText('ux-congregados-acompanhados', acompanhados);
+
+    const people = document.getElementById('ux-ativos-people');
+    if (people) {
+      const slots = 24;
+      const inativosSlots = total && inativos ? Math.max(1, Math.round((inativos / total) * slots)) : 0;
+      people.innerHTML = Array.from({ length: slots }, (_, index) => {
+        const inactive = index >= slots - inativosSlots;
+        return `<span class="${inactive ? 'inactive' : 'active'}"><i class="fa-solid fa-user"></i></span>`;
+      }).join('');
+    }
+
+    setText('ux-aniversariantes-state', aniversariantes
+      ? `${plural(aniversariantes, 'celebração prevista', 'celebrações previstas')}`
+      : 'Não há aniversariantes este mês');
+
+    setText('ux-secondary-total', textoComparacao(doMes, mesAnterior));
+    setText('ux-secondary-membros', membrosAtual
+      ? `${plural(membrosAtual, 'membro recebido', 'membros recebidos')} neste mês`
+      : 'Nenhum membro recebido neste mês');
+    setText('ux-secondary-congregados', congregados
+      ? `${acompanhados} de ${congregados} congregados acompanhados`
+      : 'Nenhum congregado cadastrado ainda');
+    setText('ux-secondary-ativos', inativos
+      ? `${plural(inativos, 'cadastro inativo', 'cadastros inativos')} em destaque`
+      : 'Todos os cadastros estão ativos');
+    setText('ux-secondary-mes', textoComparacao(doMes, mesAnterior));
+    setText('ux-secondary-aniversariantes', aniversariantes
+      ? `${plural(aniversariantes, 'pessoa para celebrar', 'pessoas para celebrar')}`
+      : 'Não há aniversariantes este mês');
+
+    if (indicadorAtivo) renderPainelIndicador();
+  }
+
   function renderStats() {
+    return renderStoryStats();
     const total = membrosCache.length;
     const membros = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length;
     const congregados = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length;
@@ -918,7 +1254,7 @@
     if (title) title.textContent = info.title;
     if (subtitle) subtitle.textContent = info.subtitle;
     if (summary) {
-      summary.innerHTML = `<strong>Resumo</strong><p>${info.summary}</p><ul>${info.items.map(item => `<li><span>${item.label}</span><strong>${item.value}</strong></li>`).join('')}</ul>`;
+      summary.innerHTML = `<strong>Resumo</strong><p>${safeText(info.summary)}</p><ul>${info.items.map(item => `<li><span>${safeText(item.label)}</span><strong>${safeText(item.value)}</strong></li>`).join('')}</ul>`;
     }
 
     if (metricChart) {
@@ -934,7 +1270,7 @@
       if (canvas) canvas.style.display = 'none';
       if (textView) {
         textView.style.display = 'grid';
-        textView.innerHTML = `<h3>${info.title}</h3><p>${info.summary}</p>${info.items.map(item => `<div><span>${item.label}</span><strong>${item.value}</strong></div>`).join('')}`;
+        textView.innerHTML = `<h3>${safeText(info.title)}</h3><p>${safeText(info.summary)}</p>${info.items.map(item => `<div><span>${safeText(item.label)}</span><strong>${safeText(item.value)}</strong></div>`).join('')}`;
       }
       return;
     }
@@ -1054,142 +1390,6 @@
     });
   }
 
-  function toggleGraficos() {
-    graficosAberto = !graficosAberto;
-    const body = document.getElementById('graficos-body');
-    if (body) body.style.display = graficosAberto ? 'grid' : 'none';
-    const chevron = document.getElementById('graficos-chevron');
-    if (chevron) chevron.textContent = graficosAberto ? '▼' : '▶';
-  }
-  window.toggleGraficos = toggleGraficos;
-
-  function renderGraficos() {
-    // 1. Crescimento Mensal
-    const ctxCrescimento = document.getElementById('chart-crescimento')?.getContext('2d');
-    if (ctxCrescimento) {
-      if (chartCrescimento) chartCrescimento.destroy();
-      const periodo = parseInt(document.getElementById('filtro-periodo')?.value || '180', 10);
-      const passos = periodo <= 30 ? Math.min(periodo, 30) : periodo <= 180 ? 6 : 12;
-      const mesesLabels = [];
-      const contagemMeses = {};
-      for (let i = passos - 1; i >= 0; i--) {
-        const d = new Date();
-        if (periodo <= 30) d.setDate(d.getDate() - i);
-        else d.setMonth(d.getMonth() - i);
-        const label = periodo <= 30
-          ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-          : d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
-        mesesLabels.push(label);
-        contagemMeses[label] = 0;
-      }
-      membrosCache.forEach(m => {
-        if (!m.created_at) return;
-        const d = new Date(m.created_at);
-        const limite = new Date();
-        limite.setDate(limite.getDate() - periodo);
-        if (d < limite) return;
-        const label = periodo <= 30
-          ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
-          : d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }).replace('.', '');
-        if (contagemMeses[label] !== undefined) contagemMeses[label]++;
-      });
-      chartCrescimento = new Chart(ctxCrescimento, {
-        type: 'line',
-        data: {
-          labels: mesesLabels,
-          datasets: [{
-            data: mesesLabels.map(l => contagemMeses[l]),
-            borderColor: '#6D4CFF',
-            backgroundColor: 'rgba(109, 76, 255, 0.12)',
-            pointBackgroundColor: '#ffffff',
-            pointBorderColor: '#6D4CFF',
-            pointHoverRadius: 6,
-            borderWidth: 3,
-            tension: 0.4,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.75)' }, ticks: { color: '#64748b', stepSize: 1 } },
-            x: { grid: { display: false }, ticks: { color: '#64748b' } }
-          }
-        }
-      });
-    }
-
-    // 2. Tipo (Membro vs Congregado)
-    const ctxTipo = document.getElementById('chart-tipo')?.getContext('2d');
-    if (ctxTipo) {
-      if (chartTipo) chartTipo.destroy();
-      const faixas = {
-        'Criancas': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) <= 12).length,
-        'Jovens': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 13 && Number(m.idade) <= 29).length,
-        'Adultos': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 30 && Number(m.idade) <= 59).length,
-        'Casais': membrosCache.filter(m => (m.estado_civil || '').toLowerCase().includes('casad')).length,
-        'Idosos': membrosCache.filter(m => Number.isFinite(Number(m.idade)) && Number(m.idade) >= 60).length
-      };
-      chartTipo = new Chart(ctxTipo, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(faixas),
-          datasets: [{
-            data: Object.values(faixas),
-            backgroundColor: ['#8B6CFF', '#22C55E', '#6D4CFF', '#F59E0B', '#EF4444'],
-            hoverOffset: 10,
-            borderColor: '#ffffff',
-            borderWidth: 4
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { color: '#475569', boxWidth: 10, font: { size: 11 } }
-            }
-          }
-        }
-      });
-    }
-
-    // 3. Setores (Top 5)
-    const ctxSetor = document.getElementById('chart-setor')?.getContext('2d');
-    if (ctxSetor) {
-      if (chartSetor) chartSetor.destroy();
-      const setoresCount = {};
-      membrosCache.forEach(m => {
-        const s = m.setor_igreja || 'Sem Setor';
-        setoresCount[s] = (setoresCount[s] || 0) + 1;
-      });
-      const sorted = Object.entries(setoresCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      chartSetor = new Chart(ctxSetor, {
-        type: 'bar',
-        data: {
-          labels: sorted.map(x => x[0]),
-          datasets: [{
-            data: sorted.map(x => x[1]),
-            backgroundColor: 'rgba(109, 76, 255, 0.78)',
-            borderRadius: 10
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, grid: { color: 'rgba(226,232,240,0.75)' }, ticks: { color: '#64748b', stepSize: 1 } },
-            x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } } }
-          }
-        }
-      });
-    }
-  }
-
   function exportarExcel() {
     if (!membrosCache.length) { toast('⚠️ Nenhum membro para exportar.'); return; }
     const dados = membrosCache.map((m, idx) => ({
@@ -1269,14 +1469,17 @@
       const eHoje = m.dia === hoje;
       const idade = agora.getFullYear() - m.ano;
       const tel = m.celular ? m.celular.replace(/\D/g, '') : null;
+      const foto = safeUrl(m.foto_url);
+      const nome = safeText(m.nome);
+      const primeiroNome = encodeURIComponent(String(m.nome || '').split(' ')[0] || '');
 
       return `<div class="aniv-item" style="${eHoje ? 'background:rgba(201,168,76,0.06);border-radius:8px;padding:8px;' : ''}">
-        ${m.foto_url ? `<img src="${m.foto_url}" class="aniv-avatar">` : `<div class="aniv-avatar-placeholder">🎂</div>`}
+        ${foto ? `<img src="${foto}" class="aniv-avatar" referrerpolicy="no-referrer">` : `<div class="aniv-avatar-placeholder">🎂</div>`}
         <div class="aniv-info">
-          <div class="aniv-nome">${m.nome} ${eHoje ? '<span class="hoje-badge">HOJE!</span>' : ''}</div>
+          <div class="aniv-nome">${nome} ${eHoje ? '<span class="hoje-badge">HOJE!</span>' : ''}</div>
           <div class="aniv-sub">Dia ${m.dia} de ${meses[mesAtual]} · ${idade} anos</div>
         </div>
-        ${tel ? `<a href="https://wa.me/55${tel}?text=Feliz+aniversário+${encodeURIComponent(m.nome.split(' ')[0])}!+Que+Deus+te+abençoe+muito!" target="_blank" class="btn btn-gold btn-sm" style="text-decoration:none;">🎉 Parabenizar</a>` : ''}
+        ${tel ? `<a href="https://wa.me/55${tel}?text=Feliz+aniversário+${primeiroNome}!+Que+Deus+te+abençoe+muito!" target="_blank" class="btn btn-gold btn-sm" style="text-decoration:none;">🎉 Parabenizar</a>` : ''}
       </div>`;
     }).join('');
   }
@@ -1290,10 +1493,12 @@
     const filtroCargo = document.getElementById('filtro-cargo').value;
 
     const filtrados = membrosCache.filter(m => {
-      const mb = !busca || m.nome.toLowerCase().includes(busca)
+      const nomeBusca = String(m.nome || '').toLowerCase();
+      const emailBusca = String(m.email || '').toLowerCase();
+      const mb = !busca || nomeBusca.includes(busca)
         || (m.cpf || '').includes(busca)
         || (m.celular || '').includes(busca)
-        || (m.email || '').toLowerCase().includes(busca);
+        || emailBusca.includes(busca);
       const mt = !filtroTipo || m.tipo_cadastro === filtroTipo;
       const ms = !filtroStatus || (m.status || 'Ativo') === filtroStatus;
       const mse = !filtroSetor || m.setor_igreja === filtroSetor;
@@ -1327,20 +1532,26 @@
       return;
     }
 
-    corpo.innerHTML = pagina.map(m => `<tr id="row-${m.id}" class="${m.id === novoId ? 'novo-destaque' : ''}">
+    corpo.innerHTML = pagina.map(m => {
+      const id = String(m.id ?? '');
+      const tipo = m.tipo_cadastro || '-';
+      const badgeTipo = tipo === 'Membro' ? 'membro' : 'congregado';
+      const destaque = String(m.id ?? '') === String(novoId ?? '') ? 'novo-destaque' : '';
+      return `<tr id="row-${escapeAttr(id)}" class="${destaque}">
       <td>${avatarImg(m, 42)}</td>
-      <td><strong class="member-name">${m.nome}</strong><div class="member-sub">${m.email || m.setor_igreja || '-'}</div></td>
-      <td>${m.cpf || '-'}</td>
-      <td><span class="badge badge-${m.tipo_cadastro === 'Membro' ? 'membro' : 'congregado'}">${m.tipo_cadastro}</span></td>
+      <td><strong class="member-name">${safeText(m.nome)}</strong><div class="member-sub">${safeText(m.email || m.setor_igreja || '-')}</div></td>
+      <td>${safeText(m.cpf || '-')}</td>
+      <td><span class="badge badge-${badgeTipo}">${safeText(tipo)}</span></td>
       <td>${statusBadge(m.status)}</td>
-      <td style="color:var(--muted);font-size:0.8rem;">${m.cargo_principal || m.setor_igreja || '-'}</td>
-      <td style="font-size:0.85rem;">${m.celular || '-'}</td>
+      <td style="color:var(--muted);font-size:0.8rem;">${safeText(m.cargo_principal || m.setor_igreja || '-')}</td>
+      <td style="font-size:0.85rem;">${safeText(m.celular || '-')}</td>
       <td><div class="td-actions">
-        <button class="btn btn-ghost btn-sm" onclick="verDetalhes('${m.id}')" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="verDetalhes(${jsString(id)})" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao(${jsString(id)})" title="Editar"><i class="fa-solid fa-pen"></i></button>
         ${whatsappLink(m.celular)}
-        <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
-      </div></td></tr>`).join('');
+        <button class="btn btn-danger btn-sm" onclick="excluirMembro(${jsString(id)},${jsString(m.nome || '')})" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+      </div></td></tr>`;
+    }).join('');
 
     const pag = document.getElementById('paginacao');
     if (totalPag <= 1) {
@@ -1364,6 +1575,13 @@
   window.carregarLista = carregarLista;
   window.renderLista = renderLista;
 
+  let renderListaTimer = null;
+  function renderListaDebounced() {
+    clearTimeout(renderListaTimer);
+    renderListaTimer = setTimeout(() => renderLista(), 120);
+  }
+  window.renderListaDebounced = renderListaDebounced;
+
   function mudarPagina(p) {
     paginaAtual = p;
     renderLista();
@@ -1372,19 +1590,25 @@
   window.mudarPagina = mudarPagina;
 
   function verDetalhes(id) {
-    const m = membrosCache.find(x => x.id === id);
+    const m = membrosCache.find(x => String(x.id) === String(id));
     if (!m) return;
 
+    const idSeguro = String(m.id ?? '');
     const tel = m.celular ? m.celular.replace(/\D/g, '') : null;
+    const foto = safeUrl(m.foto_url);
+    const doc = safeUrl(m.doc_url);
+    const tipo = m.tipo_cadastro || '-';
+    const badgeTipo = tipo === 'Membro' ? 'membro' : 'congregado';
+    const enderecoLinha = `${fmt(m.endereco)}${m.bairro ? ', ' + safeText(m.bairro) : ''}${m.cidade_estado ? ' — ' + safeText(m.cidade_estado) : ''}`;
 
     document.getElementById('modal-conteudo').innerHTML = `
       <div class="modal-header">
         <div style="display:flex;align-items:center;">
-          ${m.foto_url ? `<img src="${m.foto_url}" class="foto-modal-grande">` : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-right:1rem;flex-shrink:0;">👤</div>`}
+          ${foto ? `<img src="${foto}" class="foto-modal-grande" referrerpolicy="no-referrer">` : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(201,168,76,0.12);display:flex;align-items:center;justify-content:center;font-size:2rem;margin-right:1rem;flex-shrink:0;">👤</div>`}
           <div>
-            <div class="modal-nome">${m.nome}</div>
+            <div class="modal-nome">${safeText(m.nome)}</div>
             <div style="margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;">
-              <span class="badge badge-${m.tipo_cadastro === 'Membro' ? 'membro' : 'congregado'}">${m.tipo_cadastro}</span>
+              <span class="badge badge-${badgeTipo}">${safeText(tipo)}</span>
               ${statusBadge(m.status)}
             </div>
           </div>
@@ -1395,7 +1619,7 @@
       <div class="modal-section"><div class="modal-section-title">👤 Dados Pessoais</div><div class="modal-grid">
         <div class="modal-field"><strong>${m.tipo_cpf === 'estrangeiro' ? 'CRNM' : 'CPF'}</strong><span>${fmt(m.cpf)}</span></div>
         ${m.tipo_cpf !== 'estrangeiro' ? `<div class="modal-field"><strong>RG</strong><span>${fmt(m.rg)}</span></div>` : ''}
-        <div class="modal-field"><strong>Nascimento</strong><span>${fmtDate(m.data_nasc)}${m.idade ? ' · ' + m.idade + ' anos' : ''}</span></div>
+        <div class="modal-field"><strong>Nascimento</strong><span>${fmtDate(m.data_nasc)}${m.idade ? ' · ' + safeText(m.idade) + ' anos' : ''}</span></div>
         <div class="modal-field"><strong>Sexo</strong><span>${fmt(m.sexo)}</span></div>
         <div class="modal-field"><strong>Estado Civil</strong><span>${fmt(m.estado_civil)}</span></div>
         <div class="modal-field"><strong>Cônjuge</strong><span>${fmt(m.conjuge_nome)}</span></div>
@@ -1404,7 +1628,7 @@
       </div></div>
 
       <div class="modal-section"><div class="modal-section-title">📍 Contato</div><div class="modal-grid">
-        <div class="modal-field" style="grid-column:1/-1;"><strong>Endereço</strong><span>${fmt(m.endereco)}${m.bairro ? ', ' + m.bairro : ''}${m.cidade_estado ? ' — ' + m.cidade_estado : ''}</span></div>
+        <div class="modal-field" style="grid-column:1/-1;"><strong>Endereço</strong><span>${enderecoLinha}</span></div>
         <div class="modal-field"><strong>Celular</strong><span>${fmt(m.celular)}</span></div>
         <div class="modal-field"><strong>E-mail</strong><span>${fmt(m.email)}</span></div>
       </div></div>
@@ -1418,14 +1642,14 @@
         <div class="modal-field"><strong>Batismo ES</strong><span>${fmtDate(m.data_batismo_es)}</span></div>
       </div></div>
 
-      ${m.doc_url ? `<div class="modal-section"><div class="modal-section-title">🪪 Documento</div><img src="${m.doc_url}" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;"></div>` : ''}
-      ${m.talentos ? `<div class="modal-section"><div class="modal-section-title">🌟 Talentos</div><span style="font-size:0.88rem;">${m.talentos}</span></div>` : ''}
+      ${doc ? `<div class="modal-section"><div class="modal-section-title">🪪 Documento</div><img src="${doc}" style="width:100%;max-height:200px;object-fit:contain;border-radius:8px;" referrerpolicy="no-referrer"></div>` : ''}
+      ${m.talentos ? `<div class="modal-section"><div class="modal-section-title">🌟 Talentos</div><span style="font-size:0.88rem;">${safeText(m.talentos)}</span></div>` : ''}
 
       <div style="display:flex;gap:8px;margin-top:1rem;justify-content:flex-end;flex-wrap:wrap;">
         ${tel ? `<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;">💬 WhatsApp</a>` : ''}
-        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao('${m.id}');document.getElementById('modal-overlay').classList.remove('open')">✏️ Editar</button>
-        <button class="btn btn-ghost btn-sm" onclick="imprimirFicha('${m.id}')">🖨️ Imprimir</button>
-        <button class="btn btn-danger btn-sm" onclick="excluirMembro('${m.id}','${m.nome.replace(/'/g, "\\'")}');document.getElementById('modal-overlay').classList.remove('open')">✕ Excluir</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirEdicao(${jsString(idSeguro)});document.getElementById('modal-overlay').classList.remove('open')">✏️ Editar</button>
+        <button class="btn btn-ghost btn-sm" onclick="imprimirFicha(${jsString(idSeguro)})">🖨️ Imprimir</button>
+        <button class="btn btn-danger btn-sm" onclick="excluirMembro(${jsString(idSeguro)},${jsString(m.nome || '')});document.getElementById('modal-overlay').classList.remove('open')">✕ Excluir</button>
       </div>`;
 
     document.getElementById('modal-overlay').classList.add('open');
@@ -1510,8 +1734,11 @@
     const pf = document.getElementById('edit-preview-foto');
     const pd = document.getElementById('edit-preview-doc');
 
-    if (m.foto_url) {
-      pf.src = m.foto_url;
+    const fotoAtual = safeUrl(m.foto_url);
+    const docAtual = safeUrl(m.doc_url);
+
+    if (fotoAtual) {
+      pf.src = fotoAtual;
       pf.style.display = 'block';
       document.getElementById('edit-placeholder-foto').style.display = 'none';
       document.getElementById('edit-area-foto').classList.add('tem-foto');
@@ -1521,8 +1748,8 @@
       document.getElementById('edit-area-foto').classList.remove('tem-foto');
     }
 
-    if (m.doc_url) {
-      pd.src = m.doc_url;
+    if (docAtual) {
+      pd.src = docAtual;
       pd.style.display = 'block';
       document.getElementById('edit-placeholder-doc').style.display = 'none';
       document.getElementById('edit-area-doc').classList.add('tem-foto');
@@ -1628,7 +1855,6 @@
       if (caminho) arquivosParaDeletar.push(caminho);
     }
     if (arquivosParaDeletar.length > 0) {
-      console.log("Removendo mídias antigas do Storage:", arquivosParaDeletar);
       db.storage.from('membros').remove(arquivosParaDeletar).then(({ error: storageErr }) => {
         if (storageErr) console.warn("Erro ao deletar mídia antiga:", storageErr.message);
       });
@@ -1676,7 +1902,6 @@
       ].filter(Boolean);
 
       if (caminhos.length > 0) {
-        console.log("Limpando Storage do membro deletado:", caminhos);
         db.storage.from('membros').remove(caminhos).then(({ error: storageError }) => {
           if (storageError) console.warn("Erro ao limpar Storage:", storageError.message);
         });
@@ -1737,7 +1962,7 @@
     const m = membrosCache.find(x => x.id === id);
     if (!m) return;
 
-    const f = v => v || '—';
+    const f = v => safeText(v || '—');
     const fd = v => v ? v.split('-').reverse().join('/') : '—';
 
     document.getElementById('layout-impressao').innerHTML = `
