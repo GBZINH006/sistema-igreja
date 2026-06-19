@@ -15,7 +15,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="admin.css">
   <script src="config.js"></script>
@@ -107,13 +106,9 @@
           <div class="stat-num" id="stat-mes">—</div>
           <div class="stat-lbl">Este mês</div>
         </div>
-        <div class="stat-card rosa" data-metric="aniversariantes">
-          <div class="stat-num" id="stat-aniversariantes">—</div>
-          <div class="stat-lbl">Aniversariantes</div>
-        </div>
       </div>
 
-      <section class="metric-detail-panel" id="metric-detail-panel" aria-live="polite">
+      <section class="metric-detail-panel" id="metric-detail-panel" aria-live="polite" hidden>
         <div class="metric-detail-head">
           <div>
             <span class="metric-kicker">Indicador selecionado</span>
@@ -152,7 +147,7 @@
         </div>
       </div>
 
-      <div class="aniv-card">
+      <div class="aniv-card" hidden aria-hidden="true">
         <div class="aniv-header" onclick="toggleAniv()">
           <div class="aniv-title">🎂 Aniversariantes do mês <span id="aniv-count"
               style="background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:700;display:none;font-family:'Syne',sans-serif;"></span>

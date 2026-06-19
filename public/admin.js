@@ -14,6 +14,8 @@
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
   const ROLE_ADMIN = 'admin';
+  const INDICADORES_CAROUSEL = ['total', 'membros', 'congregados', 'ativos', 'mes'];
+  let indicadorCarouselAtual = 0;
   const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
 
   function escapeHtml(value) {
@@ -447,6 +449,187 @@
     });
   }
 
+  function redesenharCardsIndicadores() {
+    const indicadores = {
+      total: {
+        title: 'Total de Registros',
+        desc: 'Pessoas cadastradas no sistema',
+        icon: 'fa-users',
+        numberId: 'stat-total',
+        label: 'registros no cadastro',
+        visual: `
+          <div class="carousel-people-bg" aria-hidden="true">${Array.from({ length: 28 }, () => '<i class="fa-solid fa-user"></i>').join('')}</div>
+          <div class="carousel-growth-bars" id="ux-total-growth" aria-label="Crescimento acumulado"></div>
+          <div class="annual-progress">
+            <div class="annual-progress-head">
+              <span>Meta anual</span>
+              <strong id="ux-total-percent">0%</strong>
+            </div>
+            <span class="annual-progress-track"><i id="ux-total-progress"></i></span>
+            <small id="ux-total-goal">0 registros no ano</small>
+          </div>`
+      },
+      membros: {
+        title: 'Membros Recebidos',
+        desc: 'Evolução mensal de membros oficialmente recebidos pela igreja',
+        icon: 'fa-user-group',
+        numberId: 'stat-membros',
+        label: 'membros registrados',
+        visual: `
+          <div class="carousel-person-strip" id="ux-membros-icons" aria-hidden="true"></div>
+          <div class="carousel-month-bars" id="ux-membros-bars" aria-label="Evolução mensal de membros"></div>`
+      },
+      congregados: {
+        title: 'Congregados Acompanhados',
+        desc: 'Pessoas em processo de acompanhamento pastoral',
+        icon: 'fa-hand-holding-heart',
+        numberId: 'stat-congregados',
+        label: 'congregados cadastrados',
+        visual: `
+          <div class="carousel-gauge-wrap">
+            <div class="carousel-gauge" id="ux-congregados-gauge" style="--pct:0%;">
+              <div class="carousel-gauge-center">
+                <strong id="ux-congregados-percent">0%</strong>
+                <span>acompanhados</span>
+              </div>
+            </div>
+            <div class="carousel-gauge-facts">
+              <span><strong id="ux-congregados-total">0</strong> congregados</span>
+              <span><strong id="ux-congregados-acompanhados">0</strong> acompanhados</span>
+            </div>
+          </div>`
+      },
+      ativos: {
+        title: 'Cadastros Ativos',
+        desc: 'Leitura visual de pessoas ativas e inativas no cadastro',
+        icon: 'fa-user-check',
+        numberId: 'stat-ativos',
+        label: 'cadastros ativos',
+        visual: `
+          <div class="carousel-human-map" id="ux-ativos-people" aria-label="Pessoas ativas e inativas"></div>
+          <div class="carousel-legend">
+            <span><i class="active"></i> Ativos</span>
+            <span><i class="inactive"></i> Inativos</span>
+          </div>`
+      },
+      mes: {
+        title: 'Crescimento Mensal',
+        desc: 'Evolução dos últimos meses com comparação do período atual',
+        icon: 'fa-arrow-trend-up',
+        numberId: 'stat-mes',
+        label: 'novos neste mês',
+        visual: `<div class="carousel-month-bars carousel-month-bars-wide" id="ux-mes-bars" aria-label="Crescimento mensal"></div>`
+      }
+    };
+
+    const grid = document.querySelector('.stats-grid');
+    if (!grid) return;
+
+    let section = document.getElementById('indicadores-igreja');
+    if (!section) {
+      section = document.createElement('section');
+      section.id = 'indicadores-igreja';
+      section.className = 'indicator-carousel-section';
+      section.innerHTML = `
+        <div class="indicator-carousel-head">
+          <div>
+            <span class="indicator-eyebrow">Indicadores da Igreja</span>
+            <h2>Indicadores da Igreja</h2>
+            <p>Visão geral do crescimento e acompanhamento</p>
+          </div>
+          <div class="indicator-carousel-controls" aria-label="Navegação dos indicadores">
+            <button class="indicator-nav-btn" type="button" data-carousel-prev aria-label="Indicador anterior"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="indicator-nav-btn" type="button" data-carousel-next aria-label="Próximo indicador"><i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+        <div class="indicator-carousel-shell">
+          <div class="indicator-carousel-viewport"></div>
+        </div>
+        <div class="indicator-carousel-dots" id="indicator-carousel-dots" aria-label="Indicador atual"></div>`;
+      grid.parentNode.insertBefore(section, grid);
+      section.querySelector('.indicator-carousel-viewport').appendChild(grid);
+      section.querySelector('[data-carousel-prev]')?.addEventListener('click', () => mudarIndicadorCarousel(-1));
+      section.querySelector('[data-carousel-next]')?.addEventListener('click', () => mudarIndicadorCarousel(1));
+      section.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') mudarIndicadorCarousel(-1);
+        if (event.key === 'ArrowRight') mudarIndicadorCarousel(1);
+      });
+    }
+
+    grid.className = 'stats-grid indicator-carousel-track';
+    grid.innerHTML = INDICADORES_CAROUSEL.map((metric) => {
+      const item = indicadores[metric];
+      return `
+        <article class="stat-card indicator-slide indicator-slide-${metric}" data-metric="${metric}" aria-roledescription="slide">
+          <div class="indicator-slide-copy">
+            <span class="indicator-slide-icon"><i class="fa-solid ${item.icon}"></i></span>
+            <div>
+              <span class="indicator-slide-kicker">Indicador principal</span>
+              <h3>${item.title}</h3>
+              <p>${item.desc}</p>
+            </div>
+          </div>
+          <div class="indicator-slide-body">
+            <div class="indicator-visual indicator-visual-${metric}">
+              ${item.visual}
+            </div>
+            <aside class="indicator-side-summary">
+              <span>Leitura rápida</span>
+              <strong class="stat-num" id="${item.numberId}">0</strong>
+              <small>${item.label}</small>
+              <p id="ux-secondary-${metric}">Atualizando indicador...</p>
+            </aside>
+          </div>
+        </article>`;
+    }).join('');
+
+    const dots = document.getElementById('indicator-carousel-dots');
+    if (dots) {
+      dots.innerHTML = INDICADORES_CAROUSEL.map((metric, index) => `
+        <button type="button" class="indicator-dot" data-carousel-dot="${index}" aria-label="Ver indicador ${indicadores[metric].title}"></button>
+      `).join('');
+      dots.querySelectorAll('[data-carousel-dot]').forEach((dot) => {
+        dot.addEventListener('click', () => irParaIndicadorCarousel(Number(dot.dataset.carouselDot || 0)));
+      });
+    }
+
+    atualizarCarouselIndicadores();
+  }
+
+  function atualizarCarouselIndicadores() {
+    const track = document.querySelector('.indicator-carousel-track');
+    const slides = Array.from(document.querySelectorAll('.indicator-slide'));
+    const dots = Array.from(document.querySelectorAll('.indicator-dot'));
+    if (!track || !slides.length) return;
+
+    indicadorCarouselAtual = Math.max(0, Math.min(indicadorCarouselAtual, slides.length - 1));
+    track.style.transform = `translateX(-${indicadorCarouselAtual * 100}%)`;
+
+    slides.forEach((slide, index) => {
+      const active = index === indicadorCarouselAtual;
+      slide.classList.toggle('active', active);
+      slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+    });
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('active', index === indicadorCarouselAtual);
+      dot.setAttribute('aria-current', index === indicadorCarouselAtual ? 'true' : 'false');
+    });
+  }
+
+  function irParaIndicadorCarousel(index) {
+    indicadorCarouselAtual = index;
+    atualizarCarouselIndicadores();
+  }
+
+  function mudarIndicadorCarousel(delta) {
+    const totalSlides = INDICADORES_CAROUSEL.length;
+    indicadorCarouselAtual = (indicadorCarouselAtual + delta + totalSlides) % totalSlides;
+    atualizarCarouselIndicadores();
+  }
+
+  window.irParaIndicadorCarousel = irParaIndicadorCarousel;
+  window.mudarIndicadorCarousel = mudarIndicadorCarousel;
+
   async function obterPerfil(userId) {
     const { data, error } = await db
       .from('profiles')
@@ -827,6 +1010,10 @@
         el.classList.add('bump');
       }
     };
+    const setStyle = (id, prop, val) => {
+      const el = document.getElementById(id);
+      if (el) el.style.setProperty(prop, val);
+    };
     const plural = (value, single, pluralText) => `${value} ${value === 1 ? single : pluralText}`;
     const isAtivo = m => !m.status || m.status === 'Ativo';
     const parseDataLocal = valor => {
@@ -896,6 +1083,14 @@
       isAtivo(m) && (m.setor_igreja || m.congregacao_igreja || m.forma_recebimento || m.cargo_principal)
     ).length;
     const percentAcompanhados = congregados ? Math.round((acompanhados / congregados) * 100) : 0;
+    const anoAtual = new Date().getFullYear();
+    const registrosAno = membrosCache.filter(m => {
+      if (!m.created_at) return false;
+      const d = new Date(m.created_at);
+      return !Number.isNaN(d.getTime()) && d.getFullYear() === anoAtual;
+    }).length;
+    const metaAnual = Math.max(100, Math.ceil(Math.max(registrosAno, total, 1) / 50) * 50);
+    const percentMetaAnual = Math.min(100, Math.round((registrosAno / metaAnual) * 100));
 
     setNum('stat-total', total);
     setNum('stat-membros', membros);
@@ -903,6 +1098,9 @@
     setNum('stat-ativos', ativos);
     setNum('stat-mes', doMes);
     setNum('stat-aniversariantes', aniversariantes);
+    setText('ux-total-percent', `${percentMetaAnual}%`);
+    setText('ux-total-goal', `${registrosAno} de ${metaAnual} registros em ${anoAtual}`);
+    setStyle('ux-total-progress', 'width', `${percentMetaAnual}%`);
 
     const renderBarras = (id, valores) => {
       const alvo = document.getElementById(id);
