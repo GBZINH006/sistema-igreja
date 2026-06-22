@@ -114,6 +114,13 @@
 
   window.mostrarTela = mostrarTela;
 
+  function mostrarErroLogin(message) {
+    const erro = $("login-erro");
+    if (!erro) return;
+    erro.textContent = message;
+    erro.classList.add("show");
+  }
+
   function toast(msg, dur = 2800) {
     const t = $("toast");
     t.textContent = msg;
@@ -157,9 +164,9 @@
 
     const profile = await obterPerfil(session.user.id);
     if (!profile || !ROLES_PERMITIDOS.includes(profile.role)) {
-      alert("Acesso negado. Esta pagina e restrita a secretaria.");
       await db.auth.signOut();
       mostrarTela("tela-login");
+      mostrarErroLogin("Acesso negado. Esta pagina e restrita a secretaria.");
       return false;
     }
 

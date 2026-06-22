@@ -1165,6 +1165,47 @@ tr.novo-destaque {
   gap: 1rem;
 }
 
+.modal-danger::before {
+  background: linear-gradient(90deg, var(--danger), #f97316);
+}
+
+.modal-kicker {
+  color: #fca5a5;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.delete-copy {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.delete-target {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 12px;
+  color: #fecaca;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  overflow-wrap: anywhere;
+  padding: 0.9rem 1rem;
+}
+
+.delete-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
 .modal-nome {
   font-family: 'Playfair Display', serif;
   font-size: 1.1rem;

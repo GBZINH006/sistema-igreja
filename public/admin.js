@@ -66,6 +66,13 @@
 
   window.mostrarTela = mostrarTela;
 
+  function mostrarErroLogin(message) {
+    const erro = document.getElementById('login-erro');
+    if (!erro) return;
+    erro.textContent = message;
+    erro.classList.add('show');
+  }
+
   function prepararPainelPremium() {
     const tela = document.getElementById('tela-principal');
     const header = tela?.querySelector('header');
@@ -311,7 +318,7 @@
     });
   }
 
-  function redesenharCardsIndicadores() {
+  function redesenharCardsIndicadoresLegado() {
     const cards = {
       total: {
         title: 'Total de Registros',
@@ -659,10 +666,10 @@
     if (!profile || profile.role !== ROLE_ADMIN) {
       const email = session.user.email || 'este usuario';
       const roleAtual = profile?.role ? ` Role atual: ${profile.role}.` : ' Perfil nao encontrado em public.profiles.';
-      alert(`Acesso negado para ${email}.${roleAtual} Coloque este usuario como admin no SQL do Supabase.`);
       await db.auth.signOut();
       membrosCache = [];
       mostrarTela('tela-login');
+      mostrarErroLogin(`Acesso negado para ${email}.${roleAtual} Coloque este usuario como admin no SQL do Supabase.`);
       return false;
     }
 
@@ -2077,11 +2084,73 @@
 
   window.salvarEdicao = salvarEdicao;
 
-  async function excluirMembro(id, nome) {
-    if (!confirm(`Excluir "${nome}" permanentemente?`)) return;
+  function garantirModalExclusao() {
+    let overlay = document.getElementById('delete-overlay');
+    if (overlay) return overlay;
+
+    document.body.insertAdjacentHTML('beforeend', `
+      <div class="overlay" id="delete-overlay" onclick="fecharOverlayClick(event,'delete-overlay')">
+        <div class="modal modal-danger" role="dialog" aria-modal="true" aria-labelledby="delete-title" style="max-width:460px;">
+          <div class="modal-header">
+            <div>
+              <div class="modal-kicker">Ação permanente</div>
+              <div class="modal-nome" id="delete-title">Excluir cadastro</div>
+            </div>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="fecharModalExclusao()" aria-label="Fechar">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <p class="delete-copy" id="delete-copy"></p>
+          <div class="delete-target" id="delete-target"></div>
+          <div class="delete-actions">
+            <button class="btn btn-ghost" type="button" onclick="fecharModalExclusao()">Cancelar</button>
+            <button class="btn btn-danger" type="button" id="btn-confirmar-exclusao">
+              <i class="fa-solid fa-trash"></i> Excluir permanentemente
+            </button>
+          </div>
+        </div>
+      </div>`);
+
+    return document.getElementById('delete-overlay');
+  }
+
+  function fecharModalExclusao() {
+    document.getElementById('delete-overlay')?.classList.remove('open');
+  }
+
+  window.fecharModalExclusao = fecharModalExclusao;
+
+  function abrirConfirmacaoExclusao(id, nome) {
+    const overlay = garantirModalExclusao();
+    const nomeSeguro = nome || 'este cadastro';
+    document.getElementById('delete-copy').textContent = 'Esta ação remove o cadastro e tenta limpar as mídias vinculadas no Storage. Depois disso, não há desfazer.';
+    document.getElementById('delete-target').textContent = nomeSeguro;
+    document.getElementById('btn-confirmar-exclusao').onclick = () => excluirMembro(id, nomeSeguro, true);
+    overlay.classList.add('open');
+  }
+
+  async function excluirMembro(id, nome, confirmado = false) {
+    if (!confirmado) {
+      abrirConfirmacaoExclusao(id, nome);
+      return;
+    }
+
+    const btn = document.getElementById('btn-confirmar-exclusao');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Excluindo...';
+    }
+
     const m = membrosCache.find(x => x.id === id);
     const { error } = await db.from('membros').delete().eq('id', id);
-    if (error) { toast('❌ Erro ao excluir.'); return; }
+    if (error) {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-trash"></i> Excluir permanentemente';
+      }
+      toast('❌ Erro ao excluir.');
+      return;
+    }
 
     // Deleta os arquivos do storage se existirem
     if (m) {
@@ -2116,6 +2185,11 @@
     popularFiltroCargo();
     renderAniversariantes();
     renderLista();
+    fecharModalExclusao();
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-trash"></i> Excluir permanentemente';
+    }
     toast('🗑️ Membro excluído.');
   }
 
