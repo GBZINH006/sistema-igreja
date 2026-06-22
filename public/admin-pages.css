@@ -414,6 +414,27 @@ tbody tr:hover {
   font-size: 0.82rem;
 }
 
+.setting-text {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.setting-text input {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: #F8FAFC;
+  outline: none;
+}
+
+.setting-text input:focus {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
 .switch {
   position: relative;
   width: 48px;

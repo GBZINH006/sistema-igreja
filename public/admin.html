@@ -159,6 +159,20 @@
         </div>
       </div>
 
+      <section class="members-section-head" aria-labelledby="members-title">
+        <div>
+          <span class="members-kicker">Cadastro pastoral</span>
+          <h2 id="members-title">Membros cadastrados</h2>
+          <p>Busque, filtre e acompanhe os registros da igreja.</p>
+        </div>
+        <div class="members-head-actions" aria-label="Filtros rápidos">
+          <button class="quick-filter active" type="button" data-quick-filter="todos">Todos <span id="quick-count-todos">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="ativos">Ativos <span id="quick-count-ativos">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="membros">Membros <span id="quick-count-membros">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="congregados">Congregados <span id="quick-count-congregados">0</span></button>
+        </div>
+      </section>
+
       <div class="toolbar">
         <div class="search-wrap">
           <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -210,6 +224,7 @@
           <tbody id="corpo-lista"></tbody>
         </table>
       </div>
+      <div class="members-card-list" id="members-card-list" aria-live="polite"></div>
       <div class="paginacao" id="paginacao"></div>
     </main>
   </div>
