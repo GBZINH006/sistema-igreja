@@ -2703,6 +2703,179 @@
 
   window.imprimirFicha = imprimirFicha;
 
+  let pastorSignatureCanvas = null;
+  let pastorSignatureCtx = null;
+  let pastorSignatureDrawing = false;
+  let pastorSignatureSigned = false;
+  let pastorSignatureLastPoint = null;
+
+  function garantirModalAssinaturaPastor() {
+    if (document.getElementById('pastor-signature-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.id = 'pastor-signature-overlay';
+    overlay.onclick = event => fecharOverlayClick(event, 'pastor-signature-overlay');
+    overlay.innerHTML = `
+      <div class="modal signature-pad-modal" onclick="event.stopPropagation()">
+        <div class="modal-head">
+          <div>
+            <h2>Assinatura do pastor</h2>
+            <p>Esta assinatura sera exibida nas fichas baixadas pelos membros.</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="fecharAssinaturaPastor()" aria-label="Fechar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="signature-pad-body">
+          <div class="signature-pad-fields">
+            <label>Nome exibido
+              <input id="pastor-signature-name" type="text" placeholder="Nome do pastor">
+            </label>
+            <label>Cargo exibido
+              <input id="pastor-signature-role" type="text" placeholder="Pastor responsavel">
+            </label>
+          </div>
+          <div class="signature-canvas-wrap">
+            <canvas id="pastor-signature-canvas" width="900" height="260"></canvas>
+          </div>
+          <div class="signature-pad-actions">
+            <button class="btn btn-ghost" type="button" onclick="limparAssinaturaPastor()">
+              <i class="fa-solid fa-eraser"></i> Limpar
+            </button>
+            <button class="btn btn-gold" type="button" onclick="salvarAssinaturaPastor()">
+              <i class="fa-solid fa-floppy-disk"></i> Salvar assinatura
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    inicializarCanvasAssinaturaPastor();
+  }
+
+  function pontoAssinaturaPastor(event) {
+    const rect = pastorSignatureCanvas.getBoundingClientRect();
+    const pointer = event.touches?.[0] || event;
+    return {
+      x: (pointer.clientX - rect.left) * (pastorSignatureCanvas.width / rect.width),
+      y: (pointer.clientY - rect.top) * (pastorSignatureCanvas.height / rect.height)
+    };
+  }
+
+  function desenharAssinaturaPastor(event) {
+    if (!pastorSignatureDrawing) return;
+    event.preventDefault();
+    const point = pontoAssinaturaPastor(event);
+    pastorSignatureCtx.beginPath();
+    pastorSignatureCtx.moveTo(pastorSignatureLastPoint.x, pastorSignatureLastPoint.y);
+    pastorSignatureCtx.lineTo(point.x, point.y);
+    pastorSignatureCtx.stroke();
+    pastorSignatureLastPoint = point;
+    pastorSignatureSigned = true;
+  }
+
+  function inicializarCanvasAssinaturaPastor() {
+    pastorSignatureCanvas = document.getElementById('pastor-signature-canvas');
+    pastorSignatureCtx = pastorSignatureCanvas.getContext('2d');
+    pastorSignatureCtx.strokeStyle = '#1a1208';
+    pastorSignatureCtx.lineWidth = 3;
+    pastorSignatureCtx.lineCap = 'round';
+    pastorSignatureCtx.lineJoin = 'round';
+
+    const start = event => {
+      event.preventDefault();
+      pastorSignatureDrawing = true;
+      pastorSignatureLastPoint = pontoAssinaturaPastor(event);
+    };
+    const stop = () => {
+      pastorSignatureDrawing = false;
+      pastorSignatureLastPoint = null;
+    };
+
+    pastorSignatureCanvas.addEventListener('mousedown', start);
+    pastorSignatureCanvas.addEventListener('mousemove', desenharAssinaturaPastor);
+    pastorSignatureCanvas.addEventListener('mouseup', stop);
+    pastorSignatureCanvas.addEventListener('mouseleave', stop);
+    pastorSignatureCanvas.addEventListener('touchstart', start, { passive: false });
+    pastorSignatureCanvas.addEventListener('touchmove', desenharAssinaturaPastor, { passive: false });
+    pastorSignatureCanvas.addEventListener('touchend', stop);
+  }
+
+  async function abrirAssinaturaPastor() {
+    garantirModalAssinaturaPastor();
+    limparAssinaturaPastor(false);
+
+    const configAdmin = obterConfiguracoesAdmin();
+    document.getElementById('pastor-signature-name').value = configAdmin.pastorName || '';
+    document.getElementById('pastor-signature-role').value = configAdmin.pastorRole || 'Pastor responsavel';
+
+    try {
+      const { data } = await db.rpc('get_pastor_signature');
+      if (data?.pastor_name) document.getElementById('pastor-signature-name').value = data.pastor_name;
+      if (data?.pastor_role) document.getElementById('pastor-signature-role').value = data.pastor_role;
+      if (data?.signature_url) {
+        const img = new Image();
+        img.onload = () => {
+          pastorSignatureCtx.drawImage(img, 0, 0, pastorSignatureCanvas.width, pastorSignatureCanvas.height);
+          pastorSignatureSigned = true;
+        };
+        img.src = data.signature_url;
+      }
+    } catch (error) {
+      console.warn('Nao foi possivel carregar assinatura do pastor:', error);
+    }
+
+    document.getElementById('pastor-signature-overlay').classList.add('open');
+  }
+
+  function fecharAssinaturaPastor() {
+    document.getElementById('pastor-signature-overlay')?.classList.remove('open');
+  }
+
+  function limparAssinaturaPastor(showToast = true) {
+    if (!pastorSignatureCtx || !pastorSignatureCanvas) return;
+    pastorSignatureCtx.clearRect(0, 0, pastorSignatureCanvas.width, pastorSignatureCanvas.height);
+    pastorSignatureSigned = false;
+    if (showToast) toast('Assinatura limpa.');
+  }
+
+  async function salvarAssinaturaPastor() {
+    if (!pastorSignatureSigned) {
+      toast('Assine no quadro antes de salvar.');
+      return;
+    }
+
+    const signatureUrl = pastorSignatureCanvas.toDataURL('image/png');
+    const pastorName = document.getElementById('pastor-signature-name').value.trim() || 'Pastor responsavel';
+    const pastorRole = document.getElementById('pastor-signature-role').value.trim() || 'Pastor responsavel';
+
+    const { error } = await db.rpc('admin_save_pastor_signature', {
+      p_signature_url: signatureUrl,
+      p_pastor_name: pastorName,
+      p_pastor_role: pastorRole
+    });
+
+    if (error) {
+      toast(error.message || 'Nao foi possivel salvar a assinatura.');
+      return;
+    }
+
+    const settings = obterConfiguracoesAdmin();
+    localStorage.setItem('admin-page-settings', JSON.stringify({
+      ...settings,
+      pastorName,
+      pastorRole
+    }));
+    fecharAssinaturaPastor();
+    toast('Assinatura do pastor salva.');
+  }
+
+  window.abrirAssinaturaPastor = abrirAssinaturaPastor;
+  window.fecharAssinaturaPastor = fecharAssinaturaPastor;
+  window.limparAssinaturaPastor = limparAssinaturaPastor;
+  window.salvarAssinaturaPastor = salvarAssinaturaPastor;
+
   document.addEventListener('DOMContentLoaded', async () => {
     prepararPainelPremium();
     const { data: { session } } = await db.auth.getSession();

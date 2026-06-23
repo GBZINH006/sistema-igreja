@@ -5,6 +5,61 @@
   
   const { createClient } = window.supabase;
   const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+  const params = new URLSearchParams(window.location.search);
+  const isMemberFlow = params.get('origem') === 'membro';
+  const MEMBER_SESSION_KEY = 'ad_bela_vista_member_session';
+  let currentSession = null;
+
+  function carregarSessaoMembro() {
+    try {
+      currentSession = JSON.parse(localStorage.getItem(MEMBER_SESSION_KEY) || 'null');
+    } catch (error) {
+      currentSession = null;
+    }
+
+    if (isMemberFlow && !currentSession?.token) {
+      window.location.replace('membro-login.html');
+    }
+  }
+
+  carregarSessaoMembro();
+
+  function prepararFluxoMembroVisual() {
+    if (!isMemberFlow) return;
+
+    document.body.classList.add('member-account-flow');
+
+    const form = document.getElementById('form-cadastro');
+    if (form && !document.getElementById('member-flow-notice')) {
+      const notice = document.createElement('div');
+      notice.id = 'member-flow-notice';
+      notice.className = 'section-card';
+      notice.innerHTML = `
+        <div class="section-title">
+          <div class="icon-wrap"><i class="fa-solid fa-user-check"></i></div>Cadastro vinculado
+        </div>
+        <p style="color:var(--muted);line-height:1.55;margin:0;">
+          Esta ficha sera vinculada a sua conta de membro. Os anexos e documentos poderao ser conferidos depois pela secretaria.
+        </p>
+      `;
+      form.insertBefore(notice, form.firstElementChild);
+    }
+
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+      input.disabled = true;
+      input.closest('.foto-box')?.style.setProperty('display', 'none');
+    });
+
+    document.querySelectorAll('.field-label.somente-membro').forEach(label => {
+      if (label.textContent.includes('Comprovante')) label.style.display = 'none';
+    });
+
+    document.querySelectorAll('.section-card').forEach(card => {
+      const title = card.querySelector('.section-title')?.textContent || '';
+      const isUploadOnly = title.includes('Fotos') || title.includes('Documentos');
+      if (isUploadOnly) card.style.display = 'none';
+    });
+  }
 
 
   // ── Validações ───────────────────────────────
@@ -799,6 +854,8 @@
   }
 
   async function uploadArquivo(inputId, pasta, publico = false) {
+    if (isMemberFlow) return null;
+
     const input = document.getElementById(inputId);
     if (!input || !input.files[0]) return null;
 
@@ -813,9 +870,9 @@
         uploadFile = file;
       }
 
-      const membroId = crypto.randomUUID();
+      const membroId = currentSession?.accountId || crypto.randomUUID();
       const fileName = file.name || 'arquivo';
-      const path = `${membroId}/${pasta}/${fileName}`;
+      const path = `${membroId}/${pasta}/${Date.now()}_${fileName}`;
 
       const bucket = publico ? 'membros-public' : 'membros-docs';
 
@@ -943,12 +1000,14 @@
 
   async function uploadAssinatura() {
     if (!assinadoPeloMenos) return null;
+    if (isMemberFlow) return null;
 
     return new Promise(resolve => {
       canvas.toBlob(async blob => {
         if (!blob) { resolve(null); return; }
 
-        const path = `assinaturas/${Date.now()}_${Math.random().toString(36).slice(2)}.png`;
+        const prefixo = currentSession?.accountId || 'assinaturas-publicas';
+        const path = `${prefixo}/assinaturas/${Date.now()}_${Math.random().toString(36).slice(2)}.png`;
 
         const { error } = await db.storage
           .from('membros-docs')
@@ -980,7 +1039,7 @@
     sincronizarCongregacaoComSetor();
     const setorIgreja = document.getElementById('setor_igreja').value.trim();
 
-    return {
+    const dados = {
       tipo_cadastro: document.getElementById('tipo_cadastro').value,
       nome: document.getElementById('nome').value.trim(),
       rg: document.getElementById('rg').value.trim(),
@@ -1027,6 +1086,13 @@
       tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
       status: 'Ativo'
     };
+
+    if (currentSession?.accountId) {
+      dados.member_account_id = currentSession.accountId;
+      dados.email = dados.email || currentSession.email || '';
+    }
+
+    return dados;
   }
   window.coletarDados = coletarDados;
 
@@ -1096,6 +1162,11 @@
 
 
   async function salvarMembro() {
+    if (isMemberFlow && !currentSession?.token) {
+      carregarSessaoMembro();
+      if (!currentSession?.token) return;
+    }
+
     const dados = coletarDados();
 
     if (!dados.tipo_cadastro) {
@@ -1120,7 +1191,7 @@
     btn.disabled = true;
 
     try {
-      toast('📤 Enviando fotos e documentos…');
+      toast(isMemberFlow ? '📤 Salvando cadastro…' : '📤 Enviando fotos e documentos…');
 
       const [foto_url, doc_url, foto_certidao_nasc, foto_certidao_casamento, foto_diploma, foto_comprovante_end, assinatura_url] = await Promise.all([
         uploadArquivo('inp-foto-membro', 'fotos'),
@@ -1140,15 +1211,29 @@
       if (foto_comprovante_end) dados.foto_comprovante_end = foto_comprovante_end;
       if (assinatura_url) dados.assinatura_url = assinatura_url;
 
-      const { error } = await db.from('membros').insert([dados]);
-      if (error) throw error;
+      if (isMemberFlow) {
+        const { error } = await db.rpc('member_create_registration', {
+          p_session_token: currentSession.token,
+          p_payload: dados
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await db.from('membros').insert([dados]);
+        if (error) throw error;
+      }
+
+      if (isMemberFlow) {
+        window.location.href = 'membro.html?cadastro=ok';
+        return;
+      }
 
       document.getElementById('app').style.display = 'none';
       document.getElementById('tela-sucesso').classList.add('show');
       window.scrollTo(0, 0);
     } catch (e) {
-      console.warn(e);
-      toast('❌ Erro ao enviar. Tente novamente.', 'erro');
+      const detalhe = e?.message || e?.details || e?.hint || 'Tente novamente.';
+      console.warn('Erro ao salvar cadastro:', e);
+      toast(`❌ Erro ao enviar: ${detalhe}`, 'erro', 7000);
       btn.innerHTML = '✝ Enviar Cadastro';
       btn.disabled = false;
     }
@@ -1492,6 +1577,7 @@
     });
   }
 
+  prepararFluxoMembroVisual();
   prepararUploadsDragDrop();
   prepararEtapasCadastro();
 
