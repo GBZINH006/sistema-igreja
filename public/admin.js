@@ -478,12 +478,10 @@
 
     const profile = await obterPerfil(session.user.id);
     if (!profile || profile.role !== ROLE_ADMIN) {
-      const email = session.user.email || 'este usuario';
-      const roleAtual = profile?.role ? ` Role atual: ${profile.role}.` : ' Perfil nao encontrado em public.profiles.';
       await db.auth.signOut();
       membrosCache = [];
       mostrarTela('tela-login');
-      mostrarErroLogin(`Acesso negado para ${email}.${roleAtual} Coloque este usuario como admin no SQL do Supabase.`);
+      mostrarErroLogin('Acesso restrito. Esta área é exclusiva para administradores autorizados.');
       return false;
     }
 

@@ -12,7 +12,7 @@
 
   function carregarSessaoMembro() {
     try {
-      currentSession = JSON.parse(localStorage.getItem(MEMBER_SESSION_KEY) || 'null');
+      currentSession = JSON.parse(sessionStorage.getItem(MEMBER_SESSION_KEY) || localStorage.getItem(MEMBER_SESSION_KEY) || 'null');
     } catch (error) {
       currentSession = null;
     }
@@ -1155,6 +1155,21 @@
       ok = false;
     }
 
+    const lgpdConsent = document.getElementById('lgpd-consent-cadastro');
+    const hintLgpd = document.getElementById('hint-lgpd');
+    if (lgpdConsent && !lgpdConsent.checked) {
+      if (hintLgpd) {
+        hintLgpd.textContent = '⚠️ É necessário aceitar os termos de privacidade para enviar o cadastro.';
+        hintLgpd.className = 'hint erro';
+      }
+      lgpdConsent.classList.add('invalid');
+      ok = false;
+    } else if (hintLgpd) {
+      hintLgpd.textContent = '';
+      hintLgpd.className = 'hint';
+      lgpdConsent?.classList.remove('invalid');
+    }
+
     return ok;
   }
   window.validar = validar;
@@ -1180,9 +1195,10 @@
       const invalido = document.querySelector('.invalid');
       const etapaInvalida = invalido?.closest('.form-step')?.dataset.step;
       if (etapaInvalida !== undefined) irParaEtapaCadastro(Number(etapaInvalida), { scroll: false });
-      if (!invalido && !assinadoPeloMenos) irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
+      if (!invalido && (!assinadoPeloMenos || !document.getElementById('lgpd-consent-cadastro')?.checked)) irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
       invalido?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       if (!assinadoPeloMenos) document.getElementById('canvas-assinatura').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!document.getElementById('lgpd-consent-cadastro')?.checked) document.getElementById('lgpd-consent-cadastro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -1329,7 +1345,7 @@
     },
     {
       titulo: 'Assinatura',
-      descricao: 'Revise a declaracao e registre a assinatura digital para concluir.',
+      descricao: 'Revise a declaração, aceite o consentimento LGPD e registre a assinatura digital para concluir.',
       icone: 'fa-signature',
       cards: ['canvas-assinatura']
     }

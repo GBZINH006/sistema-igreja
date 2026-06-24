@@ -13,7 +13,7 @@ create table if not exists public.member_accounts (
   last_name text not null,
   email text not null unique,
   phone text not null,
-  cpf text not null unique,
+  cpf text unique,
   avatar_url text,
   password_hash text not null,
   created_at timestamptz not null default now(),
@@ -23,6 +23,9 @@ create table if not exists public.member_accounts (
 
 alter table public.member_accounts
   add column if not exists avatar_url text;
+
+alter table public.member_accounts
+  alter column cpf drop not null;
 
 create table if not exists public.member_account_sessions (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -79,12 +82,13 @@ as $$
   limit 1;
 $$;
 
+drop function if exists public.member_register_account(text, text, text, text, text, text);
+drop function if exists public.member_register_account(text, text, text, text, text);
 create or replace function public.member_register_account(
   p_first_name text,
   p_last_name text,
   p_email text,
   p_phone text,
-  p_cpf text,
   p_password text
 )
 returns table (
@@ -101,10 +105,8 @@ declare
   v_account_id uuid;
   v_token text;
   v_email text;
-  v_cpf text;
 begin
   v_email := lower(trim(coalesce(p_email, '')));
-  v_cpf := regexp_replace(coalesce(p_cpf, ''), '\D', '', 'g');
 
   if length(trim(coalesce(p_first_name, ''))) < 2 then
     raise exception 'Informe o nome.';
@@ -122,12 +124,8 @@ begin
     raise exception 'Informe um telefone valido.';
   end if;
 
-  if length(v_cpf) <> 11 then
-    raise exception 'Informe um CPF valido.';
-  end if;
-
-  if length(coalesce(p_password, '')) < 6 then
-    raise exception 'A senha precisa ter pelo menos 6 caracteres.';
+  if length(coalesce(p_password, '')) < 8 or coalesce(p_password, '') !~ '[A-Za-z]' or coalesce(p_password, '') !~ '[0-9]' then
+    raise exception 'A senha precisa ter pelo menos 8 caracteres, com letras e numeros.';
   end if;
 
   insert into public.member_accounts (
@@ -135,7 +133,6 @@ begin
     last_name,
     email,
     phone,
-    cpf,
     password_hash
   )
   values (
@@ -143,7 +140,6 @@ begin
     trim(p_last_name),
     v_email,
     trim(p_phone),
-    v_cpf,
     extensions.crypt(p_password, extensions.gen_salt('bf'))
   )
   returning id into v_account_id;
@@ -161,7 +157,7 @@ begin
     v_email;
 exception
   when unique_violation then
-    raise exception 'Este e-mail ou CPF ja possui uma conta.';
+    raise exception 'Este e-mail ja possui uma conta.';
 end;
 $$;
 
@@ -606,7 +602,7 @@ $$;
 
 revoke all on function public.member_token_hash(text) from public;
 revoke all on function public.member_account_from_token(text) from public;
-revoke all on function public.member_register_account(text, text, text, text, text, text) from public;
+revoke all on function public.member_register_account(text, text, text, text, text) from public;
 revoke all on function public.member_login_account(text, text) from public;
 revoke all on function public.member_get_account(text) from public;
 revoke all on function public.member_update_account(text, text, text, text, text) from public;
@@ -618,7 +614,7 @@ revoke all on function public.member_update_registration(text, uuid, jsonb) from
 revoke all on function public.admin_save_pastor_signature(text, text, text) from public;
 revoke all on function public.get_pastor_signature() from public;
 
-grant execute on function public.member_register_account(text, text, text, text, text, text) to anon, authenticated;
+grant execute on function public.member_register_account(text, text, text, text, text) to anon, authenticated;
 grant execute on function public.member_login_account(text, text) to anon, authenticated;
 grant execute on function public.member_get_account(text) to anon, authenticated;
 grant execute on function public.member_update_account(text, text, text, text, text) to anon, authenticated;

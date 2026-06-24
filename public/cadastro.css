@@ -445,6 +445,31 @@ main {
   color: var(--muted);
 }
 
+.cadastro-privacy-note {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 16px;
+  background: rgba(37, 99, 235, 0.06);
+  color: var(--muted);
+  line-height: 1.45;
+  text-align: left;
+}
+
+.cadastro-privacy-note i {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: var(--primary);
+}
+
 .cadastro-choice-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -882,6 +907,76 @@ input.invalid {
   margin-bottom: 6px;
   color: var(--text);
   font-size: 1rem;
+}
+
+.lgpd-box {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 18px;
+  border: 1px solid rgba(5, 150, 105, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.92), rgba(239, 246, 255, 0.86));
+  color: var(--muted);
+}
+
+.lgpd-kicker {
+  color: #047857;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lgpd-box h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.08rem;
+}
+
+.lgpd-box p {
+  margin: 0;
+  line-height: 1.58;
+}
+
+.terms-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.lgpd-consent-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.lgpd-consent-row input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--success);
 }
 
 .submit-wrap {

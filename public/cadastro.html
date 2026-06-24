@@ -61,8 +61,12 @@
       <section id="tela-escolha-cadastro" class="cadastro-start">
         <div class="cadastro-start-card">
           <div class="cadastro-start-icon"><i class="fa-solid fa-clipboard-list"></i></div>
-          <h2>Seja bem-vindo à ficha de cadastro</h2>
-          <p>Cadastre como:</p>
+          <h2>Solicitação de cadastro da igreja</h2>
+          <p>O cadastro está sujeito à aprovação da administração da igreja. Escolha como deseja solicitar:</p>
+          <div class="cadastro-privacy-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Seus dados serão usados para secretaria, acompanhamento pastoral e atualização do cadastro interno da AD Palhoça.</span>
+          </div>
           <div class="cadastro-choice-grid">
             <button type="button" class="cadastro-choice-btn"
               onclick="escolherTipoCadastro('Membro')">
@@ -708,6 +712,21 @@
             e completas.
             Comprometo-me a comunicar qualquer alteração ao secretariado da
             igreja.
+          </div>
+
+          <div class="lgpd-box" aria-labelledby="lgpd-title">
+            <div class="lgpd-kicker"><i class="fa-solid fa-scale-balanced"></i> LGPD e privacidade</div>
+            <h3 id="lgpd-title">Tratamento dos dados pessoais</h3>
+            <p>Antes de enviar a ficha, leia os termos de privacidade do cadastro da AD Palhoça.</p>
+            <a class="terms-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              Abrir termos de privacidade
+            </a>
+            <label class="lgpd-consent-row" for="lgpd-consent-cadastro">
+              <input id="lgpd-consent-cadastro" type="checkbox" required>
+              <span>Li e aceito os termos de privacidade.</span>
+            </label>
+            <div class="hint" id="hint-lgpd"></div>
           </div>
 
           <label class="field-label">Assine abaixo com o dedo ou mouse <span

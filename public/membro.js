@@ -78,7 +78,8 @@
 
   function saveSession(patch = {}) {
     state.session = { ...state.session, ...patch };
-    localStorage.setItem(MEMBER_SESSION_KEY, JSON.stringify(state.session));
+    const storage = sessionStorage.getItem(MEMBER_SESSION_KEY) ? sessionStorage : localStorage;
+    storage.setItem(MEMBER_SESSION_KEY, JSON.stringify(state.session));
   }
 
   function renderAccount() {
@@ -582,6 +583,7 @@
   async function logout() {
     const token = state.session?.token;
     localStorage.removeItem(MEMBER_SESSION_KEY);
+    sessionStorage.removeItem(MEMBER_SESSION_KEY);
     state.session = null;
 
     if (token) {
@@ -637,7 +639,7 @@
 
   async function init() {
     try {
-      state.session = JSON.parse(localStorage.getItem(MEMBER_SESSION_KEY) || "null");
+      state.session = JSON.parse(sessionStorage.getItem(MEMBER_SESSION_KEY) || localStorage.getItem(MEMBER_SESSION_KEY) || "null");
     } catch (error) {
       state.session = null;
     }
@@ -655,6 +657,7 @@
       await loadAccount();
     } catch (error) {
       localStorage.removeItem(MEMBER_SESSION_KEY);
+      sessionStorage.removeItem(MEMBER_SESSION_KEY);
       window.location.replace("membro-login.html");
       return;
     }
