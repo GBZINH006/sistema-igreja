@@ -13,7 +13,9 @@
   let indicadorAtivo = null, tipoVisualizacaoIndicador = 'bar';
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
-  const ROLE_ADMIN = 'admin';
+  const ADMIN_ROLES = ['admin', 'pastor'];
+  const DELETE_ROLES = ['admin'];
+  let currentAdminRole = null;
   const INDICADORES_CAROUSEL = ['total', 'membros', 'congregados', 'ativos', 'mes'];
   let indicadorCarouselAtual = 0;
   const SAFE_URL_PROTOCOLS = new Set(['http:', 'https:']);
@@ -94,13 +96,13 @@
           <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista" class="sidebar-logo">
           <div><strong>AD Bela-Vista</strong><span>Painel administrativo</span></div>
         </div>
-        <nav class="sidebar-nav" aria-label="Navegacao principal">
+        <nav class="sidebar-nav" aria-label="Navegação principal">
           <a class="side-link active" href="#dashboard-top" data-nav="dashboard"><i class="fa-solid fa-table-columns"></i><span>Dashboard</span></a>
           <a class="side-link" href="#corpo-lista" data-nav="membros"><i class="fa-solid fa-users"></i><span>Membros</span></a>
           <a class="side-link" href="#aniv-body" data-nav="aniversariantes"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
-          <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatorios</span></a>
+          <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatórios</span></a>
           <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
-          <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configuracoes</span></a>
+          <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
         </nav>
         <div class="sidebar-footer">
           <span class="realtime-dot"></span>
@@ -123,14 +125,14 @@
       aniversariosCard.classList.add('birthdays-panel');
       document.getElementById('aniv-body')?.classList.add('fechado');
       const title = aniversariosCard.querySelector('.aniv-title');
-      if (title) title.firstChild.textContent = 'Aniversariantes do mes ';
+      if (title) title.firstChild.textContent = 'Aniversariantes do mês ';
     }
 
     const tableWrap = document.querySelector('.table-wrap');
     if (tableWrap) {
       const thead = tableWrap.querySelector('thead tr');
       if (thead) {
-        thead.innerHTML = '<th>Foto</th><th>Nome</th><th>CPF</th><th>Tipo</th><th>Status</th><th>Ministerio</th><th>Celular</th><th>Acoes</th>';
+        thead.innerHTML = '<th>Foto</th><th>Nome</th><th>CPF</th><th>Tipo</th><th>Status</th><th>Ministério</th><th>Celular</th><th>Ações</th>';
       }
     }
 
@@ -393,7 +395,18 @@
         icon: 'fa-arrow-trend-up',
         numberId: 'stat-mes',
         label: 'novos neste mês',
-        visual: `<div class="compact-month-bars compact-month-bars-wide" id="ux-mes-bars" aria-label="Crescimento mensal"></div>`
+        visual: `
+          <div class="month-progress-card" aria-label="Progresso do mês">
+            <div class="month-progress-head">
+              <span>Progresso do mês</span>
+              <strong id="ux-mes-percent">0%</strong>
+            </div>
+            <span class="month-progress-track"><i id="ux-mes-progress"></i></span>
+            <div class="month-progress-meta">
+              <span id="ux-mes-days">Dia 1 de 30</span>
+              <strong id="ux-mes-rate">0/dia</strong>
+            </div>
+          </div>`
       }
     };
 
@@ -477,7 +490,7 @@
     }
 
     const profile = await obterPerfil(session.user.id);
-    if (!profile || profile.role !== ROLE_ADMIN) {
+    if (!profile || !ADMIN_ROLES.includes(profile.role)) {
       await db.auth.signOut();
       membrosCache = [];
       mostrarTela('tela-login');
@@ -485,6 +498,7 @@
       return false;
     }
 
+    currentAdminRole = profile.role;
     document.getElementById('header-email').textContent = session.user.email || '';
     mostrarTela('tela-principal');
     carregarLista();
@@ -513,7 +527,8 @@
     btn.disabled = false;
 
     if (error) {
-      erro.textContent = "❌ " + error.message;
+      console.warn('Falha no login administrativo:', error.message);
+      erro.textContent = 'E-mail ou senha inválidos.';
       erro.classList.add('show');
 
       const box = document.querySelector('.login-box');
@@ -532,6 +547,7 @@
   async function sair() {
     await db.auth.signOut();
     membrosCache = [];
+    currentAdminRole = null;
     document.getElementById('login-email').value = '';
     document.getElementById('login-senha').value = '';
     mostrarTela('tela-login');
@@ -579,7 +595,16 @@
   function fmtDate(v) { return v ? v.split('-').reverse().join('/') : '<span style="color:var(--muted)">—</span>'; }
 
   function statusBadge(s) {
-    const cls = { 'Ativo': 'ativo', 'Inativo': 'inativo', 'Transferido': 'transferido', 'Falecido': 'falecido' }[s] || 'ativo';
+    const cls = {
+      'Ativo': 'ativo',
+      'Aprovado': 'ativo',
+      'Pendente': 'pendente',
+      'Em análise': 'analise',
+      'Correção': 'correcao',
+      'Inativo': 'inativo',
+      'Transferido': 'transferido',
+      'Falecido': 'falecido'
+    }[s] || 'ativo';
     return `<span class="badge badge-${cls}">${safeText(s || 'Ativo')}</span>`;
   }
 
@@ -592,12 +617,22 @@
   function avatarImg(m, size = 32) {
     const foto = safeUrl(m.foto_url);
     const style = `--avatar-size:${size}px;--avatar-font:${Math.round(size * 0.45)}px;`;
-    if (foto) return `<img src="${foto}" class="member-avatar" style="${style}" referrerpolicy="no-referrer" alt="">`;
+    if (foto) return `<img src="${foto}" class="member-avatar" style="${style}" referrerpolicy="no-referrer" loading="lazy" alt="">`;
     return `<div class="member-avatar member-avatar-empty" style="${style}" aria-hidden="true"><i class="fa-solid fa-user"></i></div>`;
   }
 
   function isAtivo(m) {
-    return !m.status || m.status === 'Ativo';
+    return !m.status || m.status === 'Ativo' || m.status === 'Aprovado';
+  }
+
+  function statusActions(m) {
+    const id = escapeAttr(String(m.id ?? ''));
+    const status = m.status || 'Ativo';
+    if (status === 'Aprovado' || status === 'Ativo' || status === 'Inativo' || status === 'Transferido' || status === 'Falecido') return '';
+    return `
+      <button type="button" class="member-action member-action-approve" data-member-action="approve" data-member-id="${id}" title="Aprovar ficha" aria-label="Aprovar ficha"><i class="fa-solid fa-check"></i></button>
+      <button type="button" class="member-action member-action-warn" data-member-action="correction" data-member-id="${id}" title="Solicitar correção" aria-label="Solicitar correção"><i class="fa-solid fa-triangle-exclamation"></i></button>
+    `;
   }
 
   // ── NOTIFICAÇÕES ───────────────────────────────────────
@@ -704,7 +739,7 @@
   function iniciarRealtime() {
     const channel = db.channel('novos-membros')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'membros' }, async payload => {
-        const m = await renovarUrlsMembro(payload.new);
+        const m = payload.new;
         membrosCache.unshift(m);
 
         // Atualiza indicador principal de “Último cadastro”
@@ -803,8 +838,20 @@
     return data.signedUrl;
   }
 
+  async function renovarUrlsMembroCampos(membro, campos) {
+    if (!membro) return membro;
+    const atualizado = { ...membro };
+    await Promise.all((campos || []).map(async (campo) => {
+      atualizado[campo] = await renovarUrlAssinada(atualizado[campo]);
+    }));
+
+    const idx = membrosCache.findIndex(item => String(item.id) === String(atualizado.id));
+    if (idx !== -1) membrosCache[idx] = { ...membrosCache[idx], ...atualizado };
+    return atualizado;
+  }
+
   async function renovarUrlsMembro(membro) {
-    const campos = [
+    return renovarUrlsMembroCampos(membro, [
       'foto_url',
       'doc_url',
       'foto_certidao_nasc',
@@ -812,13 +859,7 @@
       'foto_diploma',
       'foto_comprovante_end',
       'assinatura_url'
-    ];
-
-    const atualizado = { ...membro };
-    await Promise.all(campos.map(async (campo) => {
-      atualizado[campo] = await renovarUrlAssinada(atualizado[campo]);
-    }));
-    return atualizado;
+    ]);
   }
 
   function removerArquivosStorage(urls) {
@@ -887,7 +928,7 @@
 
     const { data, error } = await db.from('membros').select('*').order('nome');
     if (error) { toast('❌ Erro ao carregar.'); return; }
-    membrosCache = await Promise.all((data || []).map(renovarUrlsMembro));
+    membrosCache = data || [];
     primeiraLeitura = false;
 
     // Atualiza painel do “último cadastro”
@@ -993,7 +1034,9 @@
       isAtivo(m) && (m.setor_igreja || m.congregacao_igreja || m.forma_recebimento || m.cargo_principal)
     ).length;
     const percentAcompanhados = congregados ? Math.round((acompanhados / congregados) * 100) : 0;
-    const anoAtual = new Date().getFullYear();
+    const agora = new Date();
+    const mesAtual = agora.getMonth();
+    const anoAtual = agora.getFullYear();
     const registrosAno = membrosCache.filter(m => {
       if (!m.created_at) return false;
       const d = new Date(m.created_at);
@@ -1051,7 +1094,16 @@
     }
 
     renderBarras('ux-membros-bars', membrosMes);
-    renderBarras('ux-mes-bars', registrosMes);
+
+    const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+    const diaAtual = agora.getDate();
+    const progressoMes = Math.min(100, Math.round((diaAtual / diasNoMes) * 100));
+    const mediaDiaria = diaAtual ? (doMes / diaAtual) : 0;
+    setText('ux-mes-percent', `${progressoMes}%`);
+    setText('ux-mes-days', `Dia ${diaAtual} de ${diasNoMes}`);
+    setText('ux-mes-rate', `${mediaDiaria.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}/dia`);
+    const mesProgress = document.getElementById('ux-mes-progress');
+    if (mesProgress) mesProgress.style.width = `${progressoMes}%`;
 
     const gauge = document.getElementById('ux-congregados-gauge');
     if (gauge) gauge.style.setProperty('--pct', `${percentAcompanhados}%`);
@@ -1248,11 +1300,6 @@
       });
     }
 
-    const diasDoMes = Array.from({ length: agora.getDate() }, (_, i) => ({
-      label: String(i + 1).padStart(2, '0'),
-      value: doMes.filter(m => new Date(m.created_at).getDate() === i + 1).length
-    }));
-
     const porDiaAniversario = aniversariantes
       .map(m => ({ label: String(new Date(m.data_nasc).getDate()).padStart(2, '0'), value: 1 }))
       .reduce((acc, item) => {
@@ -1298,10 +1345,10 @@
         ]
       },
       mes: {
-        title: 'Cadastros deste mes',
-        subtitle: 'Entradas registradas no mes atual',
-        summary: `${doMes.length} novo(s) cadastro(s) registrados neste mes.`,
-        items: diasDoMes.length ? diasDoMes : [{ label: 'Sem dados', value: 0 }]
+        title: 'Novos este mês',
+        subtitle: 'Comparativo dos últimos 6 meses',
+        summary: `${doMes.length} ${doMes.length === 1 ? 'novo cadastro registrado' : 'novos cadastros registrados'} neste mês.`,
+        items: ultimosMeses
       },
       aniversariantes: {
         title: 'Aniversariantes',
@@ -1316,11 +1363,18 @@
 
   function abrirPainelIndicador(metric) {
     indicadorAtivo = metric || 'total';
+    if (indicadorAtivo === 'mes' && tipoVisualizacaoIndicador === 'bar') {
+      tipoVisualizacaoIndicador = 'line';
+    }
     document.querySelectorAll('.stat-card').forEach(card => {
       card.classList.toggle('active', card.dataset.metric === indicadorAtivo);
     });
     const panel = document.getElementById('metric-detail-panel');
-    if (panel) panel.classList.add('open');
+    if (panel) {
+      panel.hidden = false;
+      panel.classList.add('open');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
     renderPainelIndicador();
   }
 
@@ -1330,7 +1384,10 @@
     indicadorAtivo = null;
     document.querySelectorAll('.stat-card').forEach(card => card.classList.remove('active'));
     const panel = document.getElementById('metric-detail-panel');
-    if (panel) panel.classList.remove('open');
+    if (panel) {
+      panel.classList.remove('open');
+      panel.hidden = true;
+    }
     if (metricChart) {
       metricChart.destroy();
       metricChart = null;
@@ -1390,6 +1447,13 @@
     }
     const ctx = canvas?.getContext('2d');
     if (!ctx) return;
+    if (!window.Chart) {
+      if (textView) {
+        textView.style.display = 'grid';
+        textView.innerHTML = `<h3>${safeText(info.title)}</h3><p>Biblioteca de gráficos indisponível. Veja o resumo ao lado.</p>`;
+      }
+      return;
+    }
 
     const chartType = tipoVisualizacaoIndicador === 'donut' ? 'doughnut' : tipoVisualizacaoIndicador;
     const isRound = chartType === 'pie' || chartType === 'doughnut';
@@ -1428,7 +1492,7 @@
     if (!indicadorAtivo) abrirPainelIndicador('total');
     const info = obterIndicador(indicadorAtivo);
     const { jsPDF } = window.jspdf || {};
-    if (!jsPDF) { toast('Biblioteca PDF indisponivel.'); return; }
+    if (!jsPDF) { toast('Biblioteca PDF indisponível.'); return; }
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text(info.title, 14, 18);
@@ -1607,6 +1671,7 @@
 
         if (tipo) tipo.value = '';
         if (status) status.value = '';
+        if (quick === 'pendentes' && status) status.value = 'Pendente';
         if (quick === 'ativos' && status) status.value = 'Ativo';
         if (quick === 'membros' && tipo) tipo.value = 'Membro';
         if (quick === 'congregados' && tipo) tipo.value = 'Congregado';
@@ -1622,6 +1687,7 @@
   function atualizarResumoMembros(filtrados) {
     const total = membrosCache.length;
     const ativos = membrosCache.filter(isAtivo).length;
+    const pendentes = membrosCache.filter(m => ['Pendente', 'Em análise', 'Correção'].includes(m.status || '')).length;
     const membros = membrosCache.filter(m => m.tipo_cadastro === 'Membro').length;
     const congregados = membrosCache.filter(m => m.tipo_cadastro === 'Congregado').length;
 
@@ -1631,6 +1697,7 @@
     };
 
     setText('quick-count-todos', total);
+    setText('quick-count-pendentes', pendentes);
     setText('quick-count-ativos', ativos);
     setText('quick-count-membros', membros);
     setText('quick-count-congregados', congregados);
@@ -1677,8 +1744,9 @@
             <div class="td-actions">
               <button type="button" class="member-action" data-member-action="details" data-member-id="${escapeAttr(id)}" aria-label="Visualizar"><i class="fa-solid fa-eye"></i></button>
               <button type="button" class="member-action" data-member-action="edit" data-member-id="${escapeAttr(id)}" aria-label="Editar"><i class="fa-solid fa-pen"></i></button>
+              ${statusActions(m)}
               ${whatsappLink(m.celular)}
-              <button type="button" class="member-action member-action-danger" data-member-action="delete" data-member-id="${escapeAttr(id)}" data-member-name="${escapeAttr(m.nome || '')}" aria-label="Excluir"><i class="fa-solid fa-trash"></i></button>
+              ${DELETE_ROLES.includes(currentAdminRole) ? `<button type="button" class="member-action member-action-danger" data-member-action="delete" data-member-id="${escapeAttr(id)}" data-member-name="${escapeAttr(m.nome || '')}" aria-label="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
             </div>
           </div>
         </article>`;
@@ -1759,8 +1827,9 @@
       <td><div class="td-actions">
         <button type="button" class="member-action" data-member-action="details" data-member-id="${escapeAttr(id)}" title="Visualizar" aria-label="Visualizar"><i class="fa-solid fa-eye"></i></button>
         <button type="button" class="member-action" data-member-action="edit" data-member-id="${escapeAttr(id)}" title="Editar" aria-label="Editar"><i class="fa-solid fa-pen"></i></button>
+        ${statusActions(m)}
         ${whatsappLink(m.celular)}
-        <button type="button" class="member-action member-action-danger" data-member-action="delete" data-member-id="${escapeAttr(id)}" data-member-name="${escapeAttr(m.nome || '')}" title="Excluir" aria-label="Excluir"><i class="fa-solid fa-trash"></i></button>
+        ${DELETE_ROLES.includes(currentAdminRole) ? `<button type="button" class="member-action member-action-danger" data-member-action="delete" data-member-id="${escapeAttr(id)}" data-member-name="${escapeAttr(m.nome || '')}" title="Excluir" aria-label="Excluir"><i class="fa-solid fa-trash"></i></button>` : ''}
       </div></td></tr>`;
     }).join('');
     renderMembrosMobile(pagina);
@@ -1804,6 +1873,8 @@
         document.getElementById('modal-overlay')?.classList.remove('open');
       }
       if (action === 'pdf') imprimirFicha(id);
+      if (action === 'approve') alterarStatusCadastro(id, 'Aprovado');
+      if (action === 'correction') alterarStatusCadastro(id, 'Correção');
       if (action === 'delete') {
         document.getElementById('modal-overlay')?.classList.remove('open');
         excluirMembro(id, control.dataset.memberName || '');
@@ -1811,6 +1882,27 @@
     });
 
     document.body.dataset.memberActionsReady = 'true';
+  }
+
+  async function alterarStatusCadastro(id, status) {
+    const membro = membrosCache.find(item => String(item.id) === String(id));
+    if (!membro) return;
+
+    const patch = { status };
+    if (status === 'Aprovado') {
+      patch.data_aprovacao = new Date().toISOString().slice(0, 10);
+    }
+
+    const { error } = await db.from('membros').update(patch).eq('id', id);
+    if (error) {
+      toast('Não foi possível atualizar o status.');
+      return;
+    }
+
+    Object.assign(membro, patch);
+    renderStats();
+    renderLista();
+    toast(status === 'Aprovado' ? 'Ficha aprovada.' : 'Correção solicitada.');
   }
 
   let renderListaTimer = null;
@@ -1894,9 +1986,10 @@
   }
   window.verDetalhes = verDetalhes;
 
-  function verDetalhesFicha(id) {
-    const m = membrosCache.find(x => String(x.id) === String(id));
-    if (!m) return;
+  async function verDetalhesFicha(id) {
+    const membroOriginal = membrosCache.find(x => String(x.id) === String(id));
+    if (!membroOriginal) return;
+    const m = await renovarUrlsMembroCampos(membroOriginal, ['foto_url', 'doc_url']);
 
     const idSeguro = String(m.id ?? '');
     const tel = m.celular ? m.celular.replace(/\D/g, '') : null;
@@ -1924,7 +2017,7 @@
       ['Nascimento', m.foto_certidao_nasc],
       ['Casamento', m.foto_certidao_casamento],
       ['Diploma', m.foto_diploma],
-      ['Endereco', m.foto_comprovante_end],
+      ['Endereço', m.foto_comprovante_end],
       ['Assinatura', m.assinatura_url]
     ].map(([label, value]) => `
       <span class="profile-doc-chip ${value ? 'ok' : ''}">
@@ -1957,23 +2050,23 @@
       </div>
 
       <div class="profile-section">
-        <div class="profile-section-title"><i class="fa-solid fa-id-card"></i><span>Identificacao</span></div>
+        <div class="profile-section-title"><i class="fa-solid fa-id-card"></i><span>Identificação</span></div>
         <div class="profile-grid">
           ${m.tipo_cpf !== 'estrangeiro' ? field('RG', m.rg) : ''}
           ${dateField('Nascimento', m.data_nasc, m.idade ? ` - ${safeText(m.idade)} anos` : '')}
           ${field('Sexo', m.sexo)}
           ${field('Estado civil', m.estado_civil)}
-          ${field('Conjuge', m.conjuge_nome)}
+          ${field('Cônjuge', m.conjuge_nome)}
           ${dateField('Casamento', m.data_casamento)}
           ${field('Escolaridade', m.escolaridade)}
-          ${field('Ocupacao', m.ocupacao)}
+          ${field('Ocupação', m.ocupacao)}
         </div>
       </div>
 
       <div class="profile-section">
-        <div class="profile-section-title"><i class="fa-solid fa-location-dot"></i><span>Contato e endereco</span></div>
+        <div class="profile-section-title"><i class="fa-solid fa-location-dot"></i><span>Contato e endereço</span></div>
         <div class="profile-grid">
-          ${field('Endereco', enderecoLinha, 'wide')}
+          ${field('Endereço', enderecoLinha, 'wide')}
           ${field('E-mail', m.email)}
           ${field('Fone residencial', m.fone_res)}
           ${field('Fone comercial', m.fone_com)}
@@ -1984,12 +2077,12 @@
       <div class="profile-section">
         <div class="profile-section-title"><i class="fa-solid fa-church"></i><span>Igreja</span></div>
         <div class="profile-grid">
-          ${field('Congregacao', m.congregacao_igreja)}
+          ${field('Congregação', m.congregacao_igreja)}
           ${field('Recebimento', m.forma_recebimento)}
-          ${dateField('Batismo aguas', m.data_batismo_aguas)}
+          ${dateField('Batismo águas', m.data_batismo_aguas)}
           ${dateField('Batismo ES', m.data_batismo_es)}
-          ${dateField('Aprovacao', m.data_aprovacao)}
-          ${field('Outras funcoes', m.outras_funcoes)}
+          ${dateField('Aprovação', m.data_aprovacao)}
+          ${field('Outras funções', m.outras_funcoes)}
         </div>
       </div>
 
@@ -2005,7 +2098,7 @@
         ${tel ? `<a href="https://wa.me/55${tel}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>` : ''}
         <button type="button" class="btn btn-ghost btn-sm" data-member-action="edit" data-member-id="${escapeAttr(idSeguro)}"><i class="fa-solid fa-pen"></i> Editar</button>
         <button type="button" class="btn btn-ghost btn-sm" data-member-action="pdf" data-member-id="${escapeAttr(idSeguro)}"><i class="fa-solid fa-file-pdf"></i> PDF completo</button>
-        <button type="button" class="btn btn-danger btn-sm" data-member-action="delete" data-member-id="${escapeAttr(idSeguro)}" data-member-name="${escapeAttr(m.nome || '')}"><i class="fa-solid fa-trash"></i> Excluir</button>
+        ${DELETE_ROLES.includes(currentAdminRole) ? `<button type="button" class="btn btn-danger btn-sm" data-member-action="delete" data-member-id="${escapeAttr(idSeguro)}" data-member-name="${escapeAttr(m.nome || '')}"><i class="fa-solid fa-trash"></i> Excluir</button>` : ''}
       </div>`;
 
     document.getElementById('modal-overlay').classList.add('open');
@@ -2035,9 +2128,10 @@
 
   window.sincronizarEdicaoCongregacaoPastor = sincronizarEdicaoCongregacaoPastor;
 
-  function abrirEdicao(id) {
-    const m = membrosCache.find(x => String(x.id) === String(id));
-    if (!m) return;
+  async function abrirEdicao(id) {
+    const membroOriginal = membrosCache.find(x => String(x.id) === String(id));
+    if (!membroOriginal) return;
+    const m = await renovarUrlsMembroCampos(membroOriginal, ['foto_url', 'doc_url']);
 
     const mapa = {
       'nome': m.nome,
@@ -2200,28 +2294,8 @@
 
     if (error) { toast('❌ Erro ao salvar.'); return; }
 
-    // Limpa fotos antigas do Storage se novas foram enviadas
-    const obterCaminhoStorage = (url) => {
-      if (!url) return null;
-      const partes = url.split('/public/membros/');
-      if (partes.length === 2) return partes[1];
-      return null;
-    };
-
-    const arquivosParaDeletar = [];
-    if (novaFoto && mAtual && mAtual.foto_url) {
-      const caminho = obterCaminhoStorage(mAtual.foto_url);
-      if (caminho) arquivosParaDeletar.push(caminho);
-    }
-    if (novaDoc && mAtual && mAtual.doc_url) {
-      const caminho = obterCaminhoStorage(mAtual.doc_url);
-      if (caminho) arquivosParaDeletar.push(caminho);
-    }
-    if (arquivosParaDeletar.length > 0) {
-      db.storage.from('membros').remove(arquivosParaDeletar).then(({ error: storageErr }) => {
-        if (storageErr) console.warn("Erro ao deletar mídia antiga:", storageErr.message);
-      });
-    }
+    if (novaFoto && mAtual?.foto_url) removerArquivosStorage([mAtual.foto_url]);
+    if (novaDoc && mAtual?.doc_url) removerArquivosStorage([mAtual.doc_url]);
 
     const idx = membrosCache.findIndex(x => String(x.id) === String(id));
     if (idx !== -1) membrosCache[idx] = { ...membrosCache[idx], ...dados };
@@ -2284,6 +2358,11 @@
   }
 
   async function excluirMembro(id, nome, confirmado = false) {
+    if (!DELETE_ROLES.includes(currentAdminRole)) {
+      toast('Apenas administradores podem excluir cadastros.');
+      return;
+    }
+
     if (!confirmado) {
       abrirConfirmacaoExclusao(id, nome);
       return;
@@ -2306,31 +2385,16 @@
       return;
     }
 
-    // Deleta os arquivos do storage se existirem
     if (m) {
-      const arquivosParaDeletar = [];
-      const obterCaminhoStorage = (url) => {
-        if (!url) return null;
-        const partes = url.split('/public/membros/');
-        if (partes.length === 2) return partes[1];
-        return null;
-      };
-
-      const caminhos = [
-        obterCaminhoStorage(m.foto_url),
-        obterCaminhoStorage(m.doc_url),
-        obterCaminhoStorage(m.foto_certidao_nasc),
-        obterCaminhoStorage(m.foto_certidao_casamento),
-        obterCaminhoStorage(m.foto_diploma),
-        obterCaminhoStorage(m.foto_comprovante_end),
-        obterCaminhoStorage(m.assinatura_url)
-      ].filter(Boolean);
-
-      if (caminhos.length > 0) {
-        db.storage.from('membros').remove(caminhos).then(({ error: storageError }) => {
-          if (storageError) console.warn("Erro ao limpar Storage:", storageError.message);
-        });
-      }
+      removerArquivosStorage([
+        m.foto_url,
+        m.doc_url,
+        m.foto_certidao_nasc,
+        m.foto_certidao_casamento,
+        m.foto_diploma,
+        m.foto_comprovante_end,
+        m.assinatura_url
+      ]);
     }
 
     membrosCache = membrosCache.filter(m => String(m.id) !== String(id));
@@ -2449,16 +2513,18 @@
     const imageFormat = dataUrl => String(dataUrl || '').includes('image/jpeg') ? 'JPEG' : 'PNG';
 
     const addHeader = () => {
-      doc.setFillColor(26, 18, 8);
+      doc.setFillColor(15, 118, 110);
       doc.rect(0, 0, pageW, 28, 'F');
-      doc.setTextColor(232, 201, 109);
+      doc.setFillColor(29, 78, 216);
+      doc.rect(0, 22, pageW, 6, 'F');
+      doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.text('FICHA CADASTRAL COMPLETA', margin, 12);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.text('Igreja AD Bela-Vista · Rua Frei Lauro, 44 · Ponte do Imaruim · Palhoça - SC', margin, 19);
-      doc.setTextColor(180, 150, 80);
+      doc.setTextColor(219, 234, 254);
       doc.text(`Gerado em ${new Date().toLocaleString('pt-BR')}`, pageW - margin, 12, { align: 'right' });
       doc.text(`Status: ${text(m.status, 'Ativo')}`, pageW - margin, 19, { align: 'right' });
       y = 38;
@@ -2486,10 +2552,10 @@
     const section = (title) => {
       ensureSpace(16);
       y += 2;
-      doc.setFillColor(248, 250, 252);
-      doc.setDrawColor(226, 232, 240);
+      doc.setFillColor(239, 246, 255);
+      doc.setDrawColor(191, 219, 254);
       doc.roundedRect(margin, y, contentW, 9, 2, 2, 'FD');
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(29, 78, 216);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
       doc.text(title, margin + 3, y + 6);
@@ -2537,8 +2603,10 @@
     const addMemberSummary = (fotoData) => {
       ensureSpace(38);
       doc.setFillColor(255, 255, 255);
-      doc.setDrawColor(226, 232, 240);
+      doc.setDrawColor(203, 213, 225);
       doc.roundedRect(margin, y, contentW, 34, 3, 3, 'FD');
+      doc.setFillColor(29, 78, 216);
+      doc.roundedRect(margin, y, 2.2, 34, 3, 3, 'F');
 
       if (fotoData) {
         try {
@@ -2547,9 +2615,9 @@
           console.warn('Não foi possível inserir foto no PDF:', error);
         }
       } else {
-        doc.setFillColor(254, 243, 199);
+        doc.setFillColor(239, 246, 255);
         doc.circle(margin + 17, y + 17, 13, 'F');
-        doc.setTextColor(146, 64, 14);
+        doc.setTextColor(29, 78, 216);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.text('Sem foto', margin + 17, y + 18, { align: 'center' });
@@ -2658,8 +2726,8 @@
 
     const assinaturaData = await imageToDataUrl(safeUrl(m.assinatura_url));
     const configAdmin = obterConfiguracoesAdmin();
-    const pastorNome = String(configAdmin.pastorName || '').trim() || 'Pastor responsavel';
-    const pastorCargo = String(configAdmin.pastorRole || '').trim() || 'Pastor responsavel';
+    const pastorNome = String(configAdmin.pastorName || '').trim() || 'Pastor responsável';
+    const pastorCargo = String(configAdmin.pastorRole || '').trim() || 'Pastor responsável';
     const assinaturaW = (contentW - 18) / 2;
     const membroX = margin;
     const pastorX = margin + assinaturaW + 18;
@@ -2731,7 +2799,7 @@
               <input id="pastor-signature-name" type="text" placeholder="Nome do pastor">
             </label>
             <label>Cargo exibido
-              <input id="pastor-signature-role" type="text" placeholder="Pastor responsavel">
+              <input id="pastor-signature-role" type="text" placeholder="Pastor responsável">
             </label>
           </div>
           <div class="signature-canvas-wrap">
@@ -2806,7 +2874,7 @@
 
     const configAdmin = obterConfiguracoesAdmin();
     document.getElementById('pastor-signature-name').value = configAdmin.pastorName || '';
-    document.getElementById('pastor-signature-role').value = configAdmin.pastorRole || 'Pastor responsavel';
+    document.getElementById('pastor-signature-role').value = configAdmin.pastorRole || 'Pastor responsável';
 
     try {
       const { data } = await db.rpc('get_pastor_signature');
@@ -2845,8 +2913,8 @@
     }
 
     const signatureUrl = pastorSignatureCanvas.toDataURL('image/png');
-    const pastorName = document.getElementById('pastor-signature-name').value.trim() || 'Pastor responsavel';
-    const pastorRole = document.getElementById('pastor-signature-role').value.trim() || 'Pastor responsavel';
+    const pastorName = document.getElementById('pastor-signature-name').value.trim() || 'Pastor responsável';
+    const pastorRole = document.getElementById('pastor-signature-role').value.trim() || 'Pastor responsável';
 
     const { error } = await db.rpc('admin_save_pastor_signature', {
       p_signature_url: signatureUrl,

@@ -235,6 +235,75 @@ input {
   background: #fff;
 }
 
+/* Polimento visual final */
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  letter-spacing: 0;
+}
+
+.auth-shell {
+  gap: clamp(28px, 5vw, 56px);
+}
+
+.auth-hero h1,
+.auth-card-head h2 {
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.auth-hero h1 {
+  font-size: clamp(2.75rem, 6vw, 4.9rem);
+}
+
+.auth-hero p,
+.auth-card-head p,
+.notice-card p,
+.privacy-box p {
+  line-height: 1.6;
+}
+
+.home-link,
+.hero-kicker,
+.auth-card-head > span,
+.tab,
+.primary-btn,
+.link-button,
+label span {
+  letter-spacing: 0;
+}
+
+.auth-card {
+  border-radius: 14px;
+  padding: clamp(20px, 3vw, 28px);
+}
+
+.tabs {
+  border-radius: 10px;
+}
+
+.tab {
+  border-radius: 8px;
+  font-size: 0.92rem;
+}
+
+label span {
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+input {
+  border-radius: 10px;
+  font-size: 0.96rem;
+}
+
+.primary-btn {
+  border-radius: 10px;
+}
+
 input:focus {
   border-color: var(--blue);
   outline: 3px solid rgba(37, 99, 235, 0.14);

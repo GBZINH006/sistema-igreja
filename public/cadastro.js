@@ -8,6 +8,10 @@
   const params = new URLSearchParams(window.location.search);
   const isMemberFlow = params.get('origem') === 'membro';
   const MEMBER_SESSION_KEY = 'ad_bela_vista_member_session';
+  const PUBLIC_SUBMISSION_KEY = 'ad_bela_vista_public_submission_guard';
+  const PUBLIC_SUBMISSION_COOLDOWN_MS = 5 * 60 * 1000;
+  const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
+  const ALLOWED_UPLOAD_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
   let currentSession = null;
 
   function carregarSessaoMembro() {
@@ -23,6 +27,74 @@
   }
 
   carregarSessaoMembro();
+
+  function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
+  }
+
+  function submissionFingerprint(dados) {
+    return [
+      onlyDigits(dados?.cpf).slice(-8),
+      onlyDigits(dados?.celular).slice(-8),
+      String(dados?.nome || '').trim().toLowerCase().slice(0, 48)
+    ].filter(Boolean).join(':');
+  }
+
+  function getPublicSubmissionGuard() {
+    try {
+      return JSON.parse(localStorage.getItem(PUBLIC_SUBMISSION_KEY) || 'null');
+    } catch (error) {
+      localStorage.removeItem(PUBLIC_SUBMISSION_KEY);
+      return null;
+    }
+  }
+
+  function assertPublicSubmissionAllowed(dados) {
+    if (isMemberFlow) return;
+
+    const trap = document.getElementById('website');
+    if (trap?.value) {
+      throw new Error('Nao foi possivel validar o envio.');
+    }
+
+    const previous = getPublicSubmissionGuard();
+    const fingerprint = submissionFingerprint(dados);
+    if (!previous?.at || !previous?.fingerprint || previous.fingerprint !== fingerprint) return;
+
+    const elapsed = Date.now() - Number(previous.at || 0);
+    if (elapsed < PUBLIC_SUBMISSION_COOLDOWN_MS) {
+      const wait = Math.ceil((PUBLIC_SUBMISSION_COOLDOWN_MS - elapsed) / 60000);
+      throw new Error(`Aguarde ${wait} minuto(s) antes de reenviar esta ficha.`);
+    }
+  }
+
+  function rememberPublicSubmission(dados) {
+    if (isMemberFlow) return;
+    localStorage.setItem(PUBLIC_SUBMISSION_KEY, JSON.stringify({
+      fingerprint: submissionFingerprint(dados),
+      at: Date.now()
+    }));
+  }
+
+  function prepararProtecaoPublica() {
+    if (isMemberFlow) return;
+    const form = document.getElementById('form-cadastro');
+    if (!form || document.getElementById('website')) return;
+
+    const trap = document.createElement('input');
+    trap.type = 'text';
+    trap.id = 'website';
+    trap.name = 'website';
+    trap.tabIndex = -1;
+    trap.autocomplete = 'off';
+    trap.setAttribute('aria-hidden', 'true');
+    trap.style.position = 'absolute';
+    trap.style.left = '-9999px';
+    trap.style.width = '1px';
+    trap.style.height = '1px';
+    trap.style.opacity = '0';
+    form.appendChild(trap);
+  }
 
   function prepararFluxoMembroVisual() {
     if (!isMemberFlow) return;
@@ -862,6 +934,16 @@
     const file = input.files[0];
 
     try {
+      if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
+        toast('Arquivo recusado. Envie imagem JPG, PNG, WEBP ou PDF.', 'erro');
+        return null;
+      }
+
+      if (file.size > MAX_UPLOAD_BYTES) {
+        toast('Arquivo muito grande. O limite é 6 MB por anexo.', 'erro');
+        return null;
+      }
+
       let uploadFile;
 
       if (file.type.startsWith('image/')) {
@@ -1084,7 +1166,7 @@
       talentos: document.getElementById('talentos').value.trim(),
       tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
       tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
-      status: 'Ativo'
+      status: isMemberFlow ? 'Em análise' : 'Pendente'
     };
 
     if (currentSession?.accountId) {
@@ -1202,6 +1284,13 @@
       return;
     }
 
+    try {
+      assertPublicSubmissionAllowed(dados);
+    } catch (error) {
+      toast(error.message || 'Nao foi possivel validar o envio.', 'erro', 7000);
+      return;
+    }
+
     const btn = document.getElementById('btn-salvar');
     btn.innerHTML = '<span class="spin"></span> Enviando…';
     btn.disabled = true;
@@ -1245,6 +1334,7 @@
 
       document.getElementById('app').style.display = 'none';
       document.getElementById('tela-sucesso').classList.add('show');
+      rememberPublicSubmission(dados);
       window.scrollTo(0, 0);
     } catch (e) {
       const detalhe = e?.message || e?.details || e?.hint || 'Tente novamente.';
@@ -1593,6 +1683,7 @@
     });
   }
 
+  prepararProtecaoPublica();
   prepararFluxoMembroVisual();
   prepararUploadsDragDrop();
   prepararEtapasCadastro();

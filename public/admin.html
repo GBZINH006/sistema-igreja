@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>Painel do Pastor — AD Bela-Vista</title>
-  <!-- Font Awesome (para exibir ícones) -->
+  <title>Painel do Pastor | AD Bela-Vista</title>
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <link
@@ -15,6 +15,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="admin.css">
   <script src="config.js"></script>
@@ -70,17 +71,19 @@
         <span class="header-badge">Pastor</span>
         <span class="realtime-dot" title="Tempo real ativo"></span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div class="admin-actions" aria-label="Ações do painel">
         <span class="header-user" id="header-email"></span>
         <div id="sino-wrap" onclick="abrirHistoricoNotif()" title="Notificações">
       <button class="btn btn-ghost btn-sm"><i class="fa-solid fa-bell"></i></button>
           <span id="sino-badge">0</span>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="abrirCadastro()"><i class="fa-solid fa-user-plus"></i> <span class="btn-text">Novo cadastro</span></button>
+        <button class="btn btn-gold btn-sm" onclick="abrirCadastro()"><i class="fa-solid fa-clipboard-list"></i> <span class="btn-text">Abrir ficha</span></button>
         <button class="btn btn-ghost btn-sm" onclick="abrirAssinaturaPastor()"><i class="fa-solid fa-signature"></i> <span class="btn-text">Assinatura</span></button>
-        <button class="btn btn-gold btn-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> <span class="btn-text">PDF</span></button>
-        <button class="btn btn-green btn-sm" onclick="exportarExcel()" style="background:#10b981;border-color:#10b981;color:white;"><i class="fa-solid fa-file-excel"></i> <span class="btn-text">Excel</span></button>
-        <button class="btn btn-ghost btn-sm" onclick="carregarLista()"><i class="fa-solid fa-rotate-right"></i></button>
+        <div class="admin-actions-group" aria-label="Exportações">
+          <button class="btn btn-ghost btn-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> <span class="btn-text">PDF</span></button>
+          <button class="btn btn-green btn-sm" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> <span class="btn-text">Excel</span></button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="carregarLista()" title="Atualizar lista" aria-label="Atualizar lista"><i class="fa-solid fa-rotate-right"></i></button>
         <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
       </div>
     </header>
@@ -168,6 +171,7 @@
         </div>
         <div class="members-head-actions" aria-label="Filtros rápidos">
           <button class="quick-filter active" type="button" data-quick-filter="todos">Todos <span id="quick-count-todos">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="pendentes">Pendentes <span id="quick-count-pendentes">0</span></button>
           <button class="quick-filter" type="button" data-quick-filter="ativos">Ativos <span id="quick-count-ativos">0</span></button>
           <button class="quick-filter" type="button" data-quick-filter="membros">Membros <span id="quick-count-membros">0</span></button>
           <button class="quick-filter" type="button" data-quick-filter="congregados">Congregados <span id="quick-count-congregados">0</span></button>
@@ -186,6 +190,10 @@
         </select>
         <select class="filtro" id="filtro-status" onchange="renderLista()">
           <option value="">Todos os status</option>
+          <option value="Pendente">Pendentes</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Correção">Precisam correção</option>
+          <option value="Aprovado">Aprovados</option>
           <option value="Ativo">Ativos</option>
           <option value="Inativo">Inativos</option>
           <option value="Transferido">Transferidos</option>
@@ -292,6 +300,10 @@
               type="radio" name="edit-tipo" value="Congregado"> Congregado</label></div>
         <label class="edit-label">Status</label>
         <select id="edit-status" class="edit-input">
+          <option value="Pendente">Pendente</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Correção">Correção solicitada</option>
+          <option value="Aprovado">Aprovado</option>
           <option value="Ativo">Ativo</option>
           <option value="Inativo">Inativo</option>
           <option value="Transferido">Transferido</option>

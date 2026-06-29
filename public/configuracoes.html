@@ -26,7 +26,6 @@
         <a class="side-link" href="admin.html#aniv-body"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
         <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatórios</span></a>
         <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
-        <a class="side-link" href="suporte-admin.html" hidden data-feature="suporte"><i class="fa-solid fa-headset"></i><span>Suporte</span></a>
         <a class="side-link active" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
       </nav>
       <div class="sidebar-footer"><strong>Área restrita</strong><small id="header-email">Validando acesso...</small></div>
@@ -34,9 +33,8 @@
 
     <main class="admin-page-main">
       <header class="page-header">
-        <div class="page-title">
-          <span>Configurações</span>
-          <h1>Preferências administrativas</h1>
+        <div class="page-header-brand">
+          <img src="images-removebg-preview.png" alt="Logo AD Bela-Vista">
         </div>
         <div class="header-actions">
           <button class="btn" id="refresh-btn" type="button"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
@@ -45,6 +43,14 @@
       </header>
 
       <section class="page-content">
+        <section class="page-section-head">
+          <div>
+            <span>Configurações</span>
+            <h1>Preferências administrativas</h1>
+            <p>Ajustes locais para a rotina do painel.</p>
+          </div>
+        </section>
+
         <div class="grid">
           <article class="card stat-card"><i class="fa-solid fa-users"></i><strong id="stat-total">0</strong><span>Total de cadastros</span></article>
           <article class="card stat-card"><i class="fa-solid fa-user"></i><strong id="stat-membros">0</strong><span>Membros</span></article>
@@ -97,12 +103,12 @@
               </select>
             </div>
             <label class="setting setting-text">
-              <span><strong>Pastor responsavel</strong><span>Nome impresso na assinatura da ficha PDF.</span></span>
+              <span><strong>Pastor responsável</strong><span>Nome impresso na assinatura da ficha PDF.</span></span>
               <input type="text" data-setting="pastorName" placeholder="Pr. Nome do pastor">
             </label>
             <label class="setting setting-text">
-              <span><strong>Cargo na assinatura</strong><span>Descricao abaixo do nome no PDF.</span></span>
-              <input type="text" data-setting="pastorRole" placeholder="Pastor responsavel">
+              <span><strong>Cargo na assinatura</strong><span>Descrição abaixo do nome no PDF.</span></span>
+              <input type="text" data-setting="pastorRole" placeholder="Pastor responsável">
             </label>
           </div>
         </section>

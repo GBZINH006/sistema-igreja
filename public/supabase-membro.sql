@@ -389,7 +389,7 @@ begin
     - 'member_account_id';
 
   v_payload := jsonb_set(v_payload, '{member_account_id}', to_jsonb(v_account_id), true);
-  v_payload := jsonb_set(v_payload, '{status}', to_jsonb(coalesce(nullif(v_payload->>'status', ''), 'Ativo')), true);
+  v_payload := jsonb_set(v_payload, '{status}', to_jsonb('Em análise'::text), true);
 
   select
     string_agg(format('%I', c.column_name), ', ' order by c.ordinal_position),
@@ -495,6 +495,9 @@ begin
     - 'foto_diploma'
     - 'foto_comprovante_end'
     - 'assinatura_url';
+
+  v_payload := v_payload - 'status' - 'data_aprovacao';
+  v_payload := jsonb_set(v_payload, '{status}', to_jsonb('Em análise'::text), true);
 
   select string_agg(
     format(

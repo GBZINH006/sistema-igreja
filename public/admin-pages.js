@@ -1,7 +1,7 @@
 (function () {
   const SUPABASE_URL = window.CONFIG?.SUPABASE_URL;
   const SUPABASE_KEY = window.CONFIG?.SUPABASE_KEY;
-  const ROLE_ADMIN = 'admin';
+  const ADMIN_ROLES = ['admin', 'pastor'];
   const page = document.body.dataset.page;
   const state = {
     db: null,
@@ -98,7 +98,7 @@
       'Celular': m.celular || '-',
       'E-mail': m.email || '-',
       'Setor': m.setor_igreja || '-',
-      'Congregacao': m.congregacao_igreja || '-',
+      'Congregação': m.congregacao_igreja || '-',
       'Cargo': m.cargo_principal || '-'
     }));
     const ws = XLSX.utils.json_to_sheet(dados);
@@ -111,11 +111,11 @@
   function exportarPDF() {
     if (!state.membros.length) { toast('Nenhum cadastro para exportar.'); return; }
     const { jsPDF } = window.jspdf || {};
-    if (!jsPDF) { toast('Biblioteca PDF indisponivel.'); return; }
+    if (!jsPDF) { toast('Biblioteca PDF indisponível.'); return; }
     const doc = new jsPDF('landscape');
     const c = getCounts();
     doc.setFontSize(16);
-    doc.text('Relatorio Geral de Membros - AD Bela-Vista', 14, 16);
+    doc.text('Relatório Geral de Membros - AD Bela-Vista', 14, 16);
     doc.setFontSize(9);
     doc.text(`Total: ${c.total} | Membros: ${c.membros} | Congregados: ${c.congregados} | Ativos: ${c.ativos}`, 14, 24);
     doc.autoTable({
@@ -129,7 +129,7 @@
   }
 
   function exportarGraficoPNG() {
-    if (!state.chart) { toast('Escolha um indicador grafico primeiro.'); return; }
+    if (!state.chart) { toast('Escolha um indicador gráfico primeiro.'); return; }
     const a = document.createElement('a');
     a.href = state.chart.toBase64Image();
     a.download = 'indicador-ad-bela-vista.png';
@@ -250,7 +250,7 @@
       data[input.dataset.setting] = input.type === 'checkbox' ? input.checked : input.value;
     });
     localStorage.setItem('admin-page-settings', JSON.stringify(data));
-    toast('Configuracoes salvas.');
+    toast('Configurações salvas.');
   }
 
   function renderSettingsPage() {
@@ -280,7 +280,7 @@
     }
     setText('header-email', session.user.email || '');
     const { data, error } = await state.db.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-    if (error || !data || data.role !== ROLE_ADMIN) {
+    if (error || !data || !ADMIN_ROLES.includes(data.role)) {
       await state.db.auth.signOut();
       window.location.href = 'admin.html';
       return false;
@@ -305,7 +305,7 @@
     $('reset-settings-btn')?.addEventListener('click', () => {
       localStorage.removeItem('admin-page-settings');
       loadSettings();
-      toast('Configuracoes restauradas.');
+      toast('Configurações restauradas.');
     });
   }
 

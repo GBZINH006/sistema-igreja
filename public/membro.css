@@ -488,3 +488,63 @@ main {
     flex: 1;
   }
 }
+
+/* Polimento visual final */
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  letter-spacing: 0;
+}
+
+.brand,
+.member-email,
+.eyebrow,
+.primary-btn,
+.ghost-btn,
+.icon-btn,
+label span {
+  letter-spacing: 0;
+}
+
+.hero-panel h1,
+.panel-head h2,
+.registration-card strong {
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.hero-panel h1 {
+  font-size: clamp(2.25rem, 5vw, 4.2rem);
+}
+
+.hero-panel p,
+.empty-state,
+.registration-card small {
+  line-height: 1.6;
+}
+
+.topbar {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.hero-panel,
+.content-panel,
+.stats-grid article {
+  border-radius: 14px;
+}
+
+.primary-btn,
+.ghost-btn,
+.icon-btn {
+  border-radius: 10px;
+}
+
+input,
+select,
+textarea {
+  border-radius: 10px;
+  font-size: 0.96rem;
+}
