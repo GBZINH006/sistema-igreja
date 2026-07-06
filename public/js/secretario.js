@@ -137,10 +137,12 @@
 
     panel.hidden = !abrir;
     if (abrir) {
+      if (!recoverySessionReady) mostrarEtapaCodigoRecuperacao();
       if (email && loginEmail?.value && !email.value) email.value = loginEmail.value.trim();
       email?.focus();
     } else {
       recoverySessionReady = false;
+      mostrarEtapaCodigoRecuperacao();
       limparErroLogin();
     }
   }
@@ -158,6 +160,30 @@
 
   function recoveryRedirectUrl() {
     return `${window.location.origin}${window.location.pathname}`;
+  }
+
+  function mostrarEtapaCodigoRecuperacao() {
+    const fields = $("recovery-password-fields");
+    const reset = $("btn-recovery-reset");
+    const skip = $("btn-recovery-skip");
+    const verify = $("btn-recovery-verify");
+
+    if (fields) fields.hidden = true;
+    if (reset) reset.hidden = true;
+    if (skip) skip.hidden = true;
+    if (verify) verify.hidden = false;
+  }
+
+  function mostrarOpcoesAposCodigo() {
+    const fields = $("recovery-password-fields");
+    const reset = $("btn-recovery-reset");
+    const skip = $("btn-recovery-skip");
+    const verify = $("btn-recovery-verify");
+
+    if (fields) fields.hidden = false;
+    if (reset) reset.hidden = false;
+    if (skip) skip.hidden = false;
+    if (verify) verify.hidden = true;
   }
 
   async function solicitarCodigoRecuperacao() {
@@ -187,14 +213,75 @@
       return;
     }
 
-    mostrarErroLogin("Enviamos a recuperacao para seu e-mail. Digite o codigo recebido ou abra o link enviado.");
+    recoverySessionReady = false;
+    mostrarEtapaCodigoRecuperacao();
+    mostrarErroLogin("Enviamos o codigo para seu e-mail. Digite o codigo recebido para continuar.");
   }
 
   window.solicitarCodigoRecuperacao = solicitarCodigoRecuperacao;
 
+  async function validarCodigoRecuperacao() {
+    const { email, code } = recuperarDadosSenha();
+    const btn = $("btn-recovery-verify");
+
+    if (recoverySessionReady) {
+      mostrarOpcoesAposCodigo();
+      mostrarErroLogin("Codigo validado. Escolha trocar a senha ou entrar no painel.");
+      return true;
+    }
+
+    if (!email || !code) {
+      mostrarErroLogin("Informe o e-mail e o codigo recebido.");
+      return false;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Validando...';
+    }
+
+    try {
+      const { error } = await db.auth.verifyOtp({
+        email,
+        token: code,
+        type: "recovery"
+      });
+      if (error) throw error;
+
+      recoverySessionReady = true;
+      mostrarOpcoesAposCodigo();
+      mostrarErroLogin("Codigo validado. Agora voce pode trocar a senha ou pular e entrar no painel.");
+      return true;
+    } catch (error) {
+      mostrarErroLogin(error.message || "Nao foi possivel validar o codigo.");
+      return false;
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Validar codigo";
+      }
+    }
+  }
+
+  window.validarCodigoRecuperacao = validarCodigoRecuperacao;
+
+  async function entrarComSessaoRecuperada() {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      mostrarErroLogin("Sessao expirada. Envie um novo codigo.");
+      recoverySessionReady = false;
+      mostrarEtapaCodigoRecuperacao();
+      return false;
+    }
+
+    return validarAcesso(session);
+  }
+
   async function redefinirSenhaComCodigo() {
-    const { email, code, password, confirm } = recuperarDadosSenha();
+    const { password, confirm } = recuperarDadosSenha();
     const btn = $("btn-recovery-reset");
+
+    if (!recoverySessionReady && !(await validarCodigoRecuperacao())) return;
 
     if (!password || password.length < 8) {
       mostrarErroLogin("A nova senha deve ter pelo menos 8 caracteres.");
@@ -204,50 +291,53 @@
       mostrarErroLogin("A confirmacao da senha nao confere.");
       return;
     }
-    if (!recoverySessionReady && (!email || !code)) {
-      mostrarErroLogin("Informe o e-mail e o codigo recebido.");
-      return;
-    }
 
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = '<span class="loading"></span> Trocando...';
+      btn.innerHTML = '<span class="loading"></span> Salvando...';
     }
 
     try {
-      if (!recoverySessionReady) {
-        const { error: verifyError } = await db.auth.verifyOtp({
-          email,
-          token: code,
-          type: "recovery"
-        });
-        if (verifyError) throw verifyError;
-      }
-
       const { error: updateError } = await db.auth.updateUser({ password });
       if (updateError) throw updateError;
 
-      await db.auth.signOut();
-      recoverySessionReady = false;
-      $("login-email").value = email;
-      $("login-senha").value = "";
+      await entrarComSessaoRecuperada();
       ["recovery-code", "recovery-password", "recovery-password-confirm"].forEach(id => {
         const el = $(id);
         if (el) el.value = "";
       });
-      alternarRecuperacaoSenha(false);
-      mostrarErroLogin("Senha alterada com sucesso. Entre novamente com a nova senha.");
     } catch (error) {
-      mostrarErroLogin(error.message || "Nao foi possivel validar o codigo ou trocar a senha.");
+      mostrarErroLogin(error.message || "Nao foi possivel trocar a senha.");
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.textContent = "Trocar senha";
+        btn.textContent = "Trocar senha e entrar";
       }
     }
   }
 
   window.redefinirSenhaComCodigo = redefinirSenhaComCodigo;
+
+  async function pularRedefinicaoSenha() {
+    const btn = $("btn-recovery-skip");
+    if (!recoverySessionReady && !(await validarCodigoRecuperacao())) return;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Entrando...';
+    }
+
+    try {
+      await entrarComSessaoRecuperada();
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Pular e ir para o painel";
+      }
+    }
+  }
+
+  window.pularRedefinicaoSenha = pularRedefinicaoSenha;
 
   function toast(msg, dur = 2800) {
     const t = $("toast");
@@ -972,8 +1062,9 @@
       recoverySessionReady = true;
       mostrarTela("tela-login");
       alternarRecuperacaoSenha(true);
+      mostrarOpcoesAposCodigo();
       if (session?.user?.email) $("recovery-email").value = session.user.email;
-      mostrarErroLogin("Link validado. Digite e confirme a nova senha.");
+      mostrarErroLogin("Link validado. Escolha trocar a senha ou entrar no painel.");
     });
 
     const { data: { session } } = await db.auth.getSession();
@@ -982,8 +1073,10 @@
       recoverySessionReady = Boolean(session);
       mostrarTela("tela-login");
       alternarRecuperacaoSenha(true);
+      if (session) mostrarOpcoesAposCodigo();
+      else mostrarEtapaCodigoRecuperacao();
       if (session?.user?.email) $("recovery-email").value = session.user.email;
-      mostrarErroLogin(session ? "Link validado. Digite e confirme a nova senha." : "Digite o codigo recebido e a nova senha.");
+      mostrarErroLogin(session ? "Link validado. Escolha trocar a senha ou entrar no painel." : "Digite o codigo recebido para continuar.");
       return;
     }
 
