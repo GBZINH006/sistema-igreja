@@ -4,11 +4,21 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 
 ## Paginas principais
 
-- `cadastro.html`: ficha publica de cadastro.
-- `membro-login.html`: login/criacao de conta do membro.
-- `membro.html`: portal do membro.
-- `admin.html`: painel restrito para `admin` e `pastor`.
-- `relatorios.html`, `indicadores.html`, `configuracoes.html`: paginas auxiliares do painel.
+- `pages/cadastro.html`: ficha publica de cadastro.
+- `pages/membro-login.html`: login/criacao de conta do membro.
+- `pages/membro.html`: portal do membro.
+- `pages/admin.html`: painel restrito para `admin` e `pastor`.
+- `pages/secretario.html`: painel restrito para `secretario`.
+- `pages/relatorios.html`, `pages/indicadores.html`, `pages/configuracoes.html`: paginas auxiliares do painel.
+
+## Estrutura de pastas
+
+- `pages/`: arquivos HTML.
+- `js/`: scripts JavaScript.
+- `css/`: estilos.
+- `assets/`: imagens e midias estaticas.
+- `db/`: scripts SQL do Supabase.
+- `robots/`: arquivo `robots.txt`.
 
 ## Seguranca
 
@@ -39,7 +49,7 @@ on conflict (id) do update set role = excluded.role;
 
 ## Deploy
 
-O deploy esperado e Vercel. O arquivo `vercel.json` define headers de seguranca e redireciona rotas desconhecidas para `cadastro.html`.
+O deploy esperado e Vercel. O arquivo `vercel.json` define headers de seguranca, mantem compatibilidade com rotas como `/admin.html` e redireciona rotas desconhecidas para `pages/cadastro.html`.
 
 ## Observacoes
 

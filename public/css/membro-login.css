@@ -22,7 +22,7 @@ body {
   font-family: "DM Sans", system-ui, sans-serif;
   background:
     linear-gradient(120deg, rgba(7, 17, 31, 0.94), rgba(15, 33, 58, 0.88)),
-    url("14-02-2026%20-%20Culto%20da%20Fam%C3%ADlia!%E2%80%A2%20Hoje%20Deus%20operou%20milagre%2C%20tivemos%20muito%20louvor%2C%20ora%C3%A7%C3%A3o%20e%20adora%C3%A7%C3%A3.jpg") center/cover fixed;
+    url("../assets/14-02-2026%20-%20Culto%20da%20Fam%C3%ADlia!%E2%80%A2%20Hoje%20Deus%20operou%20milagre%2C%20tivemos%20muito%20louvor%2C%20ora%C3%A7%C3%A3o%20e%20adora%C3%A7%C3%A3.jpg") center/cover fixed;
 }
 
 .auth-shell {

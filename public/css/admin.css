@@ -261,6 +261,65 @@ body::after {
   transform: none;
 }
 
+.login-link {
+  width: 100%;
+  margin-top: 0.75rem;
+  border: 0;
+  background: transparent;
+  color: rgba(201, 168, 76, 0.86);
+  font: 700 0.82rem 'Syne', sans-serif;
+  cursor: pointer;
+  text-align: center;
+}
+
+.login-link:hover,
+.login-link:focus-visible {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.btn-login-secondary {
+  margin: 0.15rem 0 0.85rem;
+  padding: 0.72rem;
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--gold);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  box-shadow: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.82rem;
+}
+
+.recovery-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: left;
+}
+
+.recovery-panel[hidden] {
+  display: none;
+}
+
+.recovery-title {
+  color: var(--gold);
+  font: 800 0.95rem 'Syne', sans-serif;
+  margin-bottom: 0.35rem;
+}
+
+.recovery-copy {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  margin-bottom: 0.85rem;
+}
+
+.recovery-actions {
+  display: grid;
+  gap: 0.35rem;
+}
+
 .login-badge {
   display: inline-flex;
   align-items: center;

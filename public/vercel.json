@@ -28,8 +28,48 @@
   ],
   "rewrites": [
     {
+      "source": "/admin.html",
+      "destination": "/pages/admin.html"
+    },
+    {
+      "source": "/secretario.html",
+      "destination": "/pages/secretario.html"
+    },
+    {
+      "source": "/cadastro.html",
+      "destination": "/pages/cadastro.html"
+    },
+    {
+      "source": "/membro-login.html",
+      "destination": "/pages/membro-login.html"
+    },
+    {
+      "source": "/membro.html",
+      "destination": "/pages/membro.html"
+    },
+    {
+      "source": "/relatorios.html",
+      "destination": "/pages/relatorios.html"
+    },
+    {
+      "source": "/indicadores.html",
+      "destination": "/pages/indicadores.html"
+    },
+    {
+      "source": "/configuracoes.html",
+      "destination": "/pages/configuracoes.html"
+    },
+    {
+      "source": "/privacidade.html",
+      "destination": "/pages/privacidade.html"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots/robots.txt"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/cadastro.html"
+      "destination": "/pages/cadastro.html"
     }
   ]
 }

@@ -7,6 +7,7 @@
 
   let membrosCache = [];
   let ultimaBusca = "";
+  let recoverySessionReady = false;
   const ROLES_PERMITIDOS = ["secretario"];
 
   const CAMPOS_EDICAO = [
@@ -120,6 +121,133 @@
     erro.textContent = message;
     erro.classList.add("show");
   }
+
+  function limparErroLogin() {
+    const erro = $("login-erro");
+    if (!erro) return;
+    erro.textContent = "";
+    erro.classList.remove("show");
+  }
+
+  function alternarRecuperacaoSenha(abrir) {
+    const panel = $("recovery-panel");
+    const email = $("recovery-email");
+    const loginEmail = $("login-email");
+    if (!panel) return;
+
+    panel.hidden = !abrir;
+    if (abrir) {
+      if (email && loginEmail?.value && !email.value) email.value = loginEmail.value.trim();
+      email?.focus();
+    } else {
+      recoverySessionReady = false;
+      limparErroLogin();
+    }
+  }
+
+  window.alternarRecuperacaoSenha = alternarRecuperacaoSenha;
+
+  function recuperarDadosSenha() {
+    return {
+      email: $("recovery-email")?.value.trim() || $("login-email")?.value.trim() || "",
+      code: $("recovery-code")?.value.trim() || "",
+      password: $("recovery-password")?.value || "",
+      confirm: $("recovery-password-confirm")?.value || ""
+    };
+  }
+
+  function recoveryRedirectUrl() {
+    return `${window.location.origin}${window.location.pathname}`;
+  }
+
+  async function solicitarCodigoRecuperacao() {
+    const { email } = recuperarDadosSenha();
+    const btn = $("btn-recovery-send");
+    if (!email) {
+      mostrarErroLogin("Informe o e-mail do usuario.");
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Enviando...';
+    }
+
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: recoveryRedirectUrl()
+    });
+
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Enviar codigo por e-mail";
+    }
+
+    if (error) {
+      mostrarErroLogin(error.message || "Nao foi possivel enviar o e-mail de recuperacao.");
+      return;
+    }
+
+    mostrarErroLogin("Enviamos a recuperacao para seu e-mail. Digite o codigo recebido ou abra o link enviado.");
+  }
+
+  window.solicitarCodigoRecuperacao = solicitarCodigoRecuperacao;
+
+  async function redefinirSenhaComCodigo() {
+    const { email, code, password, confirm } = recuperarDadosSenha();
+    const btn = $("btn-recovery-reset");
+
+    if (!password || password.length < 8) {
+      mostrarErroLogin("A nova senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (password !== confirm) {
+      mostrarErroLogin("A confirmacao da senha nao confere.");
+      return;
+    }
+    if (!recoverySessionReady && (!email || !code)) {
+      mostrarErroLogin("Informe o e-mail e o codigo recebido.");
+      return;
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span> Trocando...';
+    }
+
+    try {
+      if (!recoverySessionReady) {
+        const { error: verifyError } = await db.auth.verifyOtp({
+          email,
+          token: code,
+          type: "recovery"
+        });
+        if (verifyError) throw verifyError;
+      }
+
+      const { error: updateError } = await db.auth.updateUser({ password });
+      if (updateError) throw updateError;
+
+      await db.auth.signOut();
+      recoverySessionReady = false;
+      $("login-email").value = email;
+      $("login-senha").value = "";
+      ["recovery-code", "recovery-password", "recovery-password-confirm"].forEach(id => {
+        const el = $(id);
+        if (el) el.value = "";
+      });
+      alternarRecuperacaoSenha(false);
+      mostrarErroLogin("Senha alterada com sucesso. Entre novamente com a nova senha.");
+    } catch (error) {
+      mostrarErroLogin(error.message || "Nao foi possivel validar o codigo ou trocar a senha.");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Trocar senha";
+      }
+    }
+  }
+
+  window.redefinirSenhaComCodigo = redefinirSenhaComCodigo;
 
   function toast(msg, dur = 2800) {
     const t = $("toast");
@@ -689,7 +817,7 @@
             <strong>Fone: (48) 3242-2451</strong>
           </div>
           <div class="ficha-logo">
-            <img src="images-removebg-preview.png" alt="">
+            <img src="../assets/images-removebg-preview.png" alt="">
             ASSEMBLEIA DE DEUS<br>PALHOCA - SC
           </div>
           <div class="ficha-titulo">FICHA CADASTRAL</div>
@@ -835,7 +963,29 @@
   window.imprimirFicha = imprimirFicha;
 
   document.addEventListener("DOMContentLoaded", async () => {
+    const recoveryIncoming =
+      new URLSearchParams(window.location.hash.slice(1)).get("type") === "recovery" ||
+      new URLSearchParams(window.location.search).get("type") === "recovery";
+
+    db.auth.onAuthStateChange((event, session) => {
+      if (event !== "PASSWORD_RECOVERY") return;
+      recoverySessionReady = true;
+      mostrarTela("tela-login");
+      alternarRecuperacaoSenha(true);
+      if (session?.user?.email) $("recovery-email").value = session.user.email;
+      mostrarErroLogin("Link validado. Digite e confirme a nova senha.");
+    });
+
     const { data: { session } } = await db.auth.getSession();
+
+    if (recoveryIncoming) {
+      recoverySessionReady = Boolean(session);
+      mostrarTela("tela-login");
+      alternarRecuperacaoSenha(true);
+      if (session?.user?.email) $("recovery-email").value = session.user.email;
+      mostrarErroLogin(session ? "Link validado. Digite e confirme a nova senha." : "Digite o codigo recebido e a nova senha.");
+      return;
+    }
 
     if (session) {
       await validarAcesso(session);
