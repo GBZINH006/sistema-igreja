@@ -34,6 +34,9 @@ create table if not exists public.member_accounts (
   cpf text unique,
   avatar_url text,
   password_hash text not null,
+  privacy_accepted_at timestamptz,
+  privacy_version text,
+  privacy_source text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_login_at timestamptz
@@ -115,6 +118,9 @@ create table if not exists public.membros (
   foto_diploma text,
   foto_comprovante_end text,
   assinatura_url text,
+  privacy_accepted_at timestamptz,
+  privacy_version text,
+  privacy_source text,
   member_account_id uuid references public.member_accounts(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

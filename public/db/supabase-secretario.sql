@@ -202,6 +202,11 @@
       new.cpf := nullif(trim(coalesce(new.cpf, '')), '');
       new.celular := nullif(trim(coalesce(new.celular, '')), '');
       new.status := 'Pendente';
+      new.member_account_id := null;
+      new.data_aprovacao := null;
+      new.privacy_version := nullif(trim(coalesce(new.privacy_version, '')), '');
+      new.privacy_source := 'public_registration';
+      new.privacy_accepted_at := now();
 
       if new.tipo_cadastro not in ('Membro', 'Congregado') then
         raise exception 'Tipo de cadastro invalido.';
@@ -217,6 +222,10 @@
 
       if length(regexp_replace(coalesce(new.celular, ''), '\D', '', 'g')) < 10 then
         raise exception 'Celular obrigatorio ou invalido.';
+      end if;
+
+      if length(coalesce(new.privacy_version, '')) not between 1 and 64 then
+        raise exception 'Aceite dos termos de privacidade invalido.';
       end if;
     end if;
 
@@ -248,6 +257,9 @@
     and length(trim(coalesce(nome, ''))) between 3 and 160
     and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
     and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
+    and privacy_accepted_at is not null
+    and length(trim(coalesce(privacy_version, ''))) between 1 and 64
+    and privacy_source = 'public_registration'
   );
 
   drop policy if exists "Admin e secretaria inserem membros" on public.membros;

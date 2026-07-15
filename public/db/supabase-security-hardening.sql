@@ -317,12 +317,16 @@ begin
     new.status := 'Pendente';
     new.member_account_id := null;
     new.data_aprovacao := null;
+    new.privacy_version := nullif(trim(coalesce(new.privacy_version, '')), '');
+    new.privacy_source := 'public_registration';
+    new.privacy_accepted_at := now();
 
     if new.tipo_cadastro not in ('Membro', 'Congregado')
       or new.nome is null
       or length(new.nome) not between 3 and 160
       or length(regexp_replace(coalesce(new.cpf, ''), '\D', '', 'g')) < 4
-      or length(regexp_replace(coalesce(new.celular, ''), '\D', '', 'g')) < 10 then
+      or length(regexp_replace(coalesce(new.celular, ''), '\D', '', 'g')) < 10
+      or length(coalesce(new.privacy_version, '')) not between 1 and 64 then
       raise exception 'Dados de cadastro invalidos.';
     end if;
   end if;
@@ -358,9 +362,12 @@ to anon
 with check (
   tipo_cadastro in ('Membro', 'Congregado')
   and coalesce(status, 'Pendente') = 'Pendente'
-  and length(trim(coalesce(nome, ''))) between 3 and 160
-  and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
-  and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
+    and length(trim(coalesce(nome, ''))) between 3 and 160
+    and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
+    and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
+    and privacy_accepted_at is not null
+    and length(trim(coalesce(privacy_version, ''))) between 1 and 64
+    and privacy_source = 'public_registration'
 );
 
 drop policy if exists "Admin e secretaria inserem membros" on public.membros;

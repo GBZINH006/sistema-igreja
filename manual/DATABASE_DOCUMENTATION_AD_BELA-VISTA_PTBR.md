@@ -45,6 +45,9 @@ Campos de maior uso:
 - `cargo_principal`
 - `data_aprovacao`
 - `member_account_id`
+- `privacy_accepted_at`: data e hora do aceite, gerada pelo banco.
+- `privacy_version`: versao dos termos aceitos.
+- `privacy_source`: fluxo em que ocorreu o aceite (`public_registration` ou `member_registration`).
 
 Status esperados:
 
@@ -67,6 +70,8 @@ O portal do membro usa tabelas proprias:
 - `member_account_sessions`
 
 O membro nao usa Supabase Auth diretamente. A sessao e controlada por token armazenado com hash no banco.
+
+O aceite feito durante a criacao da conta fica em `member_accounts`, nos campos `privacy_accepted_at`, `privacy_version` e `privacy_source`. Nesse fluxo, a origem registrada e `member_signup`.
 
 ---
 
@@ -128,6 +133,8 @@ Leitura da auditoria deve ficar restrita a admin/pastor/secretario.
 - `supabase-membro.sql`: conta do membro e RPCs do portal.
 
 Depois de alterar SQL, execute `notify pgrst, 'reload schema';` ou rode o script completo.
+
+Para atualizar um banco existente com o registro de consentimento, rode novamente `supabase-membro.sql` e depois `supabase-security-hardening.sql`.
 
 ---
 

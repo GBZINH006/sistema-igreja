@@ -2,6 +2,7 @@
   const { createClient } = window.supabase;
   const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
   const MEMBER_SESSION_KEY = "ad_bela_vista_member_session";
+  const PRIVACY_POLICY_VERSION = window.CONFIG.PRIVACY_POLICY_VERSION;
 
   const $ = (selector) => document.querySelector(selector);
 
@@ -177,13 +178,20 @@
     const phone = $("#signup-phone").value.trim();
     const password = $("#signup-password").value;
 
+    if (!PRIVACY_POLICY_VERSION) {
+      showAlert("A versão dos termos de privacidade não está configurada.", "error");
+      setLoading(form, false);
+      return;
+    }
+
     try {
       const { data, error } = await db.rpc("member_register_account", {
         p_first_name: firstName,
         p_last_name: lastName,
         p_email: email,
         p_phone: phone,
-        p_password: password
+        p_password: password,
+        p_privacy_version: PRIVACY_POLICY_VERSION
       });
 
       if (error) throw error;

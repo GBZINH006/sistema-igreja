@@ -17,6 +17,9 @@ create table if not exists public.member_accounts (
   cpf text unique,
   avatar_url text,
   password_hash text not null,
+  privacy_accepted_at timestamptz,
+  privacy_version text,
+  privacy_source text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   last_login_at timestamptz
@@ -24,6 +27,11 @@ create table if not exists public.member_accounts (
 
 alter table public.member_accounts
   add column if not exists avatar_url text;
+
+alter table public.member_accounts
+  add column if not exists privacy_accepted_at timestamptz,
+  add column if not exists privacy_version text,
+  add column if not exists privacy_source text;
 
 alter table public.member_accounts
   alter column cpf drop not null;
@@ -79,7 +87,10 @@ as $$
 $$;
 
 alter table public.membros
-  add column if not exists member_account_id uuid references public.member_accounts(id) on delete set null;
+  add column if not exists member_account_id uuid references public.member_accounts(id) on delete set null,
+  add column if not exists privacy_accepted_at timestamptz,
+  add column if not exists privacy_version text,
+  add column if not exists privacy_source text;
 
 create index if not exists idx_membros_member_account_id
   on public.membros(member_account_id);
@@ -117,7 +128,8 @@ create or replace function public.member_register_account(
   p_last_name text,
   p_email text,
   p_phone text,
-  p_password text
+  p_password text,
+  p_privacy_version text
 )
 returns table (
   account_id uuid,
@@ -161,19 +173,29 @@ begin
     raise exception 'A senha precisa ter pelo menos 8 caracteres, com letras e numeros.';
   end if;
 
+  if length(trim(coalesce(p_privacy_version, ''))) not between 1 and 64 then
+    raise exception 'Aceite dos termos de privacidade invalido.';
+  end if;
+
   insert into public.member_accounts (
     first_name,
     last_name,
     email,
     phone,
-    password_hash
+    password_hash,
+    privacy_accepted_at,
+    privacy_version,
+    privacy_source
   )
   values (
     trim(p_first_name),
     trim(p_last_name),
     v_email,
     trim(p_phone),
-    extensions.crypt(p_password, extensions.gen_salt('bf', 12))
+    extensions.crypt(p_password, extensions.gen_salt('bf', 12)),
+    now(),
+    trim(p_privacy_version),
+    'member_signup'
   )
   returning id into v_account_id;
 
@@ -518,11 +540,17 @@ begin
     'parentesco_dep2', 'nome_dep3', 'parentesco_dep3', 'talentos',
     'tem_computador', 'tem_internet', 'foto_url', 'doc_url',
     'foto_certidao_nasc', 'foto_certidao_casamento', 'foto_diploma',
-    'foto_comprovante_end', 'assinatura_url'
+    'foto_comprovante_end', 'assinatura_url', 'privacy_version'
   ]::text[]);
+
+  if length(trim(coalesce(v_payload->>'privacy_version', ''))) not between 1 and 64 then
+    raise exception 'Aceite dos termos de privacidade invalido.';
+  end if;
 
   v_payload := jsonb_set(v_payload, '{member_account_id}', to_jsonb(v_account_id), true);
   v_payload := jsonb_set(v_payload, '{status}', to_jsonb('Em análise'::text), true);
+  v_payload := jsonb_set(v_payload, '{privacy_accepted_at}', to_jsonb(now()), true);
+  v_payload := jsonb_set(v_payload, '{privacy_source}', to_jsonb('member_registration'::text), true);
 
   select
     string_agg(format('%I', c.column_name), ', ' order by c.ordinal_position),
@@ -751,7 +779,7 @@ $$;
 revoke all on function public.member_token_hash(text) from public;
 revoke all on function public.member_account_from_token(text) from public;
 revoke all on function public.member_cleanup_security_state() from public;
-revoke all on function public.member_register_account(text, text, text, text, text) from public;
+revoke all on function public.member_register_account(text, text, text, text, text, text) from public;
 revoke all on function public.member_login_account(text, text) from public;
 revoke all on function public.member_get_account(text) from public;
 revoke all on function public.member_update_account(text, text, text, text, text) from public;
@@ -763,7 +791,7 @@ revoke all on function public.member_update_registration(text, uuid, jsonb) from
 revoke all on function public.admin_save_pastor_signature(text, text, text) from public;
 revoke all on function public.get_pastor_signature() from public;
 
-grant execute on function public.member_register_account(text, text, text, text, text) to anon, authenticated;
+grant execute on function public.member_register_account(text, text, text, text, text, text) to anon, authenticated;
 grant execute on function public.member_login_account(text, text) to anon, authenticated;
 grant execute on function public.member_get_account(text) to anon, authenticated;
 grant execute on function public.member_update_account(text, text, text, text, text) to anon, authenticated;

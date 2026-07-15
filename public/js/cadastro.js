@@ -12,6 +12,7 @@
   const PUBLIC_SUBMISSION_COOLDOWN_MS = 5 * 60 * 1000;
   const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
   const ALLOWED_UPLOAD_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
+  const PRIVACY_POLICY_VERSION = window.CONFIG.PRIVACY_POLICY_VERSION;
   let currentSession = null;
   let privacidadeInicialAceita = false;
 
@@ -1239,6 +1240,8 @@
       talentos: document.getElementById('talentos').value.trim(),
       tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
       tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
+      privacy_version: PRIVACY_POLICY_VERSION,
+      privacy_source: isMemberFlow ? 'member_registration' : 'public_registration',
       status: isMemberFlow ? 'Em análise' : 'Pendente'
     };
 
@@ -1320,6 +1323,17 @@
     if (isMemberFlow && !currentSession?.token) {
       carregarSessaoMembro();
       if (!currentSession?.token) return;
+    }
+
+    if (!privacidadeInicialAceita) {
+      toast('⚠️ É necessário aceitar os termos de privacidade.', 'erro');
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
+    if (!PRIVACY_POLICY_VERSION) {
+      toast('❌ A versão dos termos de privacidade não está configurada.', 'erro');
+      return;
     }
 
     const dados = coletarDados();
