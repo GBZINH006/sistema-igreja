@@ -38,7 +38,7 @@
       ]
     },
     {
-      "source": "/(admin|secretario|membro|relatorios|indicadores|configuracoes).html",
+      "source": "/(admin|membro|relatorios|indicadores|usuarios|configuracoes).html",
       "headers": [
         {
           "key": "Cache-Control",
@@ -51,10 +51,6 @@
     {
       "source": "/admin.html",
       "destination": "/pages/admin.html"
-    },
-    {
-      "source": "/secretario.html",
-      "destination": "/pages/secretario.html"
     },
     {
       "source": "/cadastro.html",
@@ -75,6 +71,10 @@
     {
       "source": "/indicadores.html",
       "destination": "/pages/indicadores.html"
+    },
+    {
+      "source": "/usuarios.html",
+      "destination": "/pages/usuarios.html"
     },
     {
       "source": "/configuracoes.html",

@@ -14,7 +14,7 @@ O sistema permite:
 - criar conta e acessar o portal do membro;
 - acompanhar fichas vinculadas a uma conta;
 - revisar, aprovar ou solicitar correcao de cadastros;
-- consultar membros no painel pastoral e no painel da secretaria;
+- consultar membros no painel administrativo unificado;
 - exportar relatorios em PDF/Excel e gerar PDF completo da ficha;
 - consultar o manual publico da ficha em `public/pages/suporte.html`.
 
@@ -23,16 +23,15 @@ O sistema permite:
 - `public/pages/cadastro.html`: ficha publica de cadastro.
 - `public/pages/membro-login.html`: login/criacao de conta do membro.
 - `public/pages/membro.html`: portal do membro.
-- `public/pages/admin.html`: painel do pastor/administrador.
-- `public/pages/secretario.html`: painel da secretaria.
+- `public/pages/admin.html`: painel administrativo unificado.
+- `public/pages/usuarios.html`: cadastro e controle de usuarios administrativos.
 - `public/pages/suporte.html`: manual publico da ficha.
 
 ### Ilustracoes internas
 
-![Ficha publica](../public/assets/manual/manual-ficha-publica.svg)
+![Ficha publica](../public/assets/manual/manual-ficha-escolha.png)
 ![Portal do membro](../public/assets/manual/manual-portal-membro.svg)
 ![Painel restrito](../public/assets/manual/manual-painel-admin.svg)
-![Secretaria](../public/assets/manual/manual-secretaria.svg)
 
 ---
 
@@ -41,11 +40,11 @@ O sistema permite:
 ### 2.1 Ficha publica
 
 1. Abra `public/pages/cadastro.html`.
-2. Escolha **Membro** ou **Congregado**.
-3. Preencha os dados solicitados.
-4. Anexe documentos quando necessario.
-5. Registre a assinatura digital.
-6. Aceite os termos de privacidade.
+2. Aceite os termos de privacidade.
+3. Escolha **Membro** ou **Congregado**.
+4. Preencha os dados solicitados.
+5. Anexe documentos quando necessario.
+6. Registre a assinatura digital.
 7. Clique em **Enviar Cadastro**.
 
 Cadastros enviados pela ficha publica entram como **Pendente**.
@@ -76,7 +75,7 @@ Fichas enviadas ou editadas pelo portal entram como **Em análise**.
 
 ## 4. Acesso
 
-### 4.1 Painel admin/pastor
+### 4.1 Painel administrativo
 
 1. Abra `public/pages/admin.html`.
 2. Informe e-mail e senha.
@@ -86,22 +85,13 @@ Roles permitidas:
 
 - `admin`
 - `pastor`
-
-Somente `admin` pode excluir cadastros.
-
-### 4.2 Painel da secretaria
-
-1. Abra `public/pages/secretario.html`.
-2. Informe e-mail e senha.
-3. Clique em **Entrar no Painel**.
-
-Role permitida:
-
 - `secretario`
 
-### 4.3 Esqueci minha senha
+`admin` e `secretario` podem excluir cadastros. `pastor` acessa o painel sem exclusao.
 
-No painel admin/pastor e no painel da secretaria existe fluxo de recuperacao:
+### 4.2 Esqueci minha senha
+
+No painel administrativo existe fluxo de recuperacao:
 
 1. Clique em **Esqueci minha senha**.
 2. Informe o e-mail.
@@ -113,7 +103,7 @@ No portal do membro, a recuperacao deve ser solicitada a secretaria ou administr
 
 ---
 
-## 5. Painel Admin/Pastor
+## 5. Painel Administrativo
 
 O painel mostra:
 
@@ -127,6 +117,7 @@ O painel mostra:
 - edicao de cadastro;
 - exportacoes PDF/Excel;
 - PDF completo da ficha;
+- cadastro e controle de usuarios administrativos;
 - configuracao de assinatura do pastor.
 
 ### Aprovacao e correcao
@@ -140,16 +131,14 @@ Na lista, cadastros com status de analise podem ser:
 
 ---
 
-## 6. Painel da Secretaria
+## 6. Usuarios Administrativos
 
-O painel da secretaria e separado do painel admin/pastor.
+A pagina `public/pages/usuarios.html` permite:
 
-Ele permite:
-
-- buscar por nome, CPF ou CRNM;
-- visualizar ficha;
-- editar dados permitidos;
-- atualizar anexos;
+- criar login administrativo;
+- definir perfil `admin`, `pastor` ou `secretario`;
+- listar usuarios do Supabase Auth;
+- atualizar o perfil de um usuario existente.
 - imprimir ficha;
 - abrir novo cadastro.
 

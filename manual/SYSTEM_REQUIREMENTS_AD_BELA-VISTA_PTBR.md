@@ -49,8 +49,8 @@ Obrigatorio:
 
 - Ficha publica de membro/congregado.
 - Portal do membro.
-- Painel admin/pastor.
-- Painel da secretaria.
+- Painel administrativo unificado.
+- Cadastro e controle de usuarios administrativos.
 - Fluxo de status: `Pendente`, `Em análise`, `Correção`, `Aprovado`.
 - Exportacao PDF/Excel.
 - PDF completo da ficha.
@@ -67,7 +67,7 @@ Obrigatorio:
 - Manter headers de seguranca no `vercel.json`.
 - Manter `membros-docs` privado.
 - Usar contas individuais.
-- Restringir exclusao a `admin`.
+- Restringir exclusao a `admin` e `secretario`.
 - Testar RLS apos qualquer alteracao.
 
 ---

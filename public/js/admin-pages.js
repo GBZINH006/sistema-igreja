@@ -1,11 +1,12 @@
 (function () {
   const SUPABASE_URL = window.CONFIG?.SUPABASE_URL;
   const SUPABASE_KEY = window.CONFIG?.SUPABASE_KEY;
-  const ADMIN_ROLES = ['admin', 'pastor'];
+  const ADMIN_ROLES = ['admin', 'pastor', 'secretario'];
   const page = document.body.dataset.page;
   const state = {
     db: null,
     membros: [],
+    users: [],
     chart: null
   };
 
@@ -47,6 +48,13 @@
 
   function fmtDate(v) {
     return v ? v.split('-').reverse().join('/') : '-';
+  }
+
+  function fmtDateTime(v) {
+    if (!v) return '-';
+    const date = new Date(v);
+    if (Number.isNaN(date.getTime())) return '-';
+    return date.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
   }
 
   function getCounts() {
@@ -258,7 +266,120 @@
     loadSettings();
   }
 
+  function roleLabel(role) {
+    const labels = {
+      admin: 'Admin',
+      pastor: 'Pastor',
+      secretario: 'Secretário',
+      'sem perfil': 'Sem perfil'
+    };
+    return labels[role] || role || 'Sem perfil';
+  }
+
+  function roleClass(role) {
+    return String(role || 'sem-perfil').replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase();
+  }
+
+  function renderUsersPage() {
+    const users = state.users || [];
+    setText('user-stat-total', users.length);
+    setText('user-stat-admin', users.filter(user => user.role === 'admin').length);
+    setText('user-stat-pastor', users.filter(user => user.role === 'pastor').length);
+    setText('user-stat-secretario', users.filter(user => user.role === 'secretario').length);
+
+    const tbody = $('admin-users-body');
+    if (!tbody) return;
+    tbody.innerHTML = users.map(user => `
+      <tr>
+        <td>${safeText(user.email)}</td>
+        <td><span class="role-pill role-${roleClass(user.role)}">${safeText(roleLabel(user.role))}</span></td>
+        <td>${safeText(fmtDateTime(user.created_at))}</td>
+        <td>${safeText(fmtDateTime(user.last_sign_in_at))}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" class="empty">Nenhum usuário administrativo encontrado.</td></tr>';
+  }
+
+  async function loadUsers() {
+    const { data, error } = await state.db.rpc('admin_list_auth_users');
+    if (error) {
+      toast(`Erro ao carregar usuários: ${error.message}`);
+      return;
+    }
+    state.users = data || [];
+    renderUsersPage();
+  }
+
+  async function saveAdminUser(event) {
+    event?.preventDefault();
+
+    const email = $('admin-user-email')?.value?.trim();
+    const password = $('admin-user-password')?.value || '';
+    const role = $('admin-user-role')?.value || 'secretario';
+    const button = $('admin-user-save');
+
+    if (!email) {
+      toast('Informe o e-mail do usuário.');
+      return;
+    }
+
+    if (password && password.length < 6) {
+      toast('A senha inicial precisa ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    const original = button?.innerHTML;
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+    }
+
+    try {
+      if (password) {
+        const signupClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+        const { error: signupError } = await signupClient.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '/admin.html')}`
+          }
+        });
+        if (signupError && !String(signupError.message || '').toLowerCase().includes('already')) {
+          throw signupError;
+        }
+      }
+
+      const { error } = await state.db.rpc('admin_upsert_user_role', {
+        p_email: email,
+        p_role: role
+      });
+      if (error) throw error;
+
+      $('admin-user-form')?.reset();
+      if ($('admin-user-role')) $('admin-user-role').value = 'secretario';
+      toast('Usuário salvo com sucesso.');
+      await loadUsers();
+    } catch (error) {
+      toast(`Erro ao salvar usuário: ${error.message || 'tente novamente.'}`);
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = original;
+      }
+    }
+  }
+
   async function loadData() {
+    if (page === 'usuarios') {
+      await loadUsers();
+      return;
+    }
+
     const { data, error } = await state.db.from('membros').select('*').order('nome');
     if (error) {
       toast('Erro ao carregar dados.');
@@ -302,6 +423,8 @@
     $('indicator-metric')?.addEventListener('change', renderIndicator);
     $('indicator-type')?.addEventListener('change', renderIndicator);
     $('save-settings-btn')?.addEventListener('click', saveSettings);
+    $('admin-user-form')?.addEventListener('submit', saveAdminUser);
+    $('users-refresh-btn')?.addEventListener('click', loadUsers);
     $('reset-settings-btn')?.addEventListener('click', () => {
       localStorage.removeItem('admin-page-settings');
       loadSettings();

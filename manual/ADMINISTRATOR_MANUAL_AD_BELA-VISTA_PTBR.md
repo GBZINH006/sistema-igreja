@@ -33,9 +33,9 @@ Orientar a manutencao do sistema, incluindo:
 
 | Role | Acesso |
 |---|---|
-| `admin` | Painel admin/pastor, edicao, exportacao, aprovacao e exclusao. |
-| `pastor` | Painel admin/pastor, consulta, edicao, exportacao, aprovacao e assinatura, sem exclusao. |
-| `secretario` | Painel da secretaria, busca, consulta e manutencao operacional permitida. |
+| `admin` | Painel administrativo, usuarios, edicao, exportacao, aprovacao e exclusao. |
+| `pastor` | Painel administrativo, consulta, edicao, exportacao, aprovacao e assinatura, sem exclusao. |
+| `secretario` | Mesmo acesso operacional do admin no painel administrativo, incluindo exclusao. |
 
 Nao existe mais central operacional de suporte/tickets. A rota `/suporte.html` agora e manual publico da ficha e nao deve divulgar rotas restritas.
 
@@ -52,7 +52,7 @@ Status principais:
 
 Rotina recomendada:
 
-1. Abra o painel admin/pastor.
+1. Abra o painel administrativo.
 2. Use o filtro rapido **Pendentes**.
 3. Abra a ficha e confira dados e anexos.
 4. Se estiver correto, aprove.
@@ -67,7 +67,7 @@ Rotina recomendada:
 - Rode `public/db/supabase-security-hardening.sql` no Supabase.
 - Confirme RLS em `membros`, `profiles`, `audit_logs` e Storage.
 - Mantenha `membros-docs` privado.
-- Ative MFA para usuarios admin/pastor quando possivel.
+- Ative MFA para usuarios admin/pastor/secretario quando possivel.
 
 ---
 

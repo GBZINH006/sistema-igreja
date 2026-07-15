@@ -47,6 +47,83 @@
   revoke all on function public.tem_role(text[]) from public;
   grant execute on function public.tem_role(text[]) to authenticated;
 
+  create or replace function public.admin_list_auth_users()
+  returns table (
+    id uuid,
+    email text,
+    role text,
+    created_at timestamptz,
+    last_sign_in_at timestamptz
+  )
+  language sql
+  stable
+  security definer
+  set search_path = public, auth
+  as $$
+    select
+      u.id,
+      u.email::text,
+      coalesce(p.role, 'sem perfil') as role,
+      u.created_at,
+      u.last_sign_in_at
+    from auth.users u
+    left join public.profiles p on p.id = u.id
+    where public.tem_role(array['admin', 'secretario'])
+    order by u.created_at desc
+    limit 200;
+  $$;
+
+  revoke all on function public.admin_list_auth_users() from public;
+  grant execute on function public.admin_list_auth_users() to authenticated;
+
+  create or replace function public.admin_upsert_user_role(
+    p_email text,
+    p_role text
+  )
+  returns table (
+    id uuid,
+    email text,
+    role text
+  )
+  language plpgsql
+  security definer
+  set search_path = public, auth
+  as $$
+  declare
+    v_user auth.users%rowtype;
+    v_role text;
+  begin
+    if not public.tem_role(array['admin', 'secretario']) then
+      raise exception 'Acesso restrito.';
+    end if;
+
+    v_role := lower(trim(coalesce(p_role, '')));
+    if v_role not in ('admin', 'pastor', 'secretario') then
+      raise exception 'Perfil invalido.';
+    end if;
+
+    select *
+    into v_user
+    from auth.users
+    where lower(email) = lower(trim(coalesce(p_email, '')))
+    limit 1;
+
+    if v_user.id is null then
+      raise exception 'Usuario nao encontrado no Authentication. Crie o login primeiro e tente novamente.';
+    end if;
+
+    insert into public.profiles (id, role)
+    values (v_user.id, v_role)
+    on conflict (id) do update set role = excluded.role;
+
+    return query
+    select v_user.id, v_user.email::text, v_role;
+  end;
+  $$;
+
+  revoke all on function public.admin_upsert_user_role(text, text) from public;
+  grant execute on function public.admin_upsert_user_role(text, text) to authenticated;
+
   drop policy if exists "Usuario ve proprio perfil" on public.profiles;
   create policy "Usuario ve proprio perfil"
   on public.profiles
@@ -59,19 +136,18 @@
   on public.profiles
   for select
   to authenticated
-  using (public.tem_role(array['admin', 'pastor']));
+  using (public.tem_role(array['admin', 'pastor', 'secretario']));
 
   drop policy if exists "Admin gerencia perfis" on public.profiles;
   create policy "Admin gerencia perfis"
   on public.profiles
   for all
   to authenticated
-  using (public.tem_role(array['admin']))
-  with check (public.tem_role(array['admin']));
+  using (public.tem_role(array['admin', 'secretario']))
+  with check (public.tem_role(array['admin', 'secretario']));
 
-  -- 2) Busca limitada para a secretaria.
-  -- O secretario nao precisa de SELECT direto na tabela inteira.
-  -- O painel chama esta funcao e recebe no maximo 12 resultados por busca.
+  -- 2) Busca da secretaria mantida por compatibilidade.
+  -- O secretario agora tambem tem acesso administrativo completo pelo painel unificado.
   create or replace function public.buscar_membros_secretaria(
     termo text,
     termo_digits text default '',
@@ -107,8 +183,8 @@
   grant execute on function public.buscar_membros_secretaria(text, text, text) to authenticated;
 
   -- 3) Politicas da tabela membros.
-  -- Admin ve tudo; secretario busca pela funcao acima e pode atualizar cadastros.
-  -- Cadastros publicos continuam aceitos, e admin/secretario tambem podem criar cadastros logados.
+  -- Admin, pastor e secretario acessam o painel unificado.
+  -- Secretario tem o mesmo acesso operacional do admin, inclusive exclusao.
   alter table public.membros enable row level security;
 
   -- Defesa extra para cadastros enviados pelo formulario publico.
@@ -125,7 +201,7 @@
       new.nome := nullif(trim(coalesce(new.nome, '')), '');
       new.cpf := nullif(trim(coalesce(new.cpf, '')), '');
       new.celular := nullif(trim(coalesce(new.celular, '')), '');
-      new.status := 'Ativo';
+      new.status := 'Pendente';
 
       if new.tipo_cadastro not in ('Membro', 'Congregado') then
         raise exception 'Tipo de cadastro invalido.';
@@ -159,7 +235,7 @@
   on public.membros
   for select
   to authenticated
-  using (public.tem_role(array['admin', 'pastor']));
+  using (public.tem_role(array['admin', 'pastor', 'secretario']));
 
   drop policy if exists "Cadastro publico insere membros" on public.membros;
   create policy "Cadastro publico insere membros"
@@ -168,7 +244,7 @@
   to anon
   with check (
     tipo_cadastro in ('Membro', 'Congregado')
-    and coalesce(status, 'Ativo') = 'Ativo'
+    and coalesce(status, 'Pendente') = 'Pendente'
     and length(trim(coalesce(nome, ''))) between 3 and 160
     and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
     and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
@@ -194,7 +270,7 @@
   on public.membros
   for delete
   to authenticated
-  using (public.tem_role(array['admin']));
+  using (public.tem_role(array['admin', 'secretario']));
 
   -- 4) Storage para arquivos enviados pela secretaria.
   -- Ajuste os buckets se no seu projeto eles tiverem outro nome.
@@ -262,3 +338,5 @@
   -- from auth.users
   -- where email = 'email-do-secretario@exemplo.com'
   -- on conflict (id) do update set role = excluded.role;
+
+  notify pgrst, 'reload schema';

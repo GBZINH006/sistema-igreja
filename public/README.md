@@ -7,8 +7,8 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 - `pages/cadastro.html`: ficha publica de cadastro.
 - `pages/membro-login.html`: login/criacao de conta do membro.
 - `pages/membro.html`: portal do membro.
-- `pages/admin.html`: painel restrito para `admin` e `pastor`.
-- `pages/secretario.html`: painel restrito para `secretario`.
+- `pages/admin.html`: painel restrito para `admin`, `pastor` e `secretario`.
+- `pages/usuarios.html`: cadastro e controle de usuarios administrativos.
 - `pages/relatorios.html`, `pages/indicadores.html`, `pages/configuracoes.html`: paginas auxiliares do painel.
 - `pages/suporte.html`: manual publico da ficha de cadastro.
 
@@ -27,6 +27,7 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 - Rode `supabase-security-hardening.sql` no SQL Editor do Supabase para aplicar RLS, roles, auditoria e bucket privado.
 - O bucket principal de documentos deve ser `membros-docs`, privado, com URLs assinadas.
 - Usuarios do painel devem existir no Supabase Auth e ter perfil em `public.profiles`.
+- Use `pages/usuarios.html` para criar logins e definir perfis quando as RPCs administrativas estiverem aplicadas.
 
 Exemplo para liberar um pastor:
 

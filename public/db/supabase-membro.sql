@@ -701,7 +701,7 @@ begin
     select 1
     from public.profiles p
     where p.id = auth.uid()
-      and p.role in ('admin', 'pastor')
+      and p.role in ('admin', 'pastor', 'secretario')
   ) then
     raise exception 'Acesso negado.';
   end if;

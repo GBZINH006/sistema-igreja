@@ -82,7 +82,7 @@ Uso esperado:
 
 - `admin`: acesso total, incluindo exclusao.
 - `pastor`: painel pastoral sem exclusao.
-- `secretario`: painel de secretaria.
+- `secretario`: acesso operacional igual ao admin no painel unificado, incluindo exclusao.
 
 ---
 
@@ -116,7 +116,7 @@ Eventos esperados:
 - update;
 - delete.
 
-Leitura da auditoria deve ficar restrita a admin/pastor.
+Leitura da auditoria deve ficar restrita a admin/pastor/secretario.
 
 ---
 
@@ -124,7 +124,7 @@ Leitura da auditoria deve ficar restrita a admin/pastor.
 
 - `supabase-schema-principal.sql`: estrutura principal.
 - `supabase-security-hardening.sql`: roles, RLS, auditoria e Storage.
-- `supabase-secretario.sql`: funcoes/policies da secretaria.
+- `supabase-secretario.sql`: funcoes/policies historicas da secretaria e acesso unificado.
 - `supabase-membro.sql`: conta do membro e RPCs do portal.
 
 Depois de alterar SQL, execute `notify pgrst, 'reload schema';` ou rode o script completo.

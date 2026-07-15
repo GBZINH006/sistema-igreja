@@ -20,8 +20,8 @@
 - `/cadastro.html` -> ficha publica.
 - `/membro-login.html` -> login do membro.
 - `/membro.html` -> portal do membro.
-- `/admin.html` -> painel admin/pastor.
-- `/secretario.html` -> painel secretaria.
+- `/admin.html` -> painel administrativo unificado.
+- `/usuarios.html` -> usuarios administrativos.
 - `/relatorios.html` -> relatorios.
 - `/indicadores.html` -> indicadores.
 - `/configuracoes.html` -> configuracoes.
@@ -65,10 +65,10 @@ O `vercel.json` deve:
 - [ ] `/cadastro.html` abre.
 - [ ] `/membro-login.html` cria/acessa conta.
 - [ ] `/membro.html` lista fichas do membro.
-- [ ] `/admin.html` entra com admin/pastor.
+- [ ] `/admin.html` entra com admin/pastor/secretario.
 - [ ] Pastor nao exclui cadastro.
-- [ ] Admin exclui cadastro.
-- [ ] `/secretario.html` entra com secretario.
+- [ ] Admin e secretario excluem cadastro.
+- [ ] `/usuarios.html` cria login e define perfil.
 - [ ] `/suporte.html` abre o manual publico da ficha e nao divulga rotas restritas.
 - [ ] PDF e Excel funcionam.
 - [ ] RLS bloqueia usuario indevido.
