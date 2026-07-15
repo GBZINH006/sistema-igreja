@@ -10,7 +10,7 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 - `pages/admin.html`: painel restrito para `admin` e `pastor`.
 - `pages/secretario.html`: painel restrito para `secretario`.
 - `pages/relatorios.html`, `pages/indicadores.html`, `pages/configuracoes.html`: paginas auxiliares do painel.
-- `pages/suporte.html`: manual navegavel do sistema.
+- `pages/suporte.html`: manual publico da ficha de cadastro.
 
 ## Estrutura de pastas
 
@@ -54,4 +54,4 @@ O deploy esperado e Vercel. O arquivo `vercel.json` define headers de seguranca,
 
 ## Observacoes
 
-A central de suporte antiga foi substituida por `pages/suporte.html`, uma pagina de manual/ajuda sem chamados, sem chat e sem IA.
+A central de suporte antiga foi substituida por `pages/suporte.html`, uma pagina publica focada apenas no preenchimento da ficha. Ela nao divulga rotas restritas.

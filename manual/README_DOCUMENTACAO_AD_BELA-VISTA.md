@@ -26,6 +26,13 @@ Este diretorio contem a documentacao operacional e tecnica do sistema.
 - Portal do membro: `public/pages/membro-login.html` e `public/pages/membro.html`
 - Admin/pastor: `public/pages/admin.html`
 - Secretaria: `public/pages/secretario.html`
-- Manual/Ajuda: `public/pages/suporte.html`
+- Manual publico da ficha: `public/pages/suporte.html`
 
 > A antiga central de suporte foi substituida pelo manual navegavel do sistema.
+
+## Imagens de apoio
+
+- `public/assets/manual/manual-ficha-publica.svg`
+- `public/assets/manual/manual-portal-membro.svg`
+- `public/assets/manual/manual-painel-admin.svg`
+- `public/assets/manual/manual-secretaria.svg`

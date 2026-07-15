@@ -25,7 +25,7 @@ Orientar a manutencao do sistema, incluindo:
 - Estilos: `public/css/`
 - SQLs: `public/db/`
 - Assets: `public/assets/`
-- Manual navegavel: `public/pages/suporte.html`
+- Manual publico da ficha: `public/pages/suporte.html`
 
 ---
 
@@ -37,7 +37,7 @@ Orientar a manutencao do sistema, incluindo:
 | `pastor` | Painel admin/pastor, consulta, edicao, exportacao, aprovacao e assinatura, sem exclusao. |
 | `secretario` | Painel da secretaria, busca, consulta e manutencao operacional permitida. |
 
-Nao existe mais central operacional de suporte/tickets. A rota `/suporte.html` agora e manual do sistema.
+Nao existe mais central operacional de suporte/tickets. A rota `/suporte.html` agora e manual publico da ficha e nao deve divulgar rotas restritas.
 
 ---
 

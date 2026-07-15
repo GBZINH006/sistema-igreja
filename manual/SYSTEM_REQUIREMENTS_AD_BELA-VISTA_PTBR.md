@@ -56,7 +56,7 @@ Obrigatorio:
 - PDF completo da ficha.
 - Assinatura digital do membro.
 - Assinatura do pastor nos PDFs.
-- Manual/Ajuda em `public/pages/suporte.html`.
+- Manual publico da ficha em `public/pages/suporte.html`.
 
 ---
 

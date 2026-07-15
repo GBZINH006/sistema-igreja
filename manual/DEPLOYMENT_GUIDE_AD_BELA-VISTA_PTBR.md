@@ -26,7 +26,7 @@
 - `/indicadores.html` -> indicadores.
 - `/configuracoes.html` -> configuracoes.
 - `/privacidade.html` -> privacidade.
-- `/suporte.html` ou `/manual.html` -> manual/ajuda.
+- `/suporte.html` ou `/manual.html` -> manual publico da ficha.
 
 ---
 
@@ -69,7 +69,7 @@ O `vercel.json` deve:
 - [ ] Pastor nao exclui cadastro.
 - [ ] Admin exclui cadastro.
 - [ ] `/secretario.html` entra com secretario.
-- [ ] `/suporte.html` abre o manual.
+- [ ] `/suporte.html` abre o manual publico da ficha e nao divulga rotas restritas.
 - [ ] PDF e Excel funcionam.
 - [ ] RLS bloqueia usuario indevido.
 - [ ] Bucket `membros-docs` esta privado.

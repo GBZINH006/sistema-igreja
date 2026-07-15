@@ -16,7 +16,7 @@ O sistema permite:
 - revisar, aprovar ou solicitar correcao de cadastros;
 - consultar membros no painel pastoral e no painel da secretaria;
 - exportar relatorios em PDF/Excel e gerar PDF completo da ficha;
-- consultar o manual navegavel em `public/pages/suporte.html`.
+- consultar o manual publico da ficha em `public/pages/suporte.html`.
 
 ### Telas principais
 
@@ -25,7 +25,14 @@ O sistema permite:
 - `public/pages/membro.html`: portal do membro.
 - `public/pages/admin.html`: painel do pastor/administrador.
 - `public/pages/secretario.html`: painel da secretaria.
-- `public/pages/suporte.html`: manual/ajuda do sistema.
+- `public/pages/suporte.html`: manual publico da ficha.
+
+### Ilustracoes internas
+
+![Ficha publica](../public/assets/manual/manual-ficha-publica.svg)
+![Portal do membro](../public/assets/manual/manual-portal-membro.svg)
+![Painel restrito](../public/assets/manual/manual-painel-admin.svg)
+![Secretaria](../public/assets/manual/manual-secretaria.svg)
 
 ---
 
@@ -166,12 +173,12 @@ Alteracoes feitas pelo membro voltam para **Em análise**.
 
 ## 8. Manual/Ajuda
 
-A antiga area de suporte foi substituida por uma pagina de manual:
+A antiga area de suporte foi substituida por uma pagina publica de manual da ficha:
 
 - `public/pages/suporte.html`
 - tambem acessivel por `/suporte.html` no deploy
 
-Essa pagina explica ficha, portal, painel, secretaria, status, seguranca e duvidas frequentes. Ela nao abre chamado, nao usa chat e nao usa assistente IA.
+Essa pagina explica apenas o preenchimento da ficha publica. Ela nao divulga rotas restritas, nao abre chamado, nao usa chat e nao usa assistente IA.
 
 ---
 
