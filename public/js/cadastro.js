@@ -13,6 +13,7 @@
   const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
   const ALLOWED_UPLOAD_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
   let currentSession = null;
+  let privacidadeInicialAceita = false;
 
   function carregarSessaoMembro() {
     try {
@@ -308,15 +309,63 @@
   window.setTipo = setTipo;
 
   function setFluxoCadastroVisivel(mostrarFormulario) {
+    const telaPrivacidade = document.getElementById('tela-privacidade-cadastro');
     const telaEscolha = document.getElementById('tela-escolha-cadastro');
     const progresso = document.querySelector('.progress-wrap');
     const formulario = document.getElementById('cadastro-formulario');
     const submit = document.querySelector('.submit-wrap');
 
-    telaEscolha?.classList.toggle('cadastro-flow-hidden', mostrarFormulario);
+    telaPrivacidade?.classList.toggle('cadastro-flow-hidden', mostrarFormulario || privacidadeInicialAceita);
+    telaEscolha?.classList.toggle('cadastro-flow-hidden', mostrarFormulario || !privacidadeInicialAceita);
     progresso?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
     formulario?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
     submit?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
+  }
+
+  function mostrarTelaPrivacidadeCadastro() {
+    privacidadeInicialAceita = false;
+
+    const consent = document.getElementById('privacy-start-consent');
+    const hint = document.getElementById('hint-privacy-start');
+    if (consent) {
+      consent.checked = false;
+      consent.classList.remove('invalid');
+    }
+    if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
+
+    document.body.classList.remove('modo-congregado');
+    document.getElementById('tipo_cadastro').value = '';
+    document.getElementById('btn-membro')?.classList.remove('active');
+    document.getElementById('btn-congregado')?.classList.remove('active');
+    setFluxoCadastroVisivel(false);
+    calcProgress();
+  }
+
+  function aceitarPrivacidadeInicial() {
+    const consent = document.getElementById('privacy-start-consent');
+    const hint = document.getElementById('hint-privacy-start');
+
+    if (consent && !consent.checked) {
+      consent.classList.add('invalid');
+      if (hint) {
+        hint.textContent = 'E necessario aceitar os termos de privacidade para iniciar a ficha.';
+        hint.className = 'hint erro';
+      }
+      return;
+    }
+
+    consent?.classList.remove('invalid');
+    if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
+
+    privacidadeInicialAceita = true;
+    setFluxoCadastroVisivel(false);
+    document.getElementById('tela-escolha-cadastro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function resetarCamposCadastro() {
@@ -388,6 +437,11 @@
   }
 
   function mostrarTelaEscolhaCadastro() {
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     document.body.classList.remove('modo-congregado');
     document.getElementById('tipo_cadastro').value = '';
     document.getElementById('btn-membro')?.classList.remove('active');
@@ -416,6 +470,11 @@
     if (btnSalvar) btnSalvar.innerHTML = `✝ Enviar Cadastro de ${tipo}`;
 
     // Libera o formulário somente após escolher
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = 'none';
 
@@ -433,12 +492,18 @@
     // Bloqueia até a escolha ficar definida (UX)
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = 'none';
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     aplicarTipoCadastro(tipo, { resetar: true });
   }
 
 
   window.setTipo = aplicarTipoCadastro;
   window.escolherTipoCadastro = escolherTipoCadastro;
+  window.aceitarPrivacidadeInicial = aceitarPrivacidadeInicial;
 
 
 
@@ -1409,7 +1474,7 @@
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = '';
 
-    mostrarTelaEscolhaCadastro();
+    mostrarTelaPrivacidadeCadastro();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1695,6 +1760,7 @@
   prepararFluxoMembroVisual();
   prepararUploadsDragDrop();
   prepararEtapasCadastro();
+  mostrarTelaPrivacidadeCadastro();
 
 })();
 

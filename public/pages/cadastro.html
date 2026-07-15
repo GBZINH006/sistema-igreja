@@ -62,7 +62,33 @@
         </a>
       </aside>
 
-      <section id="tela-escolha-cadastro" class="cadastro-start">
+      <section id="tela-privacidade-cadastro" class="cadastro-start">
+        <div class="cadastro-start-card privacy-start-card">
+          <div class="cadastro-start-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <span class="privacy-start-kicker">Privacidade dos dados</span>
+          <h2>Antes de preencher a ficha</h2>
+          <p>Leia e aceite os termos de privacidade para continuar para o cadastro da igreja.</p>
+          <div class="cadastro-privacy-note">
+            <i class="fa-solid fa-lock"></i>
+            <span>As informaÃ§Ãµes preenchidas serÃ£o usadas somente para cadastro, secretaria e acompanhamento pastoral.</span>
+          </div>
+          <a class="terms-link privacy-terms-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            Abrir termos de privacidade
+          </a>
+          <label class="privacy-first-consent" for="privacy-start-consent">
+            <input id="privacy-start-consent" type="checkbox">
+            <span>Li e aceito os termos de privacidade para iniciar a ficha.</span>
+          </label>
+          <div class="hint" id="hint-privacy-start"></div>
+          <button type="button" class="cadastro-choice-btn privacy-continue-btn" onclick="aceitarPrivacidadeInicial()">
+            <i class="fa-solid fa-check"></i>
+            Continuar para o cadastro
+          </button>
+        </div>
+      </section>
+
+      <section id="tela-escolha-cadastro" class="cadastro-start cadastro-flow-hidden">
         <div class="cadastro-start-card">
           <div class="cadastro-start-icon"><i class="fa-solid fa-clipboard-list"></i></div>
           <h2>Cadastro da igreja</h2>
