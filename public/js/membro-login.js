@@ -147,7 +147,8 @@
       markInvalid(phone);
       throw new Error("Informe um telefone válido com DDD.");
     }
-    if (password.value.length < 8 || !/[a-zA-Z]/.test(password.value) || !/\d/.test(password.value)) {
+    const passwordBytes = new TextEncoder().encode(password.value).length;
+    if (passwordBytes < 8 || passwordBytes > 72 || !/[a-zA-Z]/.test(password.value) || !/\d/.test(password.value)) {
       markInvalid(password);
       throw new Error("Use uma senha com pelo menos 8 caracteres, contendo letras e números.");
     }
@@ -188,7 +189,7 @@
       if (error) throw error;
       saveMemberSession(data?.[0]);
       showAlert("Conta criada com segurança. Redirecionando para o portal do membro...", "success");
-      window.location.href = "membro.html";
+      window.location.href = "cadastro.html?origem=membro&primeiro_acesso=1";
     } catch (error) {
       showAlert(friendlyError(error, "Não foi possível solicitar o cadastro agora. Revise os dados ou tente novamente."), "error");
     } finally {

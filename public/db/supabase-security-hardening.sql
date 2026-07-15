@@ -6,6 +6,72 @@ create extension if not exists pgcrypto;
 
 grant usage on schema public to anon, authenticated;
 grant usage on schema extensions to anon, authenticated;
+revoke create on schema public from public;
+
+-- Impede acesso direto a credenciais, sessoes e tentativas de login. O acesso
+-- legitimo ocorre somente pelas funcoes SECURITY DEFINER do fluxo de membros.
+alter table public.member_accounts enable row level security;
+alter table public.member_account_sessions enable row level security;
+
+create table if not exists public.member_login_attempts (
+  email_hash text primary key,
+  failed_attempts integer not null default 0 check (failed_attempts >= 0),
+  first_failed_at timestamptz not null default now(),
+  locked_until timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.member_login_attempts enable row level security;
+revoke all on table public.member_accounts from anon, authenticated;
+revoke all on table public.member_account_sessions from anon, authenticated;
+revoke all on table public.member_login_attempts from anon, authenticated;
+
+-- Limites de tamanho evitam payloads excessivos fora da interface.
+alter table public.member_accounts drop constraint if exists member_accounts_input_lengths;
+alter table public.member_accounts
+  add constraint member_accounts_input_lengths check (
+    length(first_name) between 2 and 80
+    and length(last_name) between 2 and 120
+    and length(email) between 5 and 254
+    and length(phone) between 10 and 30
+    and (avatar_url is null or length(avatar_url) <= 2048)
+  ) not valid;
+
+alter table public.member_account_sessions
+  drop constraint if exists member_sessions_valid_values;
+alter table public.member_account_sessions
+  add constraint member_sessions_valid_values check (
+    length(token_hash) = 64
+    and expires_at > created_at
+    and expires_at <= created_at + interval '31 days'
+  ) not valid;
+
+alter table public.member_login_attempts
+  drop constraint if exists member_login_attempts_valid_values;
+alter table public.member_login_attempts
+  add constraint member_login_attempts_valid_values check (
+    length(email_hash) = 64
+    and failed_attempts between 0 and 100
+    and (locked_until is null or locked_until >= first_failed_at)
+  ) not valid;
+
+create index if not exists idx_member_login_attempts_updated_at
+  on public.member_login_attempts(updated_at);
+
+create or replace function public.member_cleanup_security_state()
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.member_account_sessions
+  where expires_at <= now();
+
+  delete from public.member_login_attempts
+  where updated_at < now() - interval '24 hours';
+$$;
+
+revoke all on function public.member_cleanup_security_state() from public;
 
 -- 1) Roles administrativas
 create table if not exists public.profiles (
@@ -20,7 +86,7 @@ alter table public.profiles
 alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles
   add constraint profiles_role_check
-  check (role in ('admin', 'pastor', 'secretario', 'suporte'));
+  check (role in ('admin', 'pastor', 'secretario'));
 
 alter table public.profiles enable row level security;
 
@@ -77,6 +143,7 @@ create table if not exists public.audit_logs (
 );
 
 alter table public.audit_logs enable row level security;
+revoke insert, update, delete, truncate on table public.audit_logs from anon, authenticated;
 
 drop policy if exists "Admin e pastor leem auditoria" on public.audit_logs;
 create policy "Admin e pastor leem auditoria"
@@ -157,6 +224,40 @@ execute function public.audit_membros_changes();
 
 -- 3) RLS da tabela membros
 alter table public.membros enable row level security;
+
+create or replace function public.validar_cadastro_publico_membros()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.role() = 'anon' then
+    new.tipo_cadastro := nullif(trim(coalesce(new.tipo_cadastro, '')), '');
+    new.nome := nullif(trim(coalesce(new.nome, '')), '');
+    new.cpf := nullif(trim(coalesce(new.cpf, '')), '');
+    new.celular := nullif(trim(coalesce(new.celular, '')), '');
+    new.status := 'Pendente';
+    new.member_account_id := null;
+    new.data_aprovacao := null;
+
+    if new.tipo_cadastro not in ('Membro', 'Congregado')
+      or new.nome is null
+      or length(new.nome) not between 3 and 160
+      or length(regexp_replace(coalesce(new.cpf, ''), '\D', '', 'g')) < 4
+      or length(regexp_replace(coalesce(new.celular, ''), '\D', '', 'g')) < 10 then
+      raise exception 'Dados de cadastro invalidos.';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists validar_cadastro_publico_membros_trg on public.membros;
+create trigger validar_cadastro_publico_membros_trg
+before insert on public.membros
+for each row execute function public.validar_cadastro_publico_membros();
 
 drop policy if exists "Admin ve todos membros" on public.membros;
 create policy "Admin ve todos membros"

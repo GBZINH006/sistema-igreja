@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Manual do Sistema | AD Bela-Vista</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/suporte.css">
+</head>
+
+<body>
+  <header class="manual-topbar">
+    <a class="brand" href="cadastro.html">
+      <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista">
+      <span>AD Bela-Vista</span>
+    </a>
+    <nav aria-label="Atalhos principais">
+      <a href="cadastro.html">Ficha</a>
+      <a href="membro-login.html">Portal</a>
+      <a href="admin.html">Painel</a>
+    </nav>
+  </header>
+
+  <main class="manual-shell">
+    <section class="manual-hero" id="inicio">
+      <div>
+        <span class="kicker"><i class="fa-solid fa-book-open"></i> Manual do sistema</span>
+        <h1>Guia rápido para usar a ficha, o portal e o painel.</h1>
+        <p>Esta página substitui a antiga área de suporte. Aqui ficam as orientações principais para membros, secretaria, pastor e administração.</p>
+      </div>
+      <aside class="hero-card" aria-label="Resumo">
+        <strong>Fluxo principal</strong>
+        <ol>
+          <li>O membro ou congregado preenche a ficha.</li>
+          <li>O cadastro entra como pendente ou em análise.</li>
+          <li>Pastor/admin acompanha, corrige ou aprova.</li>
+          <li>O PDF pode ser gerado pelo painel ou pelo portal.</li>
+        </ol>
+      </aside>
+    </section>
+
+    <section class="manual-grid" aria-label="Modulos do sistema">
+      <a class="manual-card" href="#ficha">
+        <i class="fa-solid fa-clipboard-list"></i>
+        <span>Ficha pública</span>
+        <small>Cadastro de membro e congregado</small>
+      </a>
+      <a class="manual-card" href="#portal">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Portal do membro</span>
+        <small>Conta, ficha e acompanhamento</small>
+      </a>
+      <a class="manual-card" href="#painel">
+        <i class="fa-solid fa-table-columns"></i>
+        <span>Painel pastoral</span>
+        <small>Busca, aprovação e relatórios</small>
+      </a>
+      <a class="manual-card" href="#secretaria">
+        <i class="fa-solid fa-user-pen"></i>
+        <span>Secretaria</span>
+        <small>Consulta operacional</small>
+      </a>
+    </section>
+
+    <section class="manual-section" id="ficha">
+      <div class="section-head">
+        <span class="kicker">Ficha pública</span>
+        <h2>Como preencher e enviar cadastro</h2>
+      </div>
+      <div class="steps">
+        <article><strong>1. Escolha o tipo</strong><p>Selecione Membro para ficha completa ou Congregado para cadastro mais enxuto.</p></article>
+        <article><strong>2. Preencha os dados</strong><p>Informe dados pessoais, contato, igreja, documentos e assinatura digital.</p></article>
+        <article><strong>3. Aceite a privacidade</strong><p>Leia os termos LGPD e marque o aceite antes de enviar.</p></article>
+        <article><strong>4. Aguarde análise</strong><p>Cadastros públicos entram como Pendente; fichas enviadas pelo portal entram Em análise.</p></article>
+      </div>
+    </section>
+
+    <section class="manual-section" id="portal">
+      <div class="section-head">
+        <span class="kicker">Portal do membro</span>
+        <h2>Conta do membro e acompanhamento</h2>
+      </div>
+      <div class="info-list">
+        <p><strong>Criar conta:</strong> use nome, e-mail, telefone e senha. A ficha completa pode ser enviada depois pelo portal.</p>
+        <p><strong>Entrar:</strong> use o e-mail e a senha cadastrados. A opção lembrar acesso mantém a sessão no dispositivo.</p>
+        <p><strong>Esqueci minha senha:</strong> por segurança, a recuperação do membro deve ser solicitada à secretaria ou administração.</p>
+        <p><strong>Editar ficha:</strong> alterações feitas pelo membro voltam para análise antes de serem consideradas aprovadas.</p>
+      </div>
+    </section>
+
+    <section class="manual-section" id="status">
+      <div class="section-head">
+        <span class="kicker">Status da ficha</span>
+        <h2>O que cada status significa</h2>
+      </div>
+      <div class="status-grid">
+        <div class="status-pill pending"><strong>Pendente</strong><span>Cadastro recebido pela ficha pública e aguardando primeira conferência.</span></div>
+        <div class="status-pill review"><strong>Em análise</strong><span>Ficha enviada ou editada pelo membro e aguardando revisão.</span></div>
+        <div class="status-pill correction"><strong>Correção</strong><span>Admin/pastor solicitou ajuste em alguma informação.</span></div>
+        <div class="status-pill approved"><strong>Aprovado</strong><span>Ficha conferida e liberada para acompanhamento pastoral.</span></div>
+      </div>
+    </section>
+
+    <section class="manual-section" id="painel">
+      <div class="section-head">
+        <span class="kicker">Painel pastoral</span>
+        <h2>Rotina do pastor e administrador</h2>
+      </div>
+      <div class="feature-columns">
+        <article>
+          <h3>Dashboard</h3>
+          <p>Acompanhe total de cadastros, membros, congregados, ativos, novos do mês, aniversariantes e último cadastro.</p>
+        </article>
+        <article>
+          <h3>Lista de membros</h3>
+          <p>Use busca, filtros rápidos e filtros avançados para encontrar registros por nome, CPF, celular, status, setor, idade ou cargo.</p>
+        </article>
+        <article>
+          <h3>Aprovação</h3>
+          <p>Cadastros pendentes podem ser aprovados ou marcados para correção. Apenas admin pode excluir registros.</p>
+        </article>
+        <article>
+          <h3>Exportações</h3>
+          <p>Gere PDF, Excel e ficha completa em PDF. A assinatura do pastor pode aparecer nos documentos configurados.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="manual-section" id="secretaria">
+      <div class="section-head">
+        <span class="kicker">Secretaria</span>
+        <h2>Consulta e manutenção operacional</h2>
+      </div>
+      <div class="info-list">
+        <p>O painel da secretaria é separado do painel pastoral.</p>
+        <p>A busca deve usar pelo menos 3 letras do nome ou 4 números do documento.</p>
+        <p>A secretaria pode consultar, editar dados permitidos, atualizar anexos e imprimir ficha conforme as permissões aplicadas no Supabase.</p>
+      </div>
+    </section>
+
+    <section class="manual-section" id="seguranca">
+      <div class="section-head">
+        <span class="kicker">Segurança</span>
+        <h2>Cuidados importantes</h2>
+      </div>
+      <div class="check-list">
+        <p><i class="fa-solid fa-check"></i> Use contas individuais para admin, pastor e secretaria.</p>
+        <p><i class="fa-solid fa-check"></i> Não compartilhe senha do painel.</p>
+        <p><i class="fa-solid fa-check"></i> Mantenha o bucket <code>membros-docs</code> privado.</p>
+        <p><i class="fa-solid fa-check"></i> Rode os SQLs de segurança no Supabase antes de produção.</p>
+        <p><i class="fa-solid fa-check"></i> Confirme se RLS bloqueia acessos indevidos.</p>
+      </div>
+    </section>
+
+    <section class="manual-section faq" id="duvidas">
+      <div class="section-head">
+        <span class="kicker">Dúvidas rápidas</span>
+        <h2>Perguntas frequentes</h2>
+      </div>
+      <details open>
+        <summary>Pastor pode excluir cadastro?</summary>
+        <p>Não. A exclusão é restrita à role admin.</p>
+      </details>
+      <details>
+        <summary>O cadastro público já fica aprovado?</summary>
+        <p>Não. Ele entra como Pendente para conferência.</p>
+      </details>
+      <details>
+        <summary>O membro pode baixar a ficha?</summary>
+        <p>Sim, pelo portal do membro, quando a ficha estiver vinculada à conta.</p>
+      </details>
+      <details>
+        <summary>Onde vejo relatórios?</summary>
+        <p>No painel administrativo, usando os botões PDF, Excel e páginas auxiliares de relatórios/indicadores.</p>
+      </details>
+    </section>
+  </main>
+</body>
+
+</html>

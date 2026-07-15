@@ -165,6 +165,26 @@ textarea {
   display: none;
 }
 
+.manual-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.manual-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .cadastro-flow-hidden {
   display: none !important;
 }

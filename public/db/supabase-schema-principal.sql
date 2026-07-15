@@ -9,6 +9,7 @@ create extension if not exists pgcrypto;
 
 grant usage on schema public to anon, authenticated;
 grant usage on schema extensions to anon, authenticated;
+revoke create on schema public from public;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -22,7 +23,7 @@ alter table public.profiles
 alter table public.profiles drop constraint if exists profiles_role_check;
 alter table public.profiles
   add constraint profiles_role_check
-  check (role in ('admin', 'pastor', 'secretario', 'suporte'));
+  check (role in ('admin', 'pastor', 'secretario'));
 
 create table if not exists public.member_accounts (
   id uuid primary key default extensions.gen_random_uuid(),
@@ -44,6 +45,14 @@ create table if not exists public.member_account_sessions (
   token_hash text not null unique,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null default now() + interval '30 days'
+);
+
+create table if not exists public.member_login_attempts (
+  email_hash text primary key,
+  failed_attempts integer not null default 0,
+  first_failed_at timestamptz not null default now(),
+  locked_until timestamptz,
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists public.system_settings (
@@ -128,6 +137,9 @@ create index if not exists idx_member_account_sessions_account_id
 create index if not exists idx_member_account_sessions_expires_at
   on public.member_account_sessions(expires_at);
 
+create index if not exists idx_member_login_attempts_updated_at
+  on public.member_login_attempts(updated_at);
+
 create index if not exists idx_membros_member_account_id
   on public.membros(member_account_id);
 
@@ -146,6 +158,7 @@ create index if not exists idx_membros_tipo_cadastro
 alter table public.profiles enable row level security;
 alter table public.member_accounts enable row level security;
 alter table public.member_account_sessions enable row level security;
+alter table public.member_login_attempts enable row level security;
 alter table public.system_settings enable row level security;
 alter table public.membros enable row level security;
 alter table public.audit_logs enable row level security;

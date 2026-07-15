@@ -1,148 +1,112 @@
 # AD Bela-Vista - Manual do Administrador
 
-**Versao do documento:** 1.1  
+**Versao do documento:** 1.2
 **Publico:** administrador tecnico, pastor responsavel e pessoa autorizada a manter o sistema.
 
 ---
 
 ## 1. Objetivo
 
-Definir procedimentos para:
-- manter o acesso ao painel administrativo;
-- acompanhar cadastros recem-criados;
-- validar integracoes com Supabase e Storage;
-- orientar permissoes de pastor, admin e secretaria;
-- garantir o funcionamento continuo da gestao de membros.
+Orientar a manutencao do sistema, incluindo:
 
-> **Importante:** Este documento descreve o comportamento observado na interface e no codigo atual do projeto.
-
----
-
-## 2. Visao do Sistema
-
-### 2.1 Telas principais
-- `public/pages/cadastro.html` / `public/js/cadastro.js`: captura e envio de novos cadastros.
-- `public/pages/admin.html` / `public/js/admin.js`: painel do pastor/administrador.
-- `public/pages/secretario.html` / `public/js/secretario.js`: painel da secretaria.
-- `public/pages/membro-login.html` e `public/pages/membro.html`: portal do membro.
-
-### 2.2 Funcionalidades-chave do painel admin/pastor
-- Cards de status e estatisticas.
-- Filtros, busca dinamica e paginacao.
-- Modais de detalhes e edicao.
-- Exportacao PDF e Excel.
-- PDF completo da ficha do membro.
-- Notificacoes de novos cadastros via realtime.
-- Indicador **Ultimo cadastro** no painel principal.
-- Configuracao de assinatura do pastor para fichas.
-
-### 2.3 Funcionalidades-chave do painel da secretaria
-- Busca por nome, parte do nome, CPF ou CRNM.
-- Visualizacao de resultados restrita a consulta necessaria.
-- Edicao de dados e anexos permitidos.
-- Impressao/ficha do cadastro.
-- Abertura de novo cadastro.
+- acesso administrativo;
+- controle de roles;
+- aprovacao de cadastros;
+- integracao com Supabase;
+- Storage privado;
+- rotinas de verificacao e troubleshooting.
 
 ---
 
-## 3. Permissoes e Papeis
+## 2. Estrutura Atual
 
-O sistema usa a tabela `profiles` no Supabase para validar a role do usuario.
+- Paginas: `public/pages/`
+- Scripts: `public/js/`
+- Estilos: `public/css/`
+- SQLs: `public/db/`
+- Assets: `public/assets/`
+- Manual navegavel: `public/pages/suporte.html`
 
-| Role | Acesso esperado |
+---
+
+## 3. Roles e Permissoes
+
+| Role | Acesso |
 |---|---|
-| `admin` | Painel admin/pastor; pode editar, exportar e excluir cadastros. |
-| `pastor` | Painel admin/pastor; pode consultar, editar, exportar e gerenciar assinatura, sem excluir cadastros. |
-| `secretario` | Painel da secretaria; pode pesquisar, consultar, editar e imprimir conforme fluxo do painel. |
-| `suporte` | Role prevista nos SQLs para apoio tecnico, conforme politicas aplicadas. |
+| `admin` | Painel admin/pastor, edicao, exportacao, aprovacao e exclusao. |
+| `pastor` | Painel admin/pastor, consulta, edicao, exportacao, aprovacao e assinatura, sem exclusao. |
+| `secretario` | Painel da secretaria, busca, consulta e manutencao operacional permitida. |
 
-> **Atencao:** Credenciais devem ser individuais. Evite contas compartilhadas.
-
----
-
-## 4. Operacao do Indicador "Ultimo cadastro"
-
-### 4.1 Comportamento esperado
-- Ao abrir o painel admin/pastor, o sistema identifica o cadastro mais recente.
-- A ordenacao considera `created_at` e usa `commit_timestamp` como fallback quando disponivel.
-- O painel mostra:
-  - nome do cadastro;
-  - data/hora do registro.
-- Quando um novo cadastro chega via realtime, o indicador e atualizado imediatamente.
-
-### 4.2 Onde verificar
-- No painel admin/pastor, secao **Ultimo cadastro**.
-
-### 4.3 Casos de falha comuns
-- Registros antigos sem `created_at` podem ficar com ordenacao imprecisa.
-- Realtime pode falhar se a conexao WebSocket ou a configuracao do Supabase estiver indisponivel.
-- Se a pagina ficar aberta por muito tempo, recarregue a lista pelo botao de atualizar.
+Nao existe mais central operacional de suporte/tickets. A rota `/suporte.html` agora e manual do sistema.
 
 ---
 
-## 5. Rotina Diaria
+## 4. Rotina de Aprovacao
 
-- [ ] Abrir `public/pages/admin.html` com usuario `admin` ou `pastor`.
-- [ ] Conferir o indicador **Ultimo cadastro**.
-- [ ] Conferir notificacoes no sino.
-- [ ] Usar o botao de atualizar lista se necessario.
-- [ ] Verificar se fotos/documentos carregam.
-- [ ] Usar `public/pages/secretario.html` para consultas operacionais da secretaria.
+Status principais:
 
----
+- `Pendente`: cadastro publico aguardando conferencia.
+- `Em análise`: ficha enviada ou alterada pelo membro.
+- `Correção`: precisa ajuste do membro ou secretaria.
+- `Aprovado`: ficha conferida.
 
-## 6. Rotina Mensal
+Rotina recomendada:
 
-- [ ] Conferir integridade de fotos, documentos e assinaturas.
-- [ ] Conferir se exportacoes PDF/Excel incluem os dados esperados.
-- [ ] Revisar padronizacao de setor, congregacao e cargo.
-- [ ] Revisar usuarios ativos e remover acessos antigos.
-- [ ] Confirmar que o bucket `membros-docs` continua privado.
+1. Abra o painel admin/pastor.
+2. Use o filtro rapido **Pendentes**.
+3. Abra a ficha e confira dados e anexos.
+4. Se estiver correto, aprove.
+5. Se faltar informacao, marque como **Correção**.
 
 ---
 
-## 7. Troubleshooting
+## 5. Seguranca Operacional
 
-### Problema: usuario nao entra no painel admin
-- Confirme se o usuario existe no Supabase Auth.
-- Confirme se existe registro correspondente em `public.profiles`.
-- Confirme se a role e `admin` ou `pastor`.
-- Se o usuario esqueceu a senha, use **Esqueci minha senha** na tela de login para enviar codigo/link de recuperacao por e-mail.
+- Nunca coloque `service_role` no front-end.
+- Use apenas a chave anonima em `public/js/config.js`.
+- Rode `public/db/supabase-security-hardening.sql` no Supabase.
+- Confirme RLS em `membros`, `profiles`, `audit_logs` e Storage.
+- Mantenha `membros-docs` privado.
+- Ative MFA para usuarios admin/pastor quando possivel.
 
-### Problema: secretaria nao entra
-- Use `public/pages/secretario.html`.
-- Confirme se a role do usuario e `secretario`.
-- Se a secretaria esqueceu a senha, use **Esqueci minha senha** no painel da secretaria.
+---
 
-### Problema: codigo de recuperacao nao chega
-- Confirme se o e-mail esta correto no Supabase Auth.
-- Verifique caixa de spam/lixo eletronico.
-- Confirme se o template de recuperacao do Supabase envia codigo ou link.
-- Se necessario, o administrador tecnico pode redefinir o acesso diretamente no Supabase.
+## 6. Troubleshooting
 
-### Problema: indicador nao atualiza
-- Recarregue a lista pelo botao de atualizar.
-- Verifique o console do navegador.
-- Confirme se o cadastro foi salvo com sucesso.
-- Confirme se o realtime do Supabase esta ativo.
+### Usuario nao entra no painel
 
-### Problema: exportacao vazia
-- Confirme se a lista foi carregada.
-- Recarregue o painel.
-- Confirme se o usuario tem permissao de leitura na tabela `membros`.
+- Confirme se existe em Supabase Auth.
+- Confirme registro em `public.profiles`.
+- Confirme role correta.
+- Use **Esqueci minha senha** se o problema for senha.
 
-### Problema: anexos nao aparecem
+### Cadastro nao aparece
+
+- Recarregue a lista.
+- Verifique RLS da tabela `membros`.
+- Confirme se o registro tem `created_at`.
+
+### Anexo nao abre
+
 - Confirme se o bucket `membros-docs` existe.
-- Confirme politicas de leitura e URLs assinadas.
-- Gere novamente a URL assinada ao abrir/editar a ficha.
+- Confirme policies de Storage.
+- Gere nova URL assinada abrindo novamente a ficha.
+
+### Exportacao falha
+
+- Confirme se as bibliotecas de CDN carregaram.
+- Teste PDF, Excel e PDF completo em navegadores atualizados.
 
 ---
 
-## 8. Conclusao
+## 7. Checklist Mensal
 
-O sistema foi construido para facilitar o acompanhamento de membros, congregados e fichas da AD Bela-Vista. O administrador deve garantir:
-- acesso restrito por role;
-- integridade dos cadastros e anexos;
-- funcionamento do painel admin/pastor;
-- funcionamento do painel da secretaria;
-- backup e manutencao periodica do banco e Storage.
+- [ ] Revisar usuarios em `profiles`.
+- [ ] Remover acessos antigos.
+- [ ] Confirmar bucket privado.
+- [ ] Testar login admin, pastor e secretario.
+- [ ] Testar envio de ficha publica.
+- [ ] Testar envio pelo portal do membro.
+- [ ] Testar aprovacao/correcao.
+- [ ] Testar PDF completo.
+- [ ] Fazer backup do banco e Storage.

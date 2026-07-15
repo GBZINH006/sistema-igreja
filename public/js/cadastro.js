@@ -101,6 +101,14 @@
 
     document.body.classList.add('member-account-flow');
 
+    const nome = document.getElementById('nome');
+    const email = document.getElementById('email');
+    const celular = document.getElementById('celular');
+
+    if (nome && !nome.value) nome.value = currentSession?.fullName || '';
+    if (email && !email.value) email.value = currentSession?.email || '';
+    if (celular && !celular.value) celular.value = currentSession?.phone || '';
+
     const form = document.getElementById('form-cadastro');
     if (form && !document.getElementById('member-flow-notice')) {
       const notice = document.createElement('div');

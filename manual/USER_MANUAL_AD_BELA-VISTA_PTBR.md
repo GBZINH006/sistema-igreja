@@ -1,8 +1,8 @@
 # AD Bela-Vista - Manual do Usuario
 
 **Sistema:** Gestao de Membros da AD Bela-Vista  
-**Versao do documento:** 1.1  
-**Publico:** pastor, administrador, secretaria e equipe autorizada.
+**Versao do documento:** 1.2
+**Publico:** pastor, administrador, secretaria, membros e equipe autorizada.
 
 ---
 
@@ -10,254 +10,176 @@
 
 O sistema permite:
 
-- cadastrar novos membros e congregados;
-- consultar e manter fichas;
-- anexar fotos, documentos e assinatura digital;
-- acompanhar estatisticas e aniversariantes;
-- exportar dados em PDF e Excel;
-- receber alertas de novos cadastros no painel admin/pastor;
-- realizar consultas operacionais pelo painel da secretaria.
+- preencher ficha publica de membro ou congregado;
+- criar conta e acessar o portal do membro;
+- acompanhar fichas vinculadas a uma conta;
+- revisar, aprovar ou solicitar correcao de cadastros;
+- consultar membros no painel pastoral e no painel da secretaria;
+- exportar relatorios em PDF/Excel e gerar PDF completo da ficha;
+- consultar o manual navegavel em `public/pages/suporte.html`.
 
 ### Telas principais
+
 - `public/pages/cadastro.html`: ficha publica de cadastro.
-- `public/pages/admin.html`: painel do pastor/administrador.
-- `public/pages/secretario.html`: painel da secretaria.
 - `public/pages/membro-login.html`: login/criacao de conta do membro.
 - `public/pages/membro.html`: portal do membro.
+- `public/pages/admin.html`: painel do pastor/administrador.
+- `public/pages/secretario.html`: painel da secretaria.
+- `public/pages/suporte.html`: manual/ajuda do sistema.
 
 ---
 
-## 2. Acesso
+## 2. Fluxo da Ficha
 
-### 2.1 Painel do pastor/administrador
+### 2.1 Ficha publica
+
+1. Abra `public/pages/cadastro.html`.
+2. Escolha **Membro** ou **Congregado**.
+3. Preencha os dados solicitados.
+4. Anexe documentos quando necessario.
+5. Registre a assinatura digital.
+6. Aceite os termos de privacidade.
+7. Clique em **Enviar Cadastro**.
+
+Cadastros enviados pela ficha publica entram como **Pendente**.
+
+### 2.2 Ficha enviada pelo portal do membro
+
+1. Entre em `public/pages/membro-login.html`.
+2. Acesse `public/pages/membro.html`.
+3. Clique em **Cadastrar meu perfil**.
+4. Envie ou edite a ficha.
+
+Fichas enviadas ou editadas pelo portal entram como **Em análise**.
+
+---
+
+## 3. Status da Ficha
+
+| Status | Significado |
+|---|---|
+| `Pendente` | Cadastro publico recebido e aguardando primeira conferencia. |
+| `Em análise` | Ficha enviada ou alterada pelo membro e aguardando revisao. |
+| `Correção` | Pastor/admin pediu ajuste em alguma informacao. |
+| `Aprovado` | Ficha conferida e aprovada. |
+| `Ativo` | Registro ativo em uso administrativo. |
+| `Inativo`, `Transferido`, `Falecido` | Status administrativos especiais. |
+
+---
+
+## 4. Acesso
+
+### 4.1 Painel admin/pastor
+
 1. Abra `public/pages/admin.html`.
 2. Informe e-mail e senha.
 3. Clique em **Entrar no Painel**.
-4. Aguarde a validacao de acesso.
 
-Podem entrar nesse painel usuarios com role:
+Roles permitidas:
+
 - `admin`
 - `pastor`
 
-> **Atencao:** somente `admin` pode excluir cadastros.
+Somente `admin` pode excluir cadastros.
 
-### 2.2 Painel da secretaria
+### 4.2 Painel da secretaria
+
 1. Abra `public/pages/secretario.html`.
 2. Informe e-mail e senha.
 3. Clique em **Entrar no Painel**.
 
-Podem entrar nesse painel usuarios com role:
+Role permitida:
+
 - `secretario`
 
-### 2.3 Acesso negado
-Se o usuario nao tiver a role correta, o sistema exibe mensagem de acesso negado e retorna para a tela de login.
+### 4.3 Esqueci minha senha
 
-### 2.4 Esqueci minha senha
-Na tela de login do painel admin/pastor ou da secretaria:
+No painel admin/pastor e no painel da secretaria existe fluxo de recuperacao:
+
 1. Clique em **Esqueci minha senha**.
-2. Informe o e-mail do usuario.
-3. Clique em **Enviar codigo por e-mail**.
-4. Digite o codigo recebido no e-mail.
-5. Informe e confirme a nova senha.
-6. Clique em **Trocar senha** e entre novamente.
+2. Informe o e-mail.
+3. Receba o codigo/link por e-mail.
+4. Informe o codigo quando solicitado.
+5. Defina uma nova senha.
 
-Se o e-mail recebido vier como link de recuperacao, abra o link e informe a nova senha na tela exibida.
-
----
-
-## 3. Cadastro de Membros e Congregados
-
-### 3.1 Abrir ficha
-- No painel admin/pastor, use o botao **Abrir ficha**.
-- No painel da secretaria, use o botao **Novo cadastro**.
-- Tambem e possivel abrir diretamente `public/pages/cadastro.html`, conforme o deploy.
-
-### 3.2 Escolher tipo de cadastro
-Na tela inicial, selecione:
-- **Membro**
-- **Congregado**
-
-O modo **Congregado** mostra um fluxo mais enxuto e oculta campos que pertencem ao cadastro completo de membro.
-
-### 3.3 Campos obrigatorios principais
-Para Congregado:
-- Nome
-- CPF/CRNM
-- Celular
-- Estado civil
-- Assinatura digital
-- Aceite LGPD/privacidade
-
-Para Membro:
-- Nome
-- CPF/CRNM
-- Celular
-- Assinatura digital
-- Aceite LGPD/privacidade
-- Demais campos visiveis conforme a ficha completa
-
-### 3.4 Envio
-1. Preencha os dados.
-2. Anexe fotos/documentos quando necessario.
-3. Registre a assinatura digital.
-4. Aceite os termos de privacidade.
-5. Clique em **Enviar Cadastro**.
-6. Aguarde a tela de sucesso.
+No portal do membro, a recuperacao deve ser solicitada a secretaria ou administracao da igreja.
 
 ---
 
-## 4. Painel Admin/Pastor
+## 5. Painel Admin/Pastor
 
-Ao entrar em `public/pages/admin.html`, o usuario ve:
+O painel mostra:
 
-- cards de total, membros, congregados, ativos e cadastros do mes;
-- indicador **Ultimo cadastro**;
-- graficos de crescimento, membros/congregados e setor;
-- aniversariantes do mes;
+- dashboard com totais e indicadores;
+- ultimo cadastro;
+- aniversariantes;
 - busca e filtros;
-- tabela de cadastros;
-- notificacoes de novos cadastros;
-- exportacao PDF/Excel;
-- assinatura do pastor para fichas.
+- pendencias de aprovacao;
+- lista de membros/congregados;
+- botao de visualizar ficha;
+- edicao de cadastro;
+- exportacoes PDF/Excel;
+- PDF completo da ficha;
+- configuracao de assinatura do pastor.
 
-### 4.1 Busca e filtros
-E possivel filtrar por:
-- texto de busca;
-- tipo;
-- status;
-- setor;
-- faixa de idade;
-- cargo.
+### Aprovacao e correcao
 
-### 4.2 Visualizar detalhes
-Na tabela, use a acao de visualizar para abrir a ficha do membro/congregado.
+Na lista, cadastros com status de analise podem ser:
 
-Dentro da ficha podem aparecer:
-- dados pessoais;
-- contato;
-- igreja/setor/cargo;
-- foto;
-- documento;
-- assinatura;
-- botoes de WhatsApp, editar e PDF completo.
-
-### 4.3 Editar cadastro
-1. Abra o cadastro.
-2. Clique em **Editar**.
-3. Altere os dados necessarios.
-4. Clique em **Salvar Alteracoes**.
-
-### 4.4 Excluir cadastro
-Somente usuario com role `admin` pode excluir.
-
-O sistema exibe confirmacao antes da exclusao e tenta remover arquivos vinculados no Storage quando aplicavel.
+- aprovados;
+- marcados para correcao;
+- editados;
+- visualizados em PDF.
 
 ---
 
-## 5. Painel da Secretaria
+## 6. Painel da Secretaria
 
-O painel da secretaria fica em `public/pages/secretario.html`.
+O painel da secretaria e separado do painel admin/pastor.
 
-Ele e voltado para consulta e manutencao operacional.
+Ele permite:
 
-### 5.1 Buscar cadastro
-1. Digite nome, parte do nome, CPF ou CRNM.
-2. Use pelo menos 3 letras do nome ou 4 numeros do documento.
-3. Clique em **Buscar**.
-
-### 5.2 Acoes disponiveis
-A secretaria pode:
-- visualizar detalhes;
+- buscar por nome, CPF ou CRNM;
+- visualizar ficha;
 - editar dados permitidos;
-- atualizar foto, documento e assinatura;
+- atualizar anexos;
 - imprimir ficha;
 - abrir novo cadastro.
 
----
-
-## 6. Anexos e Assinaturas
-
-O sistema usa o bucket privado `membros-docs` no Supabase Storage.
-
-Campos de midia usados pelo sistema:
-- `foto_url`
-- `doc_url`
-- `foto_certidao_nasc`
-- `foto_certidao_casamento`
-- `foto_diploma`
-- `foto_comprovante_end`
-- `assinatura_url`
-
-As URLs sao assinadas e podem expirar. Ao abrir fichas, o sistema tenta renovar URLs quando necessario.
+A busca deve usar pelo menos 3 letras do nome ou 4 numeros do documento.
 
 ---
 
-## 7. Exportacoes
+## 7. Portal do Membro
 
-### 7.1 PDF
-No painel admin/pastor, clique em **PDF** para gerar:
-- `membros_adbela-vista_2026.pdf`
+No portal, o membro pode:
 
-### 7.2 Excel
-No painel admin/pastor, clique em **Excel** para gerar:
-- `membros_adbela-vista_2026.xlsx`
+- atualizar dados da conta;
+- enviar ficha vinculada a conta;
+- editar ficha ja enviada;
+- baixar PDF da ficha;
+- acompanhar seus registros.
 
-### 7.3 PDF completo da ficha
-Na ficha individual, use **PDF completo** para gerar um documento mais detalhado do cadastro, incluindo declaracao e assinaturas quando disponiveis.
-
----
-
-## 8. Notificacoes
-
-O painel admin/pastor escuta novos registros na tabela `membros` via realtime do Supabase.
-
-Quando um novo cadastro chega:
-- o sino pode mostrar contador;
-- o historico de novos cadastros e atualizado;
-- o indicador **Ultimo cadastro** muda para o registro mais recente;
-- a lista e os cards sao atualizados.
-
-> **Observacao:** o historico em tela vale para a sessao aberta no navegador.
+Alteracoes feitas pelo membro voltam para **Em análise**.
 
 ---
 
-## 9. Aniversariantes e Graficos
+## 8. Manual/Ajuda
 
-O painel admin/pastor mostra:
-- aniversariantes do mes;
-- crescimento mensal dos ultimos meses;
-- proporcao entre membros e congregados;
-- membros por setor.
+A antiga area de suporte foi substituida por uma pagina de manual:
 
-Se os dados parecerem desatualizados, use o botao de atualizar lista.
+- `public/pages/suporte.html`
+- tambem acessivel por `/suporte.html` no deploy
 
----
-
-## 10. Logout
-
-Clique em **Sair** no painel correspondente.
-
-O sistema encerra a sessao e volta para a tela de login.
+Essa pagina explica ficha, portal, painel, secretaria, status, seguranca e duvidas frequentes. Ela nao abre chamado, nao usa chat e nao usa assistente IA.
 
 ---
 
-## 11. Perguntas Frequentes
+## 9. Boas Praticas
 
-| Pergunta | Resposta |
-|---|---|
-| Secretaria entra pelo painel admin? | Nao. A secretaria usa `public/pages/secretario.html`. |
-| Pastor pode excluir cadastro? | Nao. Exclusao e restrita a role `admin`. |
-| O que e "Ultimo cadastro"? | E o cadastro mais recente identificado por `created_at` ou `commit_timestamp`. |
-| Por que anexo nao abre? | A URL assinada pode ter expirado ou o Storage pode estar sem permissao correta. |
-| Posso exportar backup por PDF/Excel? | Pode como apoio, mas backup oficial deve ser feito no banco e Storage. |
-
----
-
-## 12. Boas Praticas
-
-- Nao compartilhar credenciais.
-- Usar contas separadas por funcao.
-- Conferir celular/WhatsApp antes de salvar.
-- Padronizar setor, congregacao e cargo.
-- Revisar anexos antes de concluir.
-- Fazer backup periodico no Supabase.
+- Use contas individuais.
+- Nao compartilhe senhas.
+- Confirme telefone e documento antes de aprovar.
+- Revise anexos sensiveis com cuidado.
+- Use status `Correção` quando o membro precisar ajustar dados.
+- Mantenha o bucket `membros-docs` privado.
