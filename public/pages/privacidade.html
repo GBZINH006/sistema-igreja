@@ -7,15 +7,19 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Termos de Privacidade | AD Palhoça</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:wght@700;900&display=swap"
+    rel="stylesheet">
   <style>
     :root {
-      --bg: #f6f2e8;
-      --surface: #fffdf8;
+      --bg: #ffffff;
+      --surface: #ffffff;
       --ink: #102033;
-      --muted: #64748b;
-      --line: #e8dcc4;
-      --gold: #b88a2d;
+      --muted: #475569;
+      --line: #2563eb;
+      --gold: #2563eb;
+      --radius: 28px;
+      --shadow: 0 28px 70px rgba(16, 32, 51, 0.12);
     }
 
     * {
@@ -24,36 +28,83 @@
       padding: 0;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       min-height: 100vh;
-      background: var(--bg);
+      background-color: var(--bg);
+      font-family: 'DM Sans', system-ui, sans-serif;
       color: var(--ink);
-      font-family: "DM Sans", system-ui, sans-serif;
-      line-height: 1.65;
+      line-height: 1.75;
+      padding: 24px 16px;
     }
 
     main {
-      width: min(860px, calc(100% - 28px));
+      width: min(960px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 46px 0;
+      padding: 32px 0 48px;
     }
 
     .back-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       color: var(--muted);
-      font-weight: 800;
-      margin-bottom: 24px;
+      font-weight: 700;
+      margin-bottom: 28px;
       text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .back-link:hover {
+      color: var(--ink);
     }
 
     .terms-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: 0 24px 70px rgba(30, 41, 59, 0.12);
-      padding: clamp(24px, 5vw, 44px);
+      position: relative;
+      width: 100%;
+      background: linear-gradient(180deg, #ffffff 0%, #f8f4ee 100%);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      overflow: hidden;
+    }
+
+    .terms-card::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      background: conic-gradient(from 0deg, rgba(37, 99, 235, 0.45), transparent 40%, rgba(37, 99, 235, 0.45) 70%, transparent 100%);
+      border-radius: calc(var(--radius) + 3px);
+      animation: spin 5s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .terms-card::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8f4ee 100%);
+      border-radius: calc(var(--radius) - 3px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card-body {
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .eyebrow {
@@ -63,40 +114,82 @@
       gap: 8px;
       font-size: 0.78rem;
       font-weight: 900;
-      letter-spacing: 0.12em;
-      margin-bottom: 12px;
+      letter-spacing: 0.14em;
+      margin-bottom: 16px;
       text-transform: uppercase;
     }
 
     h1 {
-      font-family: "Playfair Display", Georgia, serif;
-      font-size: clamp(2.2rem, 7vw, 4rem);
-      line-height: 1;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.2rem, 4vw, 3.6rem);
+      line-height: 1.05;
       margin-bottom: 18px;
+      letter-spacing: -0.03em;
     }
 
     h2 {
-      font-size: 1.08rem;
-      margin: 26px 0 8px;
+      font-size: 1.35rem;
+      margin: 32px 0 12px;
+      color: var(--ink);
     }
 
     p,
     li {
       color: var(--muted);
+      font-size: 1rem;
+    }
+
+    p + h2,
+    h2 + p {
+      margin-top: 10px;
+    }
+
+    .link-sublinhado {
+      position: relative;
+      text-decoration: none;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .link-sublinhado::after {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      bottom: -2px;
+      left: 0;
+      background-color: var(--muted);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.25s ease;
+    }
+
+    .link-sublinhado:hover::after {
+      transform: scaleX(1);
     }
 
     ul {
-      padding-left: 20px;
+      margin-top: 12px;
+      padding-left: 24px;
+      color: var(--muted);
     }
 
-    .placeholder {
-      margin-top: 22px;
-      padding: 16px;
-      border: 1px dashed #c9a84c;
-      border-radius: 8px;
-      background: #fffbeb;
-      color: #7c4a03;
-      font-weight: 800;
+    li {
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .terms-card {
+        padding: 28px 22px;
+      }
+
+      h1 {
+        font-size: 2.4rem;
+      }
+
+      .back-link {
+        margin-bottom: 22px;
+      }
     }
   </style>
 </head>
@@ -106,28 +199,108 @@
     <a class="back-link" href="membro-login.html"><i class="fa-solid fa-arrow-left"></i> Voltar ao portal do membro</a>
 
     <article class="terms-card">
-      <span class="eyebrow"><i class="fa-solid fa-shield-halved"></i> Privacidade</span>
-      <h1>Termos de Privacidade</h1>
-      <p>Esta página reúne as informações sobre o tratamento de dados pessoais no Portal do Membro da AD Palhoça.</p>
+      <div class="card-body">
+        <span class="eyebrow"><i class="fa-solid fa-shield-halved"></i> Privacidade</span>
+        <h1>Termos de Privacidade</h1>
+        <p>Esta página reúne as informações sobre o tratamento de dados pessoais no Portal do Membro da AD Palhoça.</p>
 
-      <div class="placeholder">
-        Texto provisório. Depois você pode substituir este conteúdo pelo texto oficial da igreja.
-      </div>
+        <h2><b>Política de Privacidade</b></h2>
+        <p>
+          A AD-Bela-Vista respeita a privacidade e a proteção dos dados pessoais de seus membros, congregados, visitantes
+          e demais pessoas cadastradas.
+          <br>
+        <br>
+        Esta Política de Privacidade explica, de forma simples e transparente, quais dados são coletados, porque são
+        utilizados, quem pode acessá-los, por quanto tempo podem ser armazenados e como a pessoa cadastrada pode exercer
+        seus direitos.
+        <br>
+        <br>
+        Esta política se aplica à ficha pública de cadastro, ao Portal do Membro, ao painel administrativo e aos demais
+        recursos vinculados ao sistema da igreja.
+        <br>
+        <br>
+        <b>Data da última atualização: </b>16/07/2026
+      </p>
 
-      <h2>Finalidade</h2>
-      <p>Os dados informados são usados para criação de acesso ao portal, comunicação com o membro, atualização cadastral, secretaria e acompanhamento pastoral.</p>
+      <h2><b>Quem somos</b></h2>
+      <p>
+        A responsável pelo tratamento dos dados pessoais é:
+        <br>
+        <br>
+        <b>Nome: </b><a href="https://maps.app.goo.gl/FG6Cs4HBw2Endh3m8" class="link-sublinhado">AD - Palhoça</a>
+        <br>
+        <br>
+        <b>Nome utilizado: </b>AD Bela-Vista
+        <br>
+        <br>
+        <b>CNPJ: </b>24.527.703/0001-30
+        <br>
+        <br>
+        <b>Endereço: </b><a href="https://maps.app.goo.gl/FG6Cs4HBw2Endh3m8" class="link-sublinhado">AD - Palhoça</a>
+        <br>
+        <br>
+        <b>Responsável pelo tratamento dos dados: </b>AD Bela-Vista
+        <br>
+        <br>
+        <b>E-mail: </b>gabrieldossantosdutra06@gmail.com
+        <br>
+        <br>
+        <b>Telefone/WhatsApp: </b>55 48 9 9683-9730
+        <br>
+        <br>
+        Para fins da <b><a href="https://www.gov.br/mds/pt-br/acesso-a-informacao/governanca/integridade/campanhas/lgpd" class="link-sublinhado">LGPD</a></b>, a igreja atua como controladora dos dados pessoais cadastrados no sistema, pois determina como e para quais finalidades esses dados serão utilizado.
+      </p>
 
-      <h2>Dados Coletados</h2>
-      <p>Na criação da conta são solicitados nome, e-mail, telefone e senha. Na ficha completa poderão ser solicitados dados adicionais, como endereço, documentos, foto e assinatura.</p>
+      <h2><b>Quais dados coletamos</b></h2>
+      <p>
+        Os dados coletados podem variar de acordo com o tipo de cadastro realizado.
+        <br>
+        <br>
+        O cadastro de congregado poderá solicitar apenas informações básicas, enquanto o cadastro de membro poderá conter uma ficha mais completa.
+        <br>
+        <br>
+        Podemos coletar:
+        <br>
+        <ul>
+          <li>Dados de identificação, como nome completo, data de nascimento, documentos de identificação e demais informações necessárias ao cadastro;</li>
+          <li>Dados de contato, como telefone, WhatsApp e e-mail;</li>
+          <li>Dados de endereço;</li>
+          <li>Informações sobre estado civil e composição familiar;</li>
+          <li>Informações ministeriais, eclesiásticas e religiosas, como condição de membro ou congregado, batismo, igreja anterior, cargo, função, ministério, setor ou congregação;</li>
+          <li>Informações sobre talentos, habilidades e áreas de interesse;</li>
+          <li>Foto de perfil ou foto destinada à identificação interna;</li>
+          <li>Documentos e anexos enviados pela pessoa;</li>
+          <li>Assinatura eletrônica ou digital inserida na ficha;</li>
+          <li>Informações necessárias para criação e utilização da conta no Portal do Membro;</li>
+          <li>Dados técnicos e regisros de acesso necessários para autenticação, funcionamento e segurança do sistema, quando gerados;</li>
+          <li>Data de cadastro, situação da ficha, atualizações e histórico administrativo necessário</li>
+        </ul>
+        <br>
+        <a href="https://lgpdbrasil.com.br/lgpd-instituicoes-religiosas-e-o-tratamento-dos-dados/" class="link-sublinhado">Por revelarem convicção ou vínculo religioso, algumas informações são classificadas como <b>dados pessoais sensíveis</b> e recebem proteção reforçada nos termos da LGPD</a> 
+        <br>
+        <br>
+        Solicitamos que a pessoa cadastrada informe somente dados verdadeiros e necessários. Caso sejam fornecidos dados de familiares ou terceiros, eles devem ser limitados ao necessário e fornecidos com conhecimento ou autorização dessas pessoas, quando aplicável.
+      </p>
 
-      <h2>Responsável</h2>
-      <p>O tratamento das informações é realizado pela administração da AD Palhoça, com acesso restrito a pessoas autorizadas.</p>
-
-      <h2>Direitos do Titular</h2>
-      <p>O membro pode solicitar correção, atualização ou orientação sobre seus dados junto à secretaria da igreja.</p>
+      <h2><b>Para que usamos os dados</b></h2>
+      <p>
+        Os dados pessoais poderão ser utilizados para:
+        <ul>
+          <li>Realizar o cadastro interno de membros e congregados;</li>
+          <li>Organizar e manter atualizados os registros administrativos da igreja;</li>
+          <li>Identificar e confirmar os dados da pessoa cadastrada;</li>
+          <li>Realizar acompanhamento pastoral e eclesiástico;</li>
+          <li>Manter comunicação sobre atividades, reuniões, eventos e assuntos relacionados à igreja;</li>
+          <li>Organizar setores, departamentos, ministérios, cargos e funções;</li>
+          <li>Consultar, atualizar ou emitir a ficha cadastral;</li>
+          <li>Gerar documentos e fichas em PDF;</li>
+          <li>Permitir o acesso e funcionamento do Portal</li>
+        </ul>
+      </p>
 
       <h2>Proteção</h2>
-      <p>As informações devem ser utilizadas apenas para finalidades legítimas da igreja e protegidas contra acesso não autorizado.</p>
+      <p>As informações devem ser utilizadas apenas para finalidades legítimas da igreja e protegidas contra acesso não
+        autorizado.</p>
     </article>
   </main>
 </body>
