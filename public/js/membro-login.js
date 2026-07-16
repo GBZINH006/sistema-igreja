@@ -2,6 +2,7 @@
   const { createClient } = window.supabase;
   const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
   const MEMBER_SESSION_KEY = "ad_bela_vista_member_session";
+  const PRIVACY_POLICY_VERSION = window.CONFIG.PRIVACY_POLICY_VERSION;
 
   const $ = (selector) => document.querySelector(selector);
 
@@ -147,7 +148,8 @@
       markInvalid(phone);
       throw new Error("Informe um telefone válido com DDD.");
     }
-    if (password.value.length < 8 || !/[a-zA-Z]/.test(password.value) || !/\d/.test(password.value)) {
+    const passwordBytes = new TextEncoder().encode(password.value).length;
+    if (passwordBytes < 8 || passwordBytes > 72 || !/[a-zA-Z]/.test(password.value) || !/\d/.test(password.value)) {
       markInvalid(password);
       throw new Error("Use uma senha com pelo menos 8 caracteres, contendo letras e números.");
     }
@@ -176,19 +178,26 @@
     const phone = $("#signup-phone").value.trim();
     const password = $("#signup-password").value;
 
+    if (!PRIVACY_POLICY_VERSION) {
+      showAlert("A versão dos termos de privacidade não está configurada.", "error");
+      setLoading(form, false);
+      return;
+    }
+
     try {
       const { data, error } = await db.rpc("member_register_account", {
         p_first_name: firstName,
         p_last_name: lastName,
         p_email: email,
         p_phone: phone,
-        p_password: password
+        p_password: password,
+        p_privacy_version: PRIVACY_POLICY_VERSION
       });
 
       if (error) throw error;
       saveMemberSession(data?.[0]);
       showAlert("Conta criada com segurança. Redirecionando para o portal do membro...", "success");
-      window.location.href = "membro.html";
+      window.location.href = "cadastro.html?origem=membro&primeiro_acesso=1";
     } catch (error) {
       showAlert(friendlyError(error, "Não foi possível solicitar o cadastro agora. Revise os dados ou tente novamente."), "error");
     } finally {

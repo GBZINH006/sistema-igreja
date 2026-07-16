@@ -56,9 +56,39 @@
           <a href="#canvas-assinatura" class="side-link"><i class="fa-solid fa-signature"></i><span>Assinatura</span></a>
         </nav>
         <div class="hero-divider"></div>
+        <a class="manual-link" href="suporte.html">
+          <i class="fa-solid fa-book-open"></i>
+          <span>Manual do sistema</span>
+        </a>
       </aside>
 
-      <section id="tela-escolha-cadastro" class="cadastro-start">
+      <section id="tela-privacidade-cadastro" class="cadastro-start">
+        <div class="cadastro-start-card privacy-start-card">
+          <div class="cadastro-start-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <span class="privacy-start-kicker">Privacidade dos dados</span>
+          <h2>Antes de preencher a ficha</h2>
+          <p>Leia e aceite os termos de privacidade para continuar para o cadastro da igreja.</p>
+          <div class="cadastro-privacy-note">
+            <i class="fa-solid fa-lock"></i>
+            <span>As informaÃ§Ãµes preenchidas serÃ£o usadas somente para cadastro, secretaria e acompanhamento pastoral.</span>
+          </div>
+          <a class="terms-link privacy-terms-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            Abrir termos de privacidade
+          </a>
+          <label class="privacy-first-consent" for="privacy-start-consent">
+            <input id="privacy-start-consent" type="checkbox">
+            <span>Li e aceito os termos de privacidade para iniciar a ficha.</span>
+          </label>
+          <div class="hint" id="hint-privacy-start"></div>
+          <button type="button" class="cadastro-choice-btn privacy-continue-btn" onclick="aceitarPrivacidadeInicial()">
+            <i class="fa-solid fa-check"></i>
+            Continuar para o cadastro
+          </button>
+        </div>
+      </section>
+
+      <section id="tela-escolha-cadastro" class="cadastro-start cadastro-flow-hidden">
         <div class="cadastro-start-card">
           <div class="cadastro-start-icon"><i class="fa-solid fa-clipboard-list"></i></div>
           <h2>Cadastro da igreja</h2>
@@ -712,21 +742,6 @@
             e completas.
             Comprometo-me a comunicar qualquer alteração ao secretariado da
             igreja.
-          </div>
-
-          <div class="lgpd-box" aria-labelledby="lgpd-title">
-            <div class="lgpd-kicker"><i class="fa-solid fa-scale-balanced"></i> LGPD e privacidade</div>
-            <h3 id="lgpd-title">Tratamento dos dados pessoais</h3>
-            <p>Antes de enviar a ficha, leia os termos de privacidade do cadastro da AD Palhoça.</p>
-            <a class="terms-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>
-              Abrir termos de privacidade
-            </a>
-            <label class="lgpd-consent-row" for="lgpd-consent-cadastro">
-              <input id="lgpd-consent-cadastro" type="checkbox" required>
-              <span>Li e aceito os termos de privacidade.</span>
-            </label>
-            <div class="hint" id="hint-lgpd"></div>
           </div>
 
           <label class="field-label">Assine abaixo com o dedo ou mouse <span

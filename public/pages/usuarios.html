@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Usuários - AD Bela-Vista</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <link rel="stylesheet" href="../css/admin-pages.css">
+</head>
+
+<body data-page="usuarios">
+  <div class="admin-page">
+    <aside class="admin-page-sidebar">
+      <div class="sidebar-brand">
+        <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista">
+        <div><strong>AD Bela-Vista</strong><span>Usuários</span></div>
+      </div>
+      <nav class="sidebar-nav" aria-label="Navegação administrativa">
+        <a class="side-link" href="admin.html"><i class="fa-solid fa-table-columns"></i><span>Dashboard</span></a>
+        <a class="side-link" href="admin.html#corpo-lista"><i class="fa-solid fa-users"></i><span>Membros</span></a>
+        <a class="side-link" href="admin.html#aniv-body"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
+        <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatórios</span></a>
+        <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
+        <a class="side-link active" href="usuarios.html"><i class="fa-solid fa-user-shield"></i><span>Usuários</span></a>
+        <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+      </nav>
+      <div class="sidebar-footer"><strong>Área restrita</strong><small id="header-email">Validando acesso...</small></div>
+    </aside>
+
+    <main class="admin-page-main">
+      <header class="page-header">
+        <div class="page-header-brand">
+          <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista">
+        </div>
+        <div class="header-actions">
+          <button class="btn" id="refresh-btn" type="button"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+          <button class="btn btn-danger" id="logout-btn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+        </div>
+      </header>
+
+      <section class="page-content">
+        <section class="page-section-head">
+          <div>
+            <span>Controle de acesso</span>
+            <h1>Usuários administrativos</h1>
+            <p>Crie acessos, defina perfis e acompanhe quem pode entrar no painel.</p>
+          </div>
+        </section>
+
+        <div class="grid">
+          <article class="card stat-card"><i class="fa-solid fa-user-shield"></i><strong id="user-stat-total">0</strong><span>Usuários</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-crown"></i><strong id="user-stat-admin">0</strong><span>Admins</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-church"></i><strong id="user-stat-pastor">0</strong><span>Pastores</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-user-gear"></i><strong id="user-stat-secretario">0</strong><span>Secretários</span></article>
+        </div>
+
+        <section class="card panel">
+          <div class="panel-head">
+            <div>
+              <h2>Cadastrar ou atualizar acesso</h2>
+              <p>O login é criado no Authentication e o perfil é salvo na tabela profiles.</p>
+            </div>
+          </div>
+          <form class="user-form" id="admin-user-form">
+            <label class="field">
+              <span>E-mail</span>
+              <input id="admin-user-email" type="email" autocomplete="email" placeholder="usuario@dominio.com" required>
+            </label>
+            <label class="field">
+              <span>Senha inicial</span>
+              <input id="admin-user-password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+            </label>
+            <label class="field">
+              <span>Perfil</span>
+              <select id="admin-user-role" required>
+                <option value="secretario">Secretário</option>
+                <option value="pastor">Pastor</option>
+                <option value="admin">Admin</option>
+              </select>
+            </label>
+            <button class="btn btn-primary" id="admin-user-save" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar usuário</button>
+          </form>
+          <p class="panel-note">Para alterar apenas o perfil de um usuário já existente, informe o e-mail, deixe a senha em branco e salve.</p>
+        </section>
+
+        <section class="card panel">
+          <div class="panel-head">
+            <div>
+              <h2>Usuários cadastrados</h2>
+              <p>Lista dos usuários do Supabase Auth com perfil administrativo vinculado.</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn" id="users-refresh-btn" type="button"><i class="fa-solid fa-arrows-rotate"></i> Recarregar</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>E-mail</th>
+                  <th>Perfil</th>
+                  <th>Criado em</th>
+                  <th>Último acesso</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-body">
+                <tr><td colspan="4" class="empty">Carregando usuários...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div id="toast"></div>
+  <script src="../js/admin-pages.js"></script>
+</body>
+
+</html>

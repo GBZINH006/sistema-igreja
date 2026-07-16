@@ -16,7 +16,10 @@
 <body>
   <main class="auth-shell">
     <section class="auth-hero" aria-labelledby="auth-title">
-      <a class="home-link" href="cadastro.html"><i class="fa-solid fa-arrow-left"></i> Ficha</a>
+      <div class="hero-links">
+        <a class="home-link" href="cadastro.html"><i class="fa-solid fa-arrow-left"></i> Ficha</a>
+        <a class="home-link" href="suporte.html"><i class="fa-solid fa-book-open"></i> Manual</a>
+      </div>
       <img src="../assets/images-removebg-preview.png" alt="Logo AD Palhoça">
       <span class="hero-kicker"><i class="fa-solid fa-shield-halved"></i> Portal seguro do membro</span>
       <h1 id="auth-title">Área do Membro</h1>
@@ -94,7 +97,7 @@
           </label>
           <label>
             <span>Senha</span>
-            <input id="signup-password" type="password" autocomplete="new-password" minlength="8" required>
+            <input id="signup-password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
             <small class="field-hint">Use pelo menos 8 caracteres, misturando letras e números.</small>
           </label>
         </div>

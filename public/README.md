@@ -7,9 +7,10 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 - `pages/cadastro.html`: ficha publica de cadastro.
 - `pages/membro-login.html`: login/criacao de conta do membro.
 - `pages/membro.html`: portal do membro.
-- `pages/admin.html`: painel restrito para `admin` e `pastor`.
-- `pages/secretario.html`: painel restrito para `secretario`.
+- `pages/admin.html`: painel restrito para `admin`, `pastor` e `secretario`.
+- `pages/usuarios.html`: cadastro e controle de usuarios administrativos.
 - `pages/relatorios.html`, `pages/indicadores.html`, `pages/configuracoes.html`: paginas auxiliares do painel.
+- `pages/suporte.html`: manual publico da ficha de cadastro.
 
 ## Estrutura de pastas
 
@@ -24,8 +25,10 @@ Aplicacao estatica para cadastro publico, portal do membro e painel administrati
 
 - A chave em `config.js` deve ser a chave `anon` do Supabase. Nunca coloque `service_role` em arquivos dentro de `public`.
 - Rode `supabase-security-hardening.sql` no SQL Editor do Supabase para aplicar RLS, roles, auditoria e bucket privado.
+- Para aplicar o registro de consentimento LGPD em um banco existente, rode novamente `supabase-membro.sql` e depois `supabase-security-hardening.sql`.
 - O bucket principal de documentos deve ser `membros-docs`, privado, com URLs assinadas.
 - Usuarios do painel devem existir no Supabase Auth e ter perfil em `public.profiles`.
+- Use `pages/usuarios.html` para criar logins e definir perfis quando as RPCs administrativas estiverem aplicadas.
 
 Exemplo para liberar um pastor:
 
@@ -53,4 +56,6 @@ O deploy esperado e Vercel. O arquivo `vercel.json` define headers de seguranca,
 
 ## Observacoes
 
-A central de suporte antiga foi removida do codigo publico. O foco atual do sistema e ficha, portal do membro e painel.
+A central de suporte antiga foi substituida por `pages/suporte.html`, uma pagina publica focada apenas no preenchimento da ficha. Ela nao divulga rotas restritas.
+
+A versao vigente dos termos fica em `js/config.js`, na propriedade `PRIVACY_POLICY_VERSION`. Ao publicar uma nova versao do texto, atualize esse valor e a versao exibida em `pages/privacidade.html`.

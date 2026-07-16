@@ -13,8 +13,8 @@
   let indicadorAtivo = null, tipoVisualizacaoIndicador = 'bar';
   let historicoNotif = [], notifNaoLidas = 0, primeiraLeitura = true;
   const POR_PAGINA = 20;
-  const ADMIN_ROLES = ['admin', 'pastor'];
-  const DELETE_ROLES = ['admin'];
+  const ADMIN_ROLES = ['admin', 'pastor', 'secretario'];
+  const DELETE_ROLES = ['admin', 'secretario'];
   let currentAdminRole = null;
   const INDICADORES_CAROUSEL = ['total', 'membros', 'congregados', 'ativos', 'mes'];
   let indicadorCarouselAtual = 0;
@@ -320,6 +320,7 @@
           <a class="side-link" href="#aniv-body" data-nav="aniversariantes"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
           <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatórios</span></a>
           <a class="side-link" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
+          <a class="side-link" href="usuarios.html"><i class="fa-solid fa-user-shield"></i><span>Usuários</span></a>
           <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
         </nav>
         <div class="sidebar-footer">

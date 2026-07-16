@@ -1,60 +1,106 @@
 # AD Bela-Vista - Documentacao de Banco de Dados
 
-**Versao do documento:** 1.1  
-**Observacao:** este documento descreve o uso do banco conforme o front-end e os SQLs do projeto.
+**Versao do documento:** 1.2
 
 ---
 
 ## 1. Backend
 
 O sistema usa Supabase para:
-- autenticacao;
-- banco Postgres;
-- realtime;
-- Storage de anexos;
-- funcoes RPC;
-- politicas RLS.
 
-Os scripts SQL ficam em `public/db/`.
+- Supabase Auth nos paineis admin/pastor e secretaria;
+- Postgres para cadastros;
+- Storage privado para anexos;
+- Realtime para novos cadastros;
+- RPC para portal do membro, assinatura do pastor e busca da secretaria;
+- RLS para proteger dados.
+
+Os scripts ficam em `public/db/`.
 
 ---
 
-## 2. Entidade Principal: `membros`
+## 2. Tabela `membros`
 
-O front-end trata membros e congregados como registros da tabela `membros`.
+Registro principal de membros e congregados.
 
-### Campos usados com frequencia
+Campos de maior uso:
+
 - `id`
 - `created_at`
 - `updated_at`
-- `tipo_cadastro` (`Membro` ou `Congregado`)
-- `status` (`Ativo`, `Inativo`, `Transferido`, `Falecido`, `Pendente`, `Em analise`, conforme fluxo)
+- `tipo_cadastro`
+- `status`
 - `nome`
-- `rg`
 - `cpf`
-- `tipo_cpf`
+- `rg`
 - `data_nasc`
 - `idade`
-- `sexo`
-- `tipo_sanguineo`
-- `escolaridade`
-- `estado_civil`
 - `celular`
 - `email`
-- `cep`
-- `bairro`
 - `endereco`
 - `cidade_estado`
 - `setor_igreja`
 - `congregacao_igreja`
-- `cargo_principal`
 - `forma_recebimento`
-- `data_batismo_aguas`
-- `data_batismo_es`
+- `cargo_principal`
 - `data_aprovacao`
 - `member_account_id`
+- `privacy_accepted_at`: data e hora do aceite, gerada pelo banco.
+- `privacy_version`: versao dos termos aceitos.
+- `privacy_source`: fluxo em que ocorreu o aceite (`public_registration` ou `member_registration`).
 
-### Campos de anexos e midia
+Status esperados:
+
+- `Pendente`
+- `Em análise`
+- `Correção`
+- `Aprovado`
+- `Ativo`
+- `Inativo`
+- `Transferido`
+- `Falecido`
+
+---
+
+## 3. Contas de Membro
+
+O portal do membro usa tabelas proprias:
+
+- `member_accounts`
+- `member_account_sessions`
+
+O membro nao usa Supabase Auth diretamente. A sessao e controlada por token armazenado com hash no banco.
+
+O aceite feito durante a criacao da conta fica em `member_accounts`, nos campos `privacy_accepted_at`, `privacy_version` e `privacy_source`. Nesse fluxo, a origem registrada e `member_signup`.
+
+---
+
+## 4. Roles Administrativas
+
+A tabela `profiles` vincula usuarios do Supabase Auth a roles:
+
+- `admin`
+- `pastor`
+- `secretario`
+
+Uso esperado:
+
+- `admin`: acesso total, incluindo exclusao.
+- `pastor`: painel pastoral sem exclusao.
+- `secretario`: acesso operacional igual ao admin no painel unificado, incluindo exclusao.
+
+---
+
+## 5. Storage
+
+Bucket principal:
+
+- `membros-docs`
+
+Deve permanecer privado.
+
+Campos de midia:
+
 - `foto_url`
 - `doc_url`
 - `foto_certidao_nasc`
@@ -65,91 +111,37 @@ O front-end trata membros e congregados como registros da tabela `membros`.
 
 ---
 
-## 3. Perfis e Roles
+## 6. Auditoria
 
-A tabela `profiles` vincula usuario autenticado a uma role.
+O SQL de endurecimento cria `audit_logs` para registrar alteracoes em `membros`.
 
-Roles usadas:
-- `admin`
-- `pastor`
-- `secretario`
-- `suporte`
+Eventos esperados:
 
-Uso esperado:
-- `admin`: administra e pode excluir cadastros.
-- `pastor`: acessa painel admin/pastor, sem exclusao.
-- `secretario`: acessa painel da secretaria.
-- `suporte`: previsto para apoio tecnico conforme politicas.
+- insert;
+- update;
+- delete.
+
+Leitura da auditoria deve ficar restrita a admin/pastor/secretario.
 
 ---
 
-## 4. Storage
+## 7. Scripts SQL
 
-O bucket principal e:
+- `supabase-schema-principal.sql`: estrutura principal.
+- `supabase-security-hardening.sql`: roles, RLS, auditoria e Storage.
+- `supabase-secretario.sql`: funcoes/policies historicas da secretaria e acesso unificado.
+- `supabase-membro.sql`: conta do membro e RPCs do portal.
 
-- `membros-docs`
+Depois de alterar SQL, execute `notify pgrst, 'reload schema';` ou rode o script completo.
 
-Ele deve ser privado.
-
-O sistema salva arquivos e usa URLs assinadas para exibir:
-- foto do cadastro;
-- documento principal;
-- certidoes;
-- diploma;
-- comprovante de endereco;
-- assinatura do membro/congregado.
-
-Ao excluir ou substituir arquivos, o painel admin tenta remover arquivos antigos do Storage quando aplicavel.
-
----
-
-## 5. Carimbo de Data
-
-O indicador **Ultimo cadastro** usa:
-
-1. `created_at`, quando existir;
-2. `commit_timestamp`, quando existir como fallback;
-3. horario local atual apenas como fallback visual se nenhum carimbo valido estiver disponivel.
-
-Para boa ordenacao, todo registro deve ter `created_at` valido.
-
----
-
-## 6. Realtime
-
-O painel admin/pastor escuta eventos:
-
-- tabela: `membros`
-- evento: `INSERT`
-- schema: `public`
-
-Quando um cadastro e inserido, o painel atualiza:
-- lista local;
-- cards;
-- graficos;
-- aniversariantes;
-- notificacoes;
-- indicador **Ultimo cadastro**.
-
----
-
-## 7. Funcoes RPC Observadas
-
-O sistema usa funcoes RPC para fluxos especificos, incluindo:
-
-- busca da secretaria;
-- salvamento/consulta de assinatura do pastor;
-- fluxos do portal do membro.
-
-Os nomes e definicoes devem ser conferidos nos SQLs em `public/db/`.
+Para atualizar um banco existente com o registro de consentimento, rode novamente `supabase-membro.sql` e depois `supabase-security-hardening.sql`.
 
 ---
 
 ## 8. Boas Praticas
 
-- Manter `created_at` preenchido.
-- Nao expor chave `service_role` no front-end.
-- Manter o bucket `membros-docs` privado.
-- Validar RLS apos alteracoes em SQL.
-- Padronizar `tipo_cadastro`, `status`, `setor_igreja` e `cargo_principal`.
-- Fazer backup do banco e do Storage antes de mudancas grandes.
+- Nunca expor `service_role`.
+- Testar RLS com anon, admin, pastor e secretario.
+- Manter `membros-docs` privado.
+- Fazer backup antes de mudancas grandes.
+- Padronizar status e tipo de cadastro.

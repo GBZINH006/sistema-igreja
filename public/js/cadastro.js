@@ -12,7 +12,9 @@
   const PUBLIC_SUBMISSION_COOLDOWN_MS = 5 * 60 * 1000;
   const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
   const ALLOWED_UPLOAD_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']);
+  const PRIVACY_POLICY_VERSION = window.CONFIG.PRIVACY_POLICY_VERSION;
   let currentSession = null;
+  let privacidadeInicialAceita = false;
 
   function carregarSessaoMembro() {
     try {
@@ -100,6 +102,14 @@
     if (!isMemberFlow) return;
 
     document.body.classList.add('member-account-flow');
+
+    const nome = document.getElementById('nome');
+    const email = document.getElementById('email');
+    const celular = document.getElementById('celular');
+
+    if (nome && !nome.value) nome.value = currentSession?.fullName || '';
+    if (email && !email.value) email.value = currentSession?.email || '';
+    if (celular && !celular.value) celular.value = currentSession?.phone || '';
 
     const form = document.getElementById('form-cadastro');
     if (form && !document.getElementById('member-flow-notice')) {
@@ -300,15 +310,63 @@
   window.setTipo = setTipo;
 
   function setFluxoCadastroVisivel(mostrarFormulario) {
+    const telaPrivacidade = document.getElementById('tela-privacidade-cadastro');
     const telaEscolha = document.getElementById('tela-escolha-cadastro');
     const progresso = document.querySelector('.progress-wrap');
     const formulario = document.getElementById('cadastro-formulario');
     const submit = document.querySelector('.submit-wrap');
 
-    telaEscolha?.classList.toggle('cadastro-flow-hidden', mostrarFormulario);
+    telaPrivacidade?.classList.toggle('cadastro-flow-hidden', mostrarFormulario || privacidadeInicialAceita);
+    telaEscolha?.classList.toggle('cadastro-flow-hidden', mostrarFormulario || !privacidadeInicialAceita);
     progresso?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
     formulario?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
     submit?.classList.toggle('cadastro-flow-hidden', !mostrarFormulario);
+  }
+
+  function mostrarTelaPrivacidadeCadastro() {
+    privacidadeInicialAceita = false;
+
+    const consent = document.getElementById('privacy-start-consent');
+    const hint = document.getElementById('hint-privacy-start');
+    if (consent) {
+      consent.checked = false;
+      consent.classList.remove('invalid');
+    }
+    if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
+
+    document.body.classList.remove('modo-congregado');
+    document.getElementById('tipo_cadastro').value = '';
+    document.getElementById('btn-membro')?.classList.remove('active');
+    document.getElementById('btn-congregado')?.classList.remove('active');
+    setFluxoCadastroVisivel(false);
+    calcProgress();
+  }
+
+  function aceitarPrivacidadeInicial() {
+    const consent = document.getElementById('privacy-start-consent');
+    const hint = document.getElementById('hint-privacy-start');
+
+    if (consent && !consent.checked) {
+      consent.classList.add('invalid');
+      if (hint) {
+        hint.textContent = 'E necessario aceitar os termos de privacidade para iniciar a ficha.';
+        hint.className = 'hint erro';
+      }
+      return;
+    }
+
+    consent?.classList.remove('invalid');
+    if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
+
+    privacidadeInicialAceita = true;
+    setFluxoCadastroVisivel(false);
+    document.getElementById('tela-escolha-cadastro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function resetarCamposCadastro() {
@@ -380,6 +438,11 @@
   }
 
   function mostrarTelaEscolhaCadastro() {
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     document.body.classList.remove('modo-congregado');
     document.getElementById('tipo_cadastro').value = '';
     document.getElementById('btn-membro')?.classList.remove('active');
@@ -408,6 +471,11 @@
     if (btnSalvar) btnSalvar.innerHTML = `✝ Enviar Cadastro de ${tipo}`;
 
     // Libera o formulário somente após escolher
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = 'none';
 
@@ -425,12 +493,18 @@
     // Bloqueia até a escolha ficar definida (UX)
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = 'none';
+    if (!privacidadeInicialAceita) {
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
     aplicarTipoCadastro(tipo, { resetar: true });
   }
 
 
   window.setTipo = aplicarTipoCadastro;
   window.escolherTipoCadastro = escolherTipoCadastro;
+  window.aceitarPrivacidadeInicial = aceitarPrivacidadeInicial;
 
 
 
@@ -1166,6 +1240,8 @@
       talentos: document.getElementById('talentos').value.trim(),
       tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
       tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
+      privacy_version: PRIVACY_POLICY_VERSION,
+      privacy_source: isMemberFlow ? 'member_registration' : 'public_registration',
       status: isMemberFlow ? 'Em análise' : 'Pendente'
     };
 
@@ -1237,21 +1313,6 @@
       ok = false;
     }
 
-    const lgpdConsent = document.getElementById('lgpd-consent-cadastro');
-    const hintLgpd = document.getElementById('hint-lgpd');
-    if (lgpdConsent && !lgpdConsent.checked) {
-      if (hintLgpd) {
-        hintLgpd.textContent = '⚠️ É necessário aceitar os termos de privacidade para enviar o cadastro.';
-        hintLgpd.className = 'hint erro';
-      }
-      lgpdConsent.classList.add('invalid');
-      ok = false;
-    } else if (hintLgpd) {
-      hintLgpd.textContent = '';
-      hintLgpd.className = 'hint';
-      lgpdConsent?.classList.remove('invalid');
-    }
-
     return ok;
   }
   window.validar = validar;
@@ -1262,6 +1323,17 @@
     if (isMemberFlow && !currentSession?.token) {
       carregarSessaoMembro();
       if (!currentSession?.token) return;
+    }
+
+    if (!privacidadeInicialAceita) {
+      toast('⚠️ É necessário aceitar os termos de privacidade.', 'erro');
+      mostrarTelaPrivacidadeCadastro();
+      return;
+    }
+
+    if (!PRIVACY_POLICY_VERSION) {
+      toast('❌ A versão dos termos de privacidade não está configurada.', 'erro');
+      return;
     }
 
     const dados = coletarDados();
@@ -1277,10 +1349,9 @@
       const invalido = document.querySelector('.invalid');
       const etapaInvalida = invalido?.closest('.form-step')?.dataset.step;
       if (etapaInvalida !== undefined) irParaEtapaCadastro(Number(etapaInvalida), { scroll: false });
-      if (!invalido && (!assinadoPeloMenos || !document.getElementById('lgpd-consent-cadastro')?.checked)) irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
+      if (!invalido && !assinadoPeloMenos) irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
       invalido?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       if (!assinadoPeloMenos) document.getElementById('canvas-assinatura').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (!document.getElementById('lgpd-consent-cadastro')?.checked) document.getElementById('lgpd-consent-cadastro')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
 
@@ -1401,7 +1472,7 @@
     const overlay = document.getElementById('cadastro-bloqueado-overlay');
     if (overlay) overlay.style.display = '';
 
-    mostrarTelaEscolhaCadastro();
+    mostrarTelaPrivacidadeCadastro();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1687,6 +1758,7 @@
   prepararFluxoMembroVisual();
   prepararUploadsDragDrop();
   prepararEtapasCadastro();
+  mostrarTelaPrivacidadeCadastro();
 
 })();
 
