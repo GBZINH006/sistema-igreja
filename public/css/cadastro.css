@@ -32,8 +32,8 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 30% 0%, rgba(37, 99, 235, 0.12), transparent 34rem),
-    linear-gradient(180deg, #ffffff 0%, var(--bg) 36%);
+    linear-gradient(180deg, #ffffff 0%, var(--bg) 42%),
+    radial-gradient(circle at 24% 0%, rgba(37, 99, 235, 0.08), transparent 32rem);
   color: var(--text);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -60,9 +60,9 @@ textarea {
   overflow: hidden;
   color: #fff;
   background:
-    linear-gradient(160deg, rgba(124, 58, 237, 0.78), transparent 48%),
-    linear-gradient(180deg, #1e3a8a 0%, #0f1f4d 100%);
-  box-shadow: 22px 0 55px rgba(30, 58, 138, 0.22);
+    linear-gradient(160deg, rgba(37, 99, 235, 0.24), transparent 52%),
+    linear-gradient(180deg, #172554 0%, #0f172a 100%);
+  box-shadow: 22px 0 55px rgba(15, 23, 42, 0.18);
 }
 
 .hero::before {
@@ -76,7 +76,7 @@ textarea {
 .hero-shimmer {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 40% 10%, rgba(167, 139, 250, 0.28), transparent 18rem);
+  background: radial-gradient(circle at 40% 10%, rgba(167, 139, 250, 0.18), transparent 18rem);
   pointer-events: none;
 }
 
@@ -112,7 +112,7 @@ textarea {
 }
 
 .side-nav {
-  position: fixed;
+  position: relative;
   display: grid;
   gap: 8px;
   margin: 34px 0;
@@ -163,6 +163,26 @@ textarea {
 
 .hero-divider {
   display: none;
+}
+
+.manual-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.manual-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .cadastro-flow-hidden {
@@ -410,8 +430,8 @@ main {
   width: min(640px, 100%);
   padding: clamp(28px, 5vw, 46px);
   border: 1px solid rgba(226, 232, 240, 0.92);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.88);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
   text-align: center;
   box-shadow: var(--shadow);
   backdrop-filter: blur(18px);
@@ -443,6 +463,105 @@ main {
 .cadastro-start-card p {
   margin: 10px 0 22px;
   color: var(--muted);
+}
+
+.cadastro-privacy-note {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  border-radius: 16px;
+  background: rgba(37, 99, 235, 0.05);
+  color: var(--muted);
+  line-height: 1.45;
+  text-align: left;
+}
+
+.cadastro-privacy-note i {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: var(--primary);
+}
+
+.privacy-start-card {
+  display: grid;
+  gap: 14px;
+  max-width: 680px;
+  text-align: left;
+}
+
+.privacy-start-card .cadastro-start-icon {
+  margin-inline: 0;
+}
+
+.privacy-start-kicker {
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(5, 150, 105, 0.1);
+  color: #047857;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.privacy-start-card p {
+  max-width: 560px;
+  margin-inline: 0;
+}
+
+.privacy-start-card .cadastro-privacy-note {
+  margin-bottom: 0;
+}
+
+.privacy-terms-link {
+  justify-self: start;
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  box-shadow: var(--shadow-soft);
+}
+
+.privacy-first-consent {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid rgba(5, 150, 105, 0.22);
+  border-radius: 16px;
+  background: rgba(240, 253, 244, 0.82);
+  color: var(--text);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.privacy-first-consent input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: var(--success);
+}
+
+.privacy-continue-btn {
+  width: 100%;
+  min-height: 62px;
+  border: 0;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: #fff;
+}
+
+.privacy-continue-btn:hover {
+  color: #fff;
 }
 
 .cadastro-choice-grid {
@@ -882,6 +1001,22 @@ input.invalid {
   margin-bottom: 6px;
   color: var(--text);
   font-size: 1rem;
+}
+
+.terms-link {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: max-content;
+  max-width: 100%;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  font-weight: 900;
+  text-decoration: none;
 }
 
 .submit-wrap {
@@ -1746,4 +1881,96 @@ body.step-first #btn-step-back {
   .btn-submit {
     grid-column: auto;
   }
+}
+
+/* Polimento visual final */
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+body {
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+.section-title,
+.cadastro-start-card h2,
+.header-copy h2 {
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+p,
+.hint,
+.cadastro-privacy-note,
+.declaracao {
+  line-height: 1.6;
+}
+
+.cadastro-start-card {
+  max-width: 620px;
+  border-color: rgba(219, 228, 239, 0.9);
+}
+
+.cadastro-start-card h2 {
+  margin-bottom: 8px;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  line-height: 1.08;
+}
+
+.cadastro-start-card p {
+  max-width: 440px;
+  margin-inline: auto;
+  font-size: 1rem;
+}
+
+.cadastro-choice-btn {
+  min-height: 76px;
+  border-radius: 14px;
+  background: #fff;
+  font-size: 1rem;
+}
+
+.cadastro-choice-btn i {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #eff6ff;
+}
+
+.field-label,
+label span {
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  border-radius: 12px;
+  color: #0f172a;
+  font-size: 0.96rem;
+}
+
+.section-card {
+  border-radius: 16px;
+}
+
+.btn-step,
+.btn-submit,
+.tipo-btn,
+.btn-foto,
+.btn-novo {
+  letter-spacing: 0;
 }

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Portal do Membro | AD Palhoça</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <link rel="stylesheet" href="../css/membro-login.css">
+</head>
+
+<body>
+  <main class="auth-shell">
+    <section class="auth-hero" aria-labelledby="auth-title">
+      <div class="hero-links">
+        <a class="home-link" href="cadastro.html"><i class="fa-solid fa-arrow-left"></i> Ficha</a>
+        <a class="home-link" href="suporte.html"><i class="fa-solid fa-book-open"></i> Manual</a>
+      </div>
+      <img src="../assets/images-removebg-preview.png" alt="Logo AD Palhoça">
+      <span class="hero-kicker"><i class="fa-solid fa-shield-halved"></i> Portal seguro do membro</span>
+      <h1 id="auth-title">Área do Membro</h1>
+      <p>Entre para acompanhar seus cadastros, atualizar informações e manter seu vínculo com a igreja em segurança.</p>
+
+      <div class="trust-list" aria-label="Segurança e privacidade">
+        <span><i class="fa-solid fa-lock"></i> Acesso protegido por senha</span>
+        <span><i class="fa-solid fa-user-shield"></i> Dados usados apenas pela igreja</span>
+        <span><i class="fa-solid fa-file-contract"></i> Consentimento LGPD no cadastro</span>
+      </div>
+    </section>
+
+    <section class="auth-card" aria-label="Acesso do membro">
+      <div class="auth-card-head">
+        <span>Acesso do membro</span>
+        <h2>Já possui uma conta? Faça login.</h2>
+        <p>Use o e-mail e a senha cadastrados para entrar no portal.</p>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Alternar acesso">
+        <button class="tab active" type="button" data-tab="login"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+        <button class="tab" type="button" data-tab="signup"><i class="fa-solid fa-user-plus"></i> Solicitar cadastro</button>
+      </div>
+
+      <div id="auth-alert" class="auth-alert" aria-live="polite"></div>
+
+      <form id="login-form" class="auth-form active" novalidate>
+        <label>
+          <span>E-mail</span>
+          <input id="login-email" type="email" autocomplete="email" inputmode="email" required>
+        </label>
+        <label>
+          <span>Senha</span>
+          <input id="login-password" type="password" autocomplete="current-password" required>
+        </label>
+
+        <div class="form-options">
+          <label class="check-row compact">
+            <input id="remember-access" type="checkbox" checked>
+            <span>Lembrar acesso neste dispositivo</span>
+          </label>
+          <button id="forgot-password" class="link-button" type="button">Esqueci minha senha</button>
+        </div>
+
+        <button class="primary-btn" type="submit"><i class="fa-solid fa-lock"></i> Entrar com segurança</button>
+      </form>
+
+      <form id="signup-form" class="auth-form" novalidate>
+        <div class="notice-card">
+          <i class="fa-solid fa-circle-info"></i>
+          <div>
+            <strong>Cadastro sujeito à aprovação</strong>
+            <p>Esta solicitação será analisada pela administração da igreja antes de qualquer confirmação pastoral ou atualização definitiva.</p>
+          </div>
+        </div>
+
+        <div class="form-grid two">
+          <label>
+            <span>Nome</span>
+            <input id="signup-first-name" type="text" autocomplete="given-name" required>
+          </label>
+          <label>
+            <span>Sobrenome</span>
+            <input id="signup-last-name" type="text" autocomplete="family-name" required>
+          </label>
+        </div>
+        <label>
+          <span>E-mail</span>
+          <input id="signup-email" type="email" autocomplete="email" inputmode="email" required>
+        </label>
+        <div class="form-grid two">
+          <label>
+            <span>Telefone</span>
+            <input id="signup-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(48) 99999-9999" required>
+          </label>
+          <label>
+            <span>Senha</span>
+            <input id="signup-password" type="password" autocomplete="new-password" minlength="8" maxlength="72" required>
+            <small class="field-hint">Use pelo menos 8 caracteres, misturando letras e números.</small>
+          </label>
+        </div>
+
+        <section class="privacy-box">
+          <span class="privacy-kicker"><i class="fa-solid fa-scale-balanced"></i> Privacidade</span>
+          <p>Antes de solicitar acesso, leia os termos de privacidade do portal do membro.</p>
+          <a class="privacy-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            Abrir termos de privacidade
+          </a>
+        </section>
+
+        <label class="check-row lgpd-consent">
+          <input id="lgpd-consent" type="checkbox" required>
+          <span>Li e aceito os termos de privacidade.</span>
+        </label>
+
+        <button class="primary-btn" type="submit"><i class="fa-solid fa-user-check"></i> Solicitar acesso ao portal</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="../js/membro-login.js"></script>
+</body>
+
+</html>

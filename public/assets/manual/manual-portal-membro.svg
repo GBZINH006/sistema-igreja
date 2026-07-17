@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Manual visual do portal do membro</title>
+  <desc id="desc">Resumo visual do portal do membro para documentação interna.</desc>
+  <rect width="1200" height="720" rx="36" fill="#07111f"/>
+  <rect x="76" y="72" width="1048" height="576" rx="34" fill="#ffffff"/>
+  <rect x="76" y="72" width="1048" height="210" rx="34" fill="#0f766e"/>
+  <circle cx="156" cy="176" r="54" fill="#ffffff" opacity=".18"/>
+  <text x="238" y="168" font-family="Arial" font-size="42" font-weight="800" fill="#ffffff">Portal do membro</text>
+  <text x="238" y="210" font-family="Arial" font-size="20" fill="#d1fae5">Conta, ficha vinculada, edicao e PDF da ficha.</text>
+  <rect x="130" y="330" width="290" height="210" rx="22" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="162" y="382" font-family="Arial" font-size="25" font-weight="800" fill="#0f172a">Conta</text>
+  <text x="162" y="420" font-family="Arial" font-size="18" fill="#64748b">Nome, telefone, CPF e foto.</text>
+  <rect x="456" y="330" width="290" height="210" rx="22" fill="#ecfdf5" stroke="#99f6e4"/>
+  <text x="488" y="382" font-family="Arial" font-size="25" font-weight="800" fill="#0f172a">Ficha</text>
+  <text x="488" y="420" font-family="Arial" font-size="18" fill="#64748b">Enviar, editar e acompanhar.</text>
+  <rect x="782" y="330" width="290" height="210" rx="22" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="814" y="382" font-family="Arial" font-size="25" font-weight="800" fill="#0f172a">PDF</text>
+  <text x="814" y="420" font-family="Arial" font-size="18" fill="#64748b">Baixar ficha completa.</text>
+</svg>

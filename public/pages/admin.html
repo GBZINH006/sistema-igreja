@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel Administrativo | AD Bela-Vista</title>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="../css/admin.css">
+  <script src="../js/config.js"></script>
+</head>
+
+<body>
+
+  <!-- CARREGANDO -->
+  <div id="tela-carregando" class="ativa">
+    <div class="spinner-grande"></div>
+    <span style="color:var(--muted);font-size:0.82rem;margin-top:0.5rem;">Verificando acesso…</span>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="tela-login" class="tela">
+    <div class="login-box">
+      <!-- Troca "login-logo-placeholder" pela logo real quando tiver o arquivo -->
+      <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista" class="login-logo"
+        onerror="this.style.display='none';document.getElementById('login-icon-fb').style.display='block'">
+      <span id="login-icon-fb" class="login-logo-placeholder" style="display:none;"></span>
+
+      <h1>Painel Administrativo</h1>
+      <div class="login-church">Igreja AD Bela-Vista · Área Restrita</div>
+
+      <div id="login-erro" class="login-erro"></div>
+
+      <div class="login-field">
+        <label>E-mail</label>
+        <input type="email" id="login-email" placeholder="admin@adbela-vista.com" autocomplete="email">
+      </div>
+      <div class="login-field">
+        <label>Senha</label>
+        <input type="password" id="login-senha" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn-login" id="btn-entrar" onclick="fazerLogin()">✝ Entrar no Painel</button>
+      <button class="login-link" type="button" onclick="alternarRecuperacaoSenha(true)">Esqueci minha senha</button>
+
+      <div class="recovery-panel" id="recovery-panel" hidden>
+        <div class="recovery-title">Recuperar acesso</div>
+        <div class="recovery-copy">Informe seu e-mail para receber o codigo de validacao. Depois digite o codigo e a nova senha.</div>
+
+        <div class="login-field">
+          <label>E-mail do usuario</label>
+          <input type="email" id="recovery-email" placeholder="seu-email@dominio.com" autocomplete="email">
+        </div>
+        <button class="btn-login btn-login-secondary" id="btn-recovery-send" type="button" onclick="solicitarCodigoRecuperacao()">Enviar codigo por e-mail</button>
+
+        <div class="login-field">
+          <label>Codigo recebido</label>
+          <input type="text" id="recovery-code" placeholder="Codigo do e-mail" autocomplete="one-time-code">
+        </div>
+        <button class="btn-login btn-login-secondary" id="btn-recovery-verify" type="button" onclick="validarCodigoRecuperacao()">Validar codigo</button>
+
+        <div id="recovery-password-fields" hidden>
+          <div class="login-field">
+            <label>Nova senha</label>
+            <input type="password" id="recovery-password" placeholder="Minimo 8 caracteres" autocomplete="new-password">
+          </div>
+          <div class="login-field">
+            <label>Confirmar nova senha</label>
+            <input type="password" id="recovery-password-confirm" placeholder="Repita a nova senha" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="recovery-actions">
+          <button class="btn-login" id="btn-recovery-reset" type="button" onclick="redefinirSenhaComCodigo()" hidden>Trocar senha e entrar</button>
+          <button class="btn-login btn-login-secondary" id="btn-recovery-skip" type="button" onclick="pularRedefinicaoSenha()" hidden>Pular e ir para o painel</button>
+          <button class="login-link" type="button" onclick="alternarRecuperacaoSenha(false)">Voltar ao login</button>
+        </div>
+      </div>
+      <div class="login-badge">🔒 Acesso seguro · Senha criptografada</div>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="tela-principal" class="tela">
+
+    <header>
+      <div class="header-left">
+        <img src="../assets/images-removebg-preview.png" alt="Logo" class="header-logo"
+          onerror="this.style.display='none';document.getElementById('header-icon-fb').style.display='block'">
+        <span id="header-icon-fb" class="header-logo-placeholder" style="display:none;"></span>
+        <div class="header-info">
+          <span class="header-title">Gestão de Membros</span>
+          <span class="header-sub">AD Bela-Vista · Palhoça - SC</span>
+        </div>
+        <span class="header-badge">Admin</span>
+        <span class="realtime-dot" title="Tempo real ativo"></span>
+      </div>
+      <div class="admin-actions" aria-label="Ações do painel">
+        <span class="header-user" id="header-email"></span>
+        <div id="sino-wrap" onclick="abrirHistoricoNotif()" title="Notificações">
+      <button class="btn btn-ghost btn-sm"><i class="fa-solid fa-bell"></i></button>
+          <span id="sino-badge">0</span>
+        </div>
+        <button class="btn btn-gold btn-sm" onclick="abrirCadastro()"><i class="fa-solid fa-clipboard-list"></i> <span class="btn-text">Abrir ficha</span></button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirAssinaturaPastor()"><i class="fa-solid fa-signature"></i> <span class="btn-text">Assinatura</span></button>
+        <div class="admin-actions-group" aria-label="Exportações">
+          <button class="btn btn-ghost btn-sm" onclick="exportarPDF()"><i class="fa-solid fa-file-pdf"></i> <span class="btn-text">PDF</span></button>
+          <button class="btn btn-green btn-sm" onclick="exportarExcel()"><i class="fa-solid fa-file-excel"></i> <span class="btn-text">Excel</span></button>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="carregarLista()" title="Atualizar lista" aria-label="Atualizar lista"><i class="fa-solid fa-rotate-right"></i></button>
+        <button class="btn btn-danger btn-sm" onclick="sair()">Sair</button>
+      </div>
+    </header>
+
+    <main>
+      <div class="stats-grid">
+        <div class="stat-card azul" data-metric="total">
+          <div class="stat-num" id="stat-total">—</div>
+          <div class="stat-lbl">Total</div>
+        </div>
+        <div class="stat-card ciano" data-metric="membros">
+          <div class="stat-num" id="stat-membros">—</div>
+          <div class="stat-lbl">Membros</div>
+        </div>
+        <div class="stat-card ouro" data-metric="congregados">
+          <div class="stat-num" id="stat-congregados">—</div>
+          <div class="stat-lbl">Congregados</div>
+        </div>
+        <div class="stat-card verde" data-metric="ativos">
+          <div class="stat-num" id="stat-ativos">—</div>
+          <div class="stat-lbl">Ativos</div>
+        </div>
+        <div class="stat-card roxo" data-metric="mes">
+          <div class="stat-num" id="stat-mes">—</div>
+          <div class="stat-lbl">Este mês</div>
+        </div>
+      </div>
+
+      <section class="metric-detail-panel" id="metric-detail-panel" aria-live="polite" hidden>
+        <div class="metric-detail-head">
+          <div>
+            <span class="metric-kicker">Indicador selecionado</span>
+            <h2 id="metric-title">Total</h2>
+            <p id="metric-subtitle">Registros cadastrados</p>
+          </div>
+          <div class="metric-actions">
+            <label class="metric-view-label" for="metric-view-type">Visualização</label>
+            <select class="filtro metric-view-select" id="metric-view-type" onchange="alterarVisualizacaoIndicador(this.value)">
+              <option value="line">Linha</option>
+              <option value="bar" selected>Barra</option>
+              <option value="pie">Pizza</option>
+              <option value="doughnut">Donut</option>
+              <option value="text">Texto resumido</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="exportarIndicadorPDF()"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportarIndicadorPNG()"><i class="fa-solid fa-image"></i> PNG</button>
+            <button class="btn btn-ghost btn-sm" onclick="alterarVisualizacaoIndicador('text')"><i class="fa-solid fa-align-left"></i> Texto</button>
+            <button class="btn btn-danger btn-sm" onclick="fecharPainelIndicador()"><i class="fa-solid fa-xmark"></i> Fechar</button>
+          </div>
+        </div>
+        <div class="metric-detail-body">
+          <div class="metric-chart-wrap">
+            <canvas id="metric-chart"></canvas>
+            <div class="metric-text-view" id="metric-text-view"></div>
+          </div>
+          <div class="metric-summary" id="metric-summary"></div>
+        </div>
+      </section>
+
+      <div class="last-cadastro">
+        <div class="last-cadastro-kicker">📌 Último cadastro</div>
+        <div class="last-cadastro-main">
+          <div class="last-cadastro-nome" id="last-cadastro-nome">—</div>
+          <div class="last-cadastro-quando" id="last-cadastro-quando">—</div>
+        </div>
+      </div>
+
+      <div class="aniv-card" hidden aria-hidden="true">
+        <div class="aniv-header" onclick="toggleAniv()">
+          <div class="aniv-title">🎂 Aniversariantes do mês <span id="aniv-count"
+              style="background:rgba(201,168,76,0.18);color:var(--gold2);border:1px solid rgba(201,168,76,0.3);font-size:0.7rem;padding:2px 8px;border-radius:10px;font-weight:700;display:none;font-family:'Syne',sans-serif;"></span>
+          </div>
+          <span id="aniv-chevron" style="color:var(--muted);">▼</span>
+        </div>
+        <div class="aniv-body" id="aniv-body">
+          <div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Carregando…</div>
+        </div>
+      </div>
+
+      <section class="members-section-head" aria-labelledby="members-title">
+        <div>
+          <span class="members-kicker">Cadastro administrativo</span>
+          <h2 id="members-title">Membros cadastrados</h2>
+          <p>Busque, filtre e acompanhe os registros da igreja.</p>
+        </div>
+        <div class="members-head-actions" aria-label="Filtros rápidos">
+          <button class="quick-filter active" type="button" data-quick-filter="todos">Todos <span id="quick-count-todos">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="pendentes">Pendentes <span id="quick-count-pendentes">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="ativos">Ativos <span id="quick-count-ativos">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="membros">Membros <span id="quick-count-membros">0</span></button>
+          <button class="quick-filter" type="button" data-quick-filter="congregados">Congregados <span id="quick-count-congregados">0</span></button>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <div class="search-wrap">
+          <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="busca" placeholder="Buscar por nome, CPF ou celular…" oninput="renderListaDebounced()">
+        </div>
+        <select class="filtro" id="filtro-tipo" onchange="renderLista()">
+          <option value="">Todos os tipos</option>
+          <option value="Membro">Membros</option>
+          <option value="Congregado">Congregados</option>
+        </select>
+        <select class="filtro" id="filtro-status" onchange="renderLista()">
+          <option value="">Todos os status</option>
+          <option value="Pendente">Pendentes</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Correção">Precisam correção</option>
+          <option value="Aprovado">Aprovados</option>
+          <option value="Ativo">Ativos</option>
+          <option value="Inativo">Inativos</option>
+          <option value="Transferido">Transferidos</option>
+          <option value="Falecido">Falecidos</option>
+        </select>
+        <button class="btn btn-ghost btn-sm btn-filtros-avancados" type="button" onclick="toggleFiltrosAvancados()">
+          <i class="fa-solid fa-sliders"></i> Filtros avançados
+        </button>
+        <select class="filtro filtro-avancado" id="filtro-setor" onchange="renderLista()">
+          <option value="">Todos os setores</option>
+        </select>
+        <select class="filtro filtro-avancado" id="filtro-idade" onchange="renderLista()">
+          <option value="">Todas as idades</option>
+          <option value="crianca">Crianças (0-12)</option>
+          <option value="adolescente">Adolescentes (13-17)</option>
+          <option value="jovem">Jovens (18-29)</option>
+          <option value="adulto">Adultos (30-59)</option>
+          <option value="idoso">Idosos (60+)</option>
+        </select>
+        <select class="filtro filtro-avancado" id="filtro-cargo" onchange="renderLista()">
+          <option value="">Todos os cargos</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Membro</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Celular</th>
+              <th>Setor</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="corpo-lista"></tbody>
+        </table>
+      </div>
+      <div class="members-card-list" id="members-card-list" aria-live="polite"></div>
+      <div class="paginacao" id="paginacao"></div>
+    </main>
+  </div>
+
+  <!-- MODAL DETALHES -->
+  <div class="overlay" id="modal-overlay" onclick="fecharOverlayClick(event,'modal-overlay')">
+    <div class="modal" id="modal-conteudo"></div>
+  </div>
+
+  <!-- MODAL EDIÇÃO -->
+  <div class="overlay" id="edit-overlay" onclick="fecharOverlayClick(event,'edit-overlay')">
+    <div class="modal" style="max-width:720px;">
+      <div class="modal-header">
+        <div class="modal-nome">✏️ Editar Cadastro</div>
+        <button class="btn btn-ghost btn-sm"
+          onclick="document.getElementById('edit-overlay').classList.remove('open')">✕ Fechar</button>
+      </div>
+      <input type="hidden" id="edit-id">
+      <div class="edit-section">
+        <div class="edit-section-title">📸 Fotos</div>
+        <div class="edit-row edit-col2">
+          <div>
+            <label class="edit-label">Foto do Membro</label>
+            <div class="foto-edit-area" id="edit-area-foto">
+              <img id="edit-preview-foto" class="foto-edit-preview" style="display:none;">
+              <div id="edit-placeholder-foto" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">👤 Sem foto
+              </div>
+              <div class="foto-edit-btns">
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-foto').click()">📁 Arquivo</button>
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-cam').click()">📷 Câmera</button>
+              </div>
+              <input type="file" id="edit-input-foto" accept="image/*" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
+              <input type="file" id="edit-input-cam" accept="image/*" capture="environment" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-foto','edit-placeholder-foto','edit-area-foto')">
+            </div>
+          </div>
+          <div>
+            <label class="edit-label">Foto do Documento</label>
+            <div class="foto-edit-area" id="edit-area-doc">
+              <img id="edit-preview-doc" class="doc-edit-preview" style="display:none;">
+              <div id="edit-placeholder-doc" style="font-size:0.78rem;color:var(--muted);padding:0.3rem 0;">🪪 Sem
+                documento</div>
+              <div class="foto-edit-btns">
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-doc').click()">📁 Arquivo</button>
+                <button type="button" class="btn-foto-edit"
+                  onclick="document.getElementById('edit-input-doc-cam').click()">📷 Câmera</button>
+              </div>
+              <input type="file" id="edit-input-doc" accept="image/*" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
+              <input type="file" id="edit-input-doc-cam" accept="image/*" capture="environment" style="display:none"
+                onchange="editPreviewFoto(this,'edit-preview-doc','edit-placeholder-doc','edit-area-doc')">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">👤 Dados Pessoais</div>
+        <label class="edit-label">Tipo</label>
+        <div class="edit-radio"><label><input type="radio" name="edit-tipo" value="Membro"> Membro</label><label><input
+              type="radio" name="edit-tipo" value="Congregado"> Congregado</label></div>
+        <label class="edit-label">Status</label>
+        <select id="edit-status" class="edit-input">
+          <option value="Pendente">Pendente</option>
+          <option value="Em análise">Em análise</option>
+          <option value="Correção">Correção solicitada</option>
+          <option value="Aprovado">Aprovado</option>
+          <option value="Ativo">Ativo</option>
+          <option value="Inativo">Inativo</option>
+          <option value="Transferido">Transferido</option>
+          <option value="Falecido">Falecido</option>
+        </select>
+        <label class="edit-label">Nome Completo *</label>
+        <input type="text" id="edit-nome" class="edit-input" placeholder="Nome completo">
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">RG</label><input type="text" id="edit-rg" class="edit-input"></div>
+          <div><label class="edit-label">CPF</label><input type="text" id="edit-cpf" class="edit-input" maxlength="14"
+              oninput="maskCPF(this)"></div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Nascimento</label><input type="date" id="edit-nasc" class="edit-input"></div>
+          <div><label class="edit-label">Idade</label><input type="number" id="edit-idade" class="edit-input" min="0">
+          </div>
+          <div><label class="edit-label">Sexo</label>
+            <div class="edit-radio" style="margin-top:8px;"><label><input type="radio" name="edit-sexo" value="M">
+                M</label><label><input type="radio" name="edit-sexo" value="F"> F</label></div>
+          </div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Tipo Sanguíneo</label><select id="edit-sangue" class="edit-input">
+              <option value="">—</option>
+              <option>A+</option>
+              <option>A-</option>
+              <option>B+</option>
+              <option>B-</option>
+              <option>AB+</option>
+              <option>AB-</option>
+              <option>O+</option>
+              <option>O-</option>
+            </select></div>
+          <div><label class="edit-label">Escolaridade</label><select id="edit-esc" class="edit-input">
+              <option value="">—</option>
+              <option>Fundamental Incompleto</option>
+              <option>Fundamental Completo</option>
+              <option>Médio Incompleto</option>
+              <option>Médio Completo</option>
+              <option>Superior Incompleto</option>
+              <option>Superior Completo</option>
+              <option>Pós-Graduação</option>
+            </select></div>
+          <div><label class="edit-label">Estado Civil</label><select id="edit-civil" class="edit-input">
+              <option value="">—</option>
+              <option>Solteiro(a)</option>
+              <option>Casado(a)</option>
+              <option>Divorciado(a)</option>
+              <option>Viúvo(a)</option>
+              <option>União Estável</option>
+            </select></div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Cônjuge</label><input type="text" id="edit-conjuge" class="edit-input"></div>
+          <div><label class="edit-label">Data Casamento</label><input type="date" id="edit-casamento"
+              class="edit-input"></div>
+        </div>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">📍 Endereço e Contato</div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">CEP</label><input type="text" id="edit-cep" class="edit-input" maxlength="9"
+              oninput="maskCEP(this)"></div>
+          <div><label class="edit-label">Bairro</label><input type="text" id="edit-bairro" class="edit-input"></div>
+        </div>
+        <label class="edit-label">Endereço</label><input type="text" id="edit-endereco" class="edit-input">
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Cidade / UF</label><input type="text" id="edit-cidade" class="edit-input">
+          </div>
+          <div><label class="edit-label">Fone Residencial</label><input type="text" id="edit-fone-res"
+              class="edit-input" oninput="maskPhone(this)"></div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Fone Comercial</label><input type="text" id="edit-fone-com" class="edit-input"
+              oninput="maskPhone(this)"></div>
+          <div><label class="edit-label">Celular / WhatsApp</label><input type="text" id="edit-celular"
+              class="edit-input" oninput="maskPhone(this)"></div>
+        </div>
+        <label class="edit-label">E-mail</label><input type="email" id="edit-email" class="edit-input">
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">✝️ Igreja</div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Forma de Recebimento</label><select id="edit-recebimento" class="edit-input">
+              <option value="">—</option>
+              <option>Batismo nas Águas</option>
+              <option>Transferência</option>
+              <option>Aclamação</option>
+              <option>Reconciliação</option>
+            </select></div>
+          <div><label class="edit-label">Cargo Principal</label><input type="text" id="edit-cargo" class="edit-input">
+          </div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Setor</label><select id="edit-setor" class="edit-input" onchange="sincronizarEdicaoCongregacaoPastor()">
+              <option value="">Selecione o setor</option>
+              <option>Setor 01: Ponte do Imaruim (Sede)</option>
+              <option>Setor 02: Jardim Eldorado</option>
+              <option>Setor 03: Caminho Novo</option>
+              <option>Setor 04: Aririú</option>
+              <option>Setor 05: Barra</option>
+              <option>Setor 06: Praia de Fora</option>
+              <option>Setor 07: Pinheira</option>
+              <option>Setor 08: Pacheco</option>
+              <option>Setor 09: Bela Vista</option>
+              <option>Setor 10: Madri</option>
+              <option>Setor 11: Nova Esperança</option>
+              <option>Setor 12: Alto Aririú</option>
+              <option>Setor 13: Maciambu</option>
+              <option>Setor 14: Enseada de Brito</option>
+              <option>Setor 15: Passa Vinte</option>
+              <option>Setor 16: Vila Nova</option>
+              <option>Setor 17: Alaor Silveira</option>
+              <option>Setor 18: Rio Grande</option>
+            </select></div>
+          <div><label class="edit-label">Congregação</label><input type="text" id="edit-congregacao" class="edit-input" placeholder="Preenchida pelo setor escolhido" readonly>
+          </div>
+        </div>
+        <div class="edit-row edit-col3">
+          <div><label class="edit-label">Batismo Águas</label><input type="date" id="edit-bat-aguas" class="edit-input">
+          </div>
+          <div><label class="edit-label">Batismo ES</label><input type="date" id="edit-bat-es" class="edit-input"></div>
+          <div><label class="edit-label">Data Aprovação</label><input type="date" id="edit-aprovacao"
+              class="edit-input"></div>
+        </div>
+      </div>
+      <div class="edit-section">
+        <div class="edit-section-title">👨‍👩‍👧 Família</div>
+        <label class="edit-label">Qtd. Filhos</label>
+        <input type="number" id="edit-filhos" class="edit-input" min="0" style="max-width:100px;">
+        <div class="edit-row edit-col2" style="margin-top:0.5rem;">
+          <div><label class="edit-label">Integrante 1</label><input type="text" id="edit-dep1-nome" class="edit-input">
+          </div>
+          <div><label class="edit-label">Parentesco 1</label><input type="text" id="edit-dep1-par" class="edit-input">
+          </div>
+        </div>
+        <div class="edit-row edit-col2">
+          <div><label class="edit-label">Integrante 2</label><input type="text" id="edit-dep2-nome" class="edit-input">
+          </div>
+          <div><label class="edit-label">Parentesco 2</label><input type="text" id="edit-dep2-par" class="edit-input">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap;">
+        <button class="btn btn-ghost"
+          onclick="document.getElementById('edit-overlay').classList.remove('open')">Cancelar</button>
+        <button class="btn btn-primary" id="btn-salvar-edit" onclick="salvarEdicao()">💾 Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL HISTÓRICO NOTIFICAÇÕES -->
+  <div class="overlay" id="hist-overlay" onclick="fecharOverlayClick(event,'hist-overlay')">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-header">
+        <div class="modal-nome">🔔 Novos Cadastros</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost btn-sm" onclick="limparNotificacoes()">Limpar tudo</button>
+          <button class="btn btn-ghost btn-sm"
+            onclick="document.getElementById('hist-overlay').classList.remove('open')">✕</button>
+        </div>
+      </div>
+      <div id="hist-lista" style="max-height:60vh;overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <div id="notif-stack"></div>
+  <div id="layout-impressao" style="display:none;"></div>
+  <div id="toast"></div>
+
+  <script src="../js/admin.js"></script>
+
+</body>
+
+</html>

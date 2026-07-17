@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Manual visual do painel admin</title>
+  <desc id="desc">Resumo visual do painel administrativo para documentação interna.</desc>
+  <rect width="1200" height="720" rx="36" fill="#eef3f8"/>
+  <rect x="60" y="54" width="270" height="612" rx="28" fill="#0f172a"/>
+  <text x="110" y="126" font-family="Arial" font-size="30" font-weight="800" fill="#fff">Painel restrito</text>
+  <g font-family="Arial" font-size="18" font-weight="700" fill="#e2e8f0">
+    <rect x="100" y="190" width="190" height="48" rx="14" fill="#2563eb"/><text x="126" y="221">Dashboard</text>
+    <rect x="100" y="252" width="190" height="48" rx="14" fill="#1e293b"/><text x="126" y="283">Membros</text>
+    <rect x="100" y="314" width="190" height="48" rx="14" fill="#1e293b"/><text x="126" y="345">Relatorios</text>
+    <rect x="100" y="376" width="190" height="48" rx="14" fill="#1e293b"/><text x="126" y="407">Indicadores</text>
+  </g>
+  <rect x="370" y="72" width="770" height="580" rx="28" fill="#ffffff" stroke="#d8e3f0"/>
+  <text x="420" y="132" font-family="Arial" font-size="34" font-weight="800" fill="#0f172a">Rotina administrativa</text>
+  <g transform="translate(420 180)">
+    <rect width="190" height="120" rx="18" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="28" y="50" font-family="Arial" font-size="36" font-weight="800" fill="#2563eb">128</text>
+    <text x="28" y="86" font-family="Arial" font-size="18" fill="#64748b">Cadastros</text>
+    <rect x="220" width="190" height="120" rx="18" fill="#ecfdf5" stroke="#99f6e4"/>
+    <text x="248" y="50" font-family="Arial" font-size="36" font-weight="800" fill="#0f766e">18</text>
+    <text x="248" y="86" font-family="Arial" font-size="18" fill="#64748b">Pendentes</text>
+    <rect x="440" width="190" height="120" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="468" y="50" font-family="Arial" font-size="36" font-weight="800" fill="#d97706">PDF</text>
+    <text x="468" y="86" font-family="Arial" font-size="18" fill="#64748b">Exportacoes</text>
+  </g>
+  <rect x="420" y="360" width="640" height="210" rx="22" fill="#f8fbff" stroke="#d8e3f0"/>
+  <text x="458" y="414" font-family="Arial" font-size="24" font-weight="800" fill="#0f172a">Acompanhar, filtrar, aprovar e exportar fichas</text>
+  <text x="458" y="454" font-family="Arial" font-size="18" fill="#64748b">Documento interno: nao publicar link em paginas abertas.</text>
+</svg>

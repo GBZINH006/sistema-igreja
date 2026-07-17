@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Indicadores - AD Bela-Vista</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="../js/config.js"></script>
+  <link rel="stylesheet" href="../css/admin-pages.css">
+</head>
+
+<body data-page="indicadores">
+  <div class="admin-page">
+    <aside class="admin-page-sidebar">
+      <div class="sidebar-brand">
+        <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista">
+        <div><strong>AD Bela-Vista</strong><span>Indicadores</span></div>
+      </div>
+      <nav class="sidebar-nav" aria-label="Navegação administrativa">
+        <a class="side-link" href="admin.html"><i class="fa-solid fa-table-columns"></i><span>Dashboard</span></a>
+        <a class="side-link" href="admin.html#corpo-lista"><i class="fa-solid fa-users"></i><span>Membros</span></a>
+        <a class="side-link" href="admin.html#aniv-body"><i class="fa-solid fa-cake-candles"></i><span>Aniversariantes</span></a>
+        <a class="side-link" href="relatorios.html"><i class="fa-solid fa-file-export"></i><span>Relatórios</span></a>
+        <a class="side-link active" href="indicadores.html"><i class="fa-solid fa-chart-line"></i><span>Indicadores</span></a>
+        <a class="side-link" href="usuarios.html"><i class="fa-solid fa-user-shield"></i><span>Usuários</span></a>
+        <a class="side-link" href="configuracoes.html"><i class="fa-solid fa-gear"></i><span>Configurações</span></a>
+      </nav>
+      <div class="sidebar-footer"><strong>Área restrita</strong><small id="header-email">Validando acesso...</small></div>
+    </aside>
+
+    <main class="admin-page-main">
+      <header class="page-header">
+        <div class="page-header-brand">
+          <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista">
+        </div>
+        <div class="header-actions">
+          <button class="btn" id="refresh-btn" type="button"><i class="fa-solid fa-rotate-right"></i> Atualizar</button>
+          <button class="btn btn-danger" id="logout-btn" type="button"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sair</button>
+        </div>
+      </header>
+
+      <section class="page-content">
+        <section class="page-section-head">
+          <div>
+            <span>Indicadores</span>
+            <h1>Análises visuais do cadastro</h1>
+            <p>Acompanhe métricas e gráficos dos registros.</p>
+          </div>
+        </section>
+
+        <div class="grid">
+          <article class="card stat-card"><i class="fa-solid fa-users"></i><strong id="stat-total">0</strong><span>Total de cadastros</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-user-plus"></i><strong id="stat-mes">0</strong><span>Este mês</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-user-check"></i><strong id="stat-ativos">0</strong><span>Ativos</span></article>
+          <article class="card stat-card"><i class="fa-solid fa-cake-candles"></i><strong id="stat-aniversariantes">0</strong><span>Aniversariantes</span></article>
+        </div>
+
+        <section class="card panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="indicator-title">Indicador</h2>
+              <p>Escolha uma métrica e o tipo de visualização para montar o gráfico.</p>
+            </div>
+            <div class="toolbar">
+              <div class="field">
+                <label for="indicator-metric">Métrica</label>
+                <select id="indicator-metric">
+                  <option value="crescimento">Crescimento mensal</option>
+                  <option value="tipo">Membros vs Congregados</option>
+                  <option value="status">Status</option>
+                  <option value="setor">Setores</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="indicator-type">Visualização</label>
+                <select id="indicator-type">
+                  <option value="bar">Barra</option>
+                  <option value="line">Linha</option>
+                  <option value="pie">Pizza</option>
+                  <option value="donut">Donut</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" id="export-png-btn" type="button"><i class="fa-solid fa-image"></i> PNG</button>
+            </div>
+          </div>
+          <div class="split">
+            <div class="chart-wrap">
+              <canvas id="indicator-chart"></canvas>
+            </div>
+            <ul class="summary-list" id="indicator-summary"></ul>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div id="toast"></div>
+  <script src="../js/admin-pages.js"></script>
+</body>
+
+</html>
