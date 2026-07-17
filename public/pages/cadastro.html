@@ -38,7 +38,7 @@
     <div id="app">
 
       <!-- HERO -->
-      <aside class="hero" aria-label="Navegacao do cadastro">
+      <aside class="hero" aria-label="Navegação do cadastro">
         <div class="hero-shimmer"></div>
         <img src="../assets/images-removebg-preview.png" alt="Logo AD Bela-Vista"
           class="hero-logo"
@@ -48,7 +48,7 @@
         <div class="hero-address"><i class="fa-solid fa-location-dot"
             style="color: #ef4444;  "></i> Rua Frei Lauro, 44 · Ponte do Imaruim
           · Palhoça - SC</div>
-        <nav class="side-nav" aria-label="Etapas do formulario">
+        <nav class="side-nav" aria-label="Etapas do formulário">
           <a href="#form-cadastro" class="side-link active"><i class="fa-solid fa-user"></i><span>Dados pessoais</span></a>
           <a href="#endereco" class="side-link"><i class="fa-solid fa-address-book"></i><span>Contato</span></a>
           <a href="#box-certidao-nasc" class="side-link"><i class="fa-solid fa-file-shield"></i><span>Documentos</span></a>
@@ -67,23 +67,18 @@
           <div class="cadastro-start-icon"><i class="fa-solid fa-shield-halved"></i></div>
           <span class="privacy-start-kicker">Privacidade dos dados</span>
           <h2>Antes de preencher a ficha</h2>
-          <p>Leia e aceite os termos de privacidade para continuar para o cadastro da igreja.</p>
+          <p>Conheça como seus dados serão tratados antes de iniciar. O aceite obrigatório será solicitado somente na etapa final.</p>
           <div class="cadastro-privacy-note">
             <i class="fa-solid fa-lock"></i>
-            <span>As informaÃ§Ãµes preenchidas serÃ£o usadas somente para cadastro, secretaria e acompanhamento pastoral.</span>
+            <span>As informações preenchidas serão usadas somente para cadastro, secretaria e acompanhamento pastoral.</span>
           </div>
           <a class="terms-link privacy-terms-link" href="privacidade.html" target="_blank" rel="noopener noreferrer">
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
             Abrir termos de privacidade
           </a>
-          <label class="privacy-first-consent" for="privacy-start-consent">
-            <input id="privacy-start-consent" type="checkbox">
-            <span>Li e aceito os termos de privacidade para iniciar a ficha.</span>
-          </label>
-          <div class="hint" id="hint-privacy-start"></div>
           <button type="button" class="cadastro-choice-btn privacy-continue-btn" onclick="aceitarPrivacidadeInicial()">
-            <i class="fa-solid fa-check"></i>
-            Continuar para o cadastro
+            <i class="fa-solid fa-arrow-right"></i>
+            Iniciar cadastro
           </button>
         </div>
       </section>
@@ -756,6 +751,20 @@
             </div>
           </div>
           <div class="hint" id="hint-assinatura"></div>
+          <div class="privacy-final-box" id="privacy-final-box">
+            <div class="privacy-final-heading">
+              <i class="fa-solid fa-shield-halved"></i>
+              <div>
+                <strong>Consentimento obrigatório</strong>
+                <span>Seu registro só será salvo depois desta confirmação.</span>
+              </div>
+            </div>
+            <label class="privacy-final-consent" for="privacy-final-consent">
+              <input id="privacy-final-consent" type="checkbox" required>
+              <span>Li e aceito os <a href="privacidade.html" target="_blank" rel="noopener noreferrer">termos de uso e a Política de Privacidade</a>.</span>
+            </label>
+            <div class="hint" id="hint-privacy-final" aria-live="polite"></div>
+          </div>
         </div>
 
         </form>
@@ -772,7 +781,7 @@
             Continuar
             <i class="fa-solid fa-arrow-right"></i>
           </button>
-          <button class="btn-submit" id="btn-salvar" onclick="salvarMembro()">
+          <button class="btn-submit" id="btn-salvar" type="button" onclick="salvarMembro()" disabled>
             ✝ Enviar Cadastro
           </button>
         </div>

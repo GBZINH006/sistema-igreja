@@ -185,6 +185,9 @@
   -- 3) Politicas da tabela membros.
   -- Admin, pastor e secretario acessam o painel unificado.
   -- Secretario tem o mesmo acesso operacional do admin, inclusive exclusao.
+  alter table public.membros
+    add column if not exists privacy_consent boolean not null default false;
+
   alter table public.membros enable row level security;
 
   -- Defesa extra para cadastros enviados pelo formulario publico.
@@ -204,6 +207,7 @@
       new.status := 'Pendente';
       new.member_account_id := null;
       new.data_aprovacao := null;
+      new.privacy_consent := coalesce(new.privacy_consent, false);
       new.privacy_version := nullif(trim(coalesce(new.privacy_version, '')), '');
       new.privacy_source := 'public_registration';
       new.privacy_accepted_at := now();
@@ -224,7 +228,8 @@
         raise exception 'Celular obrigatorio ou invalido.';
       end if;
 
-      if length(coalesce(new.privacy_version, '')) not between 1 and 64 then
+      if new.privacy_consent is not true
+        or length(coalesce(new.privacy_version, '')) not between 1 and 64 then
         raise exception 'Aceite dos termos de privacidade invalido.';
       end if;
     end if;
@@ -257,7 +262,8 @@
     and length(trim(coalesce(nome, ''))) between 3 and 160
     and length(regexp_replace(coalesce(cpf, ''), '\D', '', 'g')) >= 4
     and length(regexp_replace(coalesce(celular, ''), '\D', '', 'g')) >= 10
-    and privacy_accepted_at is not null
+      and privacy_consent is true
+      and privacy_accepted_at is not null
     and length(trim(coalesce(privacy_version, ''))) between 1 and 64
     and privacy_source = 'public_registration'
   );
