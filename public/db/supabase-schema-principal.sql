@@ -118,6 +118,7 @@ create table if not exists public.membros (
   foto_diploma text,
   foto_comprovante_end text,
   assinatura_url text,
+  privacy_consent boolean not null default false,
   privacy_accepted_at timestamptz,
   privacy_version text,
   privacy_source text,

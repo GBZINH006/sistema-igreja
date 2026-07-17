@@ -63,7 +63,7 @@
           <div class="panel-head">
             <div>
               <h2>Cadastrar ou atualizar acesso</h2>
-              <p>O login é criado no Authentication e o perfil é salvo na tabela profiles.</p>
+              <p>Cadastre o login no Supabase Authentication e defina o perfil de acesso. Administrador e secretário possuem o mesmo acesso operacional aos dados.</p>
             </div>
           </div>
           <form class="user-form" id="admin-user-form">
@@ -73,14 +73,14 @@
             </label>
             <label class="field">
               <span>Senha inicial</span>
-              <input id="admin-user-password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
+              <input id="admin-user-password" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
             </label>
             <label class="field">
               <span>Perfil</span>
               <select id="admin-user-role" required>
                 <option value="secretario">Secretário</option>
                 <option value="pastor">Pastor</option>
-                <option value="admin">Admin</option>
+                <option value="admin">Administrador</option>
               </select>
             </label>
             <button class="btn btn-primary" id="admin-user-save" type="submit"><i class="fa-solid fa-floppy-disk"></i> Salvar usuário</button>

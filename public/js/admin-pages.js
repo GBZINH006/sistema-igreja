@@ -268,7 +268,7 @@
 
   function roleLabel(role) {
     const labels = {
-      admin: 'Admin',
+      admin: 'Administrador',
       pastor: 'Pastor',
       secretario: 'Secretário',
       'sem perfil': 'Sem perfil'
@@ -322,8 +322,8 @@
       return;
     }
 
-    if (password && password.length < 6) {
-      toast('A senha inicial precisa ter pelo menos 6 caracteres.');
+    if (password && password.length < 8) {
+      toast('A senha inicial precisa ter pelo menos 8 caracteres.');
       return;
     }
 
@@ -346,6 +346,7 @@
           email,
           password,
           options: {
+            data: { requested_role: role },
             emailRedirectTo: `${window.location.origin}${window.location.pathname.replace(/\/[^/]*$/, '/admin.html')}`
           }
         });

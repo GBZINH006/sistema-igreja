@@ -88,6 +88,7 @@ $$;
 
 alter table public.membros
   add column if not exists member_account_id uuid references public.member_accounts(id) on delete set null,
+  add column if not exists privacy_consent boolean not null default false,
   add column if not exists privacy_accepted_at timestamptz,
   add column if not exists privacy_version text,
   add column if not exists privacy_source text;
@@ -540,10 +541,11 @@ begin
     'parentesco_dep2', 'nome_dep3', 'parentesco_dep3', 'talentos',
     'tem_computador', 'tem_internet', 'foto_url', 'doc_url',
     'foto_certidao_nasc', 'foto_certidao_casamento', 'foto_diploma',
-    'foto_comprovante_end', 'assinatura_url', 'privacy_version'
+    'foto_comprovante_end', 'assinatura_url', 'privacy_consent', 'privacy_version'
   ]::text[]);
 
-  if length(trim(coalesce(v_payload->>'privacy_version', ''))) not between 1 and 64 then
+  if coalesce((v_payload->>'privacy_consent')::boolean, false) is not true
+    or length(trim(coalesce(v_payload->>'privacy_version', ''))) not between 1 and 64 then
     raise exception 'Aceite dos termos de privacidade invalido.';
   end if;
 

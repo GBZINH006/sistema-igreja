@@ -326,17 +326,6 @@
   function mostrarTelaPrivacidadeCadastro() {
     privacidadeInicialAceita = false;
 
-    const consent = document.getElementById('privacy-start-consent');
-    const hint = document.getElementById('hint-privacy-start');
-    if (consent) {
-      consent.checked = false;
-      consent.classList.remove('invalid');
-    }
-    if (hint) {
-      hint.textContent = '';
-      hint.className = 'hint';
-    }
-
     document.body.classList.remove('modo-congregado');
     document.getElementById('tipo_cadastro').value = '';
     document.getElementById('btn-membro')?.classList.remove('active');
@@ -346,24 +335,6 @@
   }
 
   function aceitarPrivacidadeInicial() {
-    const consent = document.getElementById('privacy-start-consent');
-    const hint = document.getElementById('hint-privacy-start');
-
-    if (consent && !consent.checked) {
-      consent.classList.add('invalid');
-      if (hint) {
-        hint.textContent = 'E necessario aceitar os termos de privacidade para iniciar a ficha.';
-        hint.className = 'hint erro';
-      }
-      return;
-    }
-
-    consent?.classList.remove('invalid');
-    if (hint) {
-      hint.textContent = '';
-      hint.className = 'hint';
-    }
-
     privacidadeInicialAceita = true;
     setFluxoCadastroVisivel(false);
     document.getElementById('tela-escolha-cadastro')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -430,8 +401,9 @@
     if (inpComprovante) inpComprovante.value = '';
     if (camComprovante) camComprovante.value = '';
 
-    const btnSalvar = document.getElementById('btn-salvar');
-    if (btnSalvar) btnSalvar.disabled = false;
+    const consentimentoFinal = document.getElementById('privacy-final-consent');
+    if (consentimentoFinal) consentimentoFinal.checked = false;
+    atualizarConsentimentoFinal();
 
     limparAssinatura();
     toggleCPF();
@@ -1241,6 +1213,7 @@
       tem_computador: document.querySelector('input[name="tem_computador"]:checked')?.value || 'Sim',
       tem_internet: document.querySelector('input[name="tem_internet"]:checked')?.value || 'Sim',
       privacy_version: PRIVACY_POLICY_VERSION,
+      privacy_consent: document.getElementById('privacy-final-consent')?.checked === true,
       privacy_source: isMemberFlow ? 'member_registration' : 'public_registration',
       status: isMemberFlow ? 'Em análise' : 'Pendente'
     };
@@ -1336,6 +1309,20 @@
       return;
     }
 
+    const consentimentoFinal = document.getElementById('privacy-final-consent');
+    if (!consentimentoFinal?.checked) {
+      consentimentoFinal?.classList.add('invalid');
+      const hint = document.getElementById('hint-privacy-final');
+      if (hint) {
+        hint.textContent = 'É obrigatório marcar “Li e aceito” antes de finalizar o cadastro.';
+        hint.className = 'hint erro';
+      }
+      toast('⚠️ Leia e aceite os termos de uso e a Política de Privacidade.', 'erro');
+      irParaEtapaCadastro(etapasCadastro.length - 1, { scroll: false });
+      document.getElementById('privacy-final-box')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     const dados = coletarDados();
 
     if (!dados.tipo_cadastro) {
@@ -1358,7 +1345,7 @@
     try {
       assertPublicSubmissionAllowed(dados);
     } catch (error) {
-      toast(error.message || 'Nao foi possivel validar o envio.', 'erro', 7000);
+      toast(error.message || 'Não foi possível validar o envio.', 'erro', 7000);
       return;
     }
 
@@ -1418,6 +1405,25 @@
 
   window.salvarMembro = salvarMembro;
 
+  function atualizarConsentimentoFinal() {
+    const consentimento = document.getElementById('privacy-final-consent');
+    const botao = document.getElementById('btn-salvar');
+    const hint = document.getElementById('hint-privacy-final');
+    const aceito = consentimento?.checked === true;
+
+    if (botao) botao.disabled = !aceito;
+    consentimento?.classList.remove('invalid');
+    if (hint && aceito) {
+      hint.textContent = 'Consentimento confirmado. Agora você pode finalizar o cadastro.';
+      hint.className = 'hint ok';
+    } else if (hint) {
+      hint.textContent = '';
+      hint.className = 'hint';
+    }
+  }
+
+  document.getElementById('privacy-final-consent')?.addEventListener('change', atualizarConsentimentoFinal);
+
   function novoCadastro() {
     document.getElementById('tela-sucesso').classList.remove('show');
     document.getElementById('app').style.display = 'block';
@@ -1465,7 +1471,7 @@
     const btnSalvar = document.getElementById('btn-salvar');
     if (btnSalvar) {
       btnSalvar.innerHTML = '✝ Enviar Cadastro';
-      btnSalvar.disabled = false;
+      btnSalvar.disabled = true;
     }
 
     // volta para escolha e bloqueia formulário até selecionar tipo
@@ -1481,25 +1487,25 @@
 
   const etapasCadastro = [
     {
-      titulo: 'Identificacao',
+      titulo: 'Identificação',
       descricao: 'Comece pelo tipo de cadastro, foto e dados pessoais essenciais.',
       icone: 'fa-user',
       cards: ['box-foto-membro', 'nome']
     },
     {
       titulo: 'Contato',
-      descricao: 'Informe endereco, telefones, e-mail e dados profissionais.',
+      descricao: 'Informe endereço, telefones, e-mail e dados profissionais.',
       icone: 'fa-address-book',
       cards: ['cep', 'ocupacao']
     },
     {
       titulo: 'Documentos',
-      descricao: 'Anexe certidoes, comprovantes e arquivos exigidos para a ficha.',
+      descricao: 'Anexe certidões, comprovantes e arquivos exigidos para a ficha.',
       icone: 'fa-file-shield',
       cards: ['box-certidao-nasc']
     },
     {
-      titulo: 'Igreja e familia',
+      titulo: 'Igreja e família',
       descricao: 'Complete dados ministeriais, cargos, familiares e recursos.',
       icone: 'fa-church',
       cards: ['forma_recebimento', 'cargo_principal', 'qtd_filhos', 'talentos']
