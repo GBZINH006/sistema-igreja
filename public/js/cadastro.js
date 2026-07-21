@@ -816,7 +816,7 @@
     const selEstado = document.getElementById('sel_estado');
     if (!selEstado) return;
     try {
-      const res = await fetch('https://servicodados.ibge.gov.br/api /v1/localidades/estados?ordenar=nome');
+      const res = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?ordenar=nome');
       const estados = await res.json();
       selEstado.innerHTML = '<option value="">UF</option>';
       estados.forEach(est => {
