@@ -7,7 +7,9 @@
   const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
   const params = new URLSearchParams(window.location.search);
   const isMemberFlow = params.get('origem') === 'membro';
+  const registrationToken = params.get('token');
   const MEMBER_SESSION_KEY = 'ad_bela_vista_member_session';
+  let tokenValidation = null;
   const PUBLIC_SUBMISSION_KEY = 'ad_bela_vista_public_submission_guard';
   const PUBLIC_SUBMISSION_COOLDOWN_MS = 5 * 60 * 1000;
   const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
@@ -1764,7 +1766,217 @@
   prepararFluxoMembroVisual();
   prepararUploadsDragDrop();
   prepararEtapasCadastro();
-  mostrarTelaPrivacidadeCadastro();
+
+  // Valida token antes de mostrar página
+  (async function() {
+    const isValid = await validarTokenCadastro();
+    if (isValid) {
+      mostrarTelaPrivacidadeCadastro();
+    }
+  })();
+
+  // Valida token de cadastro
+  async function validarTokenCadastro() {
+    if (!registrationToken) {
+      mostrarAcessoNegado();
+      return false;
+    }
+
+    try {
+      const { data, error } = await db.rpc('validate_registration_token', {
+        p_token: registrationToken
+      });
+
+      if (error) throw error;
+
+      const validation = data?.[0];
+      
+      if (!validation || !validation.valid) {
+        if (validation?.expired) {
+          mostrarTokenExpirado(validation);
+        } else if (validation?.used) {
+          mostrarTokenUsado();
+        } else {
+          mostrarTokenInvalido();
+        }
+        return false;
+      }
+
+      tokenValidation = validation;
+      iniciarContagemRegressiva(validation.time_remaining_seconds);
+      return true;
+
+    } catch (error) {
+      console.error('Erro ao validar token:', error);
+      mostrarErroValidacao();
+      return false;
+    }
+  }
+
+  function mostrarAcessoNegado() {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div style="background:white;padding:3rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:500px;">
+          <div style="width:80px;height:80px;background:#fee;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <i class="fa-solid fa-lock" style="font-size:2.5rem;color:#dc2626;"></i>
+          </div>
+          <h1 style="font-size:1.75rem;font-weight:700;color:#1a1a1a;margin:0 0 1rem;">Acesso Restrito</h1>
+          <p style="color:#666;line-height:1.6;margin:0 0 1.5rem;">
+            O cadastro é feito apenas através de link de convite.<br><br>
+            <strong>Entre em contato com a secretaria da igreja</strong> para solicitar seu link personalizado.
+          </p>
+          <div style="background:#fef3c7;border:1px solid#fde047;border-radius:8px;padding:1rem;margin:1rem 0;font-size:0.875rem;text-align:left;">
+            <strong style="color:#92400e;">💡 Como funciona:</strong><br>
+            <span style="color:#78350f;">A secretaria gerará um link temporário válido por 2 horas exclusivamente para você.</span>
+          </div>
+          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-home"></i> Voltar ao Início
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function mostrarTokenExpirado(validation) {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div style="background:white;padding:3rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:500px;">
+          <div style="width:80px;height:80px;background:#fef3c7;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <i class="fa-solid fa-hourglass-end" style="font-size:2.5rem;color:#f59e0b;"></i>
+          </div>
+          <h1 style="font-size:1.75rem;font-weight:700;color:#1a1a1a;margin:0 0 1rem;">Link Expirado</h1>
+          <p style="color:#666;line-height:1.6;margin:0 0 1.5rem;">
+            Este link de cadastro expirou.<br>
+            Os links são válidos por apenas <strong>2 horas</strong> após serem gerados.
+          </p>
+          ${validation?.expires_at ? `
+          <div style="background:#fef3c7;border:1px solid#fde047;border-radius:8px;padding:1rem;margin:1rem 0;font-size:0.875rem;">
+            <strong style="color:#92400e;">Expirou em:</strong><br>
+            <span style="color:#78350f;">${new Date(validation.expires_at).toLocaleString('pt-BR')}</span>
+          </div>
+          ` : ''}
+          <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
+            Entre em contato com a secretaria para solicitar um novo link.
+          </p>
+          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-home"></i> Voltar ao Início
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function mostrarTokenUsado() {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div style="background:white;padding:3rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:500px;">
+          <div style="width:80px;height:80px;background:#dbeafe;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <i class="fa-solid fa-check-circle" style="font-size:2.5rem;color:#3b82f6;"></i>
+          </div>
+          <h1 style="font-size:1.75rem;font-weight:700;color:#1a1a1a;margin:0 0 1rem;">Link Já Utilizado</h1>
+          <p style="color:#666;line-height:1.6;margin:0 0 1.5rem;">
+            Este link de cadastro já foi utilizado.<br>
+            Cada link pode ser usado apenas <strong>uma vez</strong>.
+          </p>
+          <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
+            Se você ainda não completou seu cadastro, entre em contato com a secretaria.
+          </p>
+          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-home"></i> Voltar ao Início
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function mostrarTokenInvalido() {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div style="background:white;padding:3rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:500px;">
+          <div style="width:80px;height:80px;background:#fee;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <i class="fa-solid fa-exclamation-triangle" style="font-size:2.5rem;color:#dc2626;"></i>
+          </div>
+          <h1 style="font-size:1.75rem;font-weight:700;color:#1a1a1a;margin:0 0 1rem;">Link Inválido</h1>
+          <p style="color:#666;line-height:1.6;margin:0 0 1.5rem;">
+            Este link de cadastro não é válido ou foi revogado.
+          </p>
+          <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
+            Entre em contato com a secretaria para obter um novo link.
+          </p>
+          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-home"></i> Voltar ao Início
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function mostrarErroValidacao() {
+    document.body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;text-align:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);">
+        <div style="background:white;padding:3rem;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:500px;">
+          <div style="width:80px;height:80px;background:#fee;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
+            <i class="fa-solid fa-wifi" style="font-size:2.5rem;color:#dc2626;"></i>
+          </div>
+          <h1 style="font-size:1.75rem;font-weight:700;color:#1a1a1a;margin:0 0 1rem;">Erro de Conexão</h1>
+          <p style="color:#666;line-height:1.6;margin:0 0 1.5rem;">
+            Não foi possível validar o link de cadastro.<br>
+            Verifique sua conexão com a internet.
+          </p>
+          <button onclick="window.location.reload()" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-rotate"></i> Tentar Novamente
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  let countdownInterval = null;
+  function iniciarContagemRegressiva(secondsRemaining) {
+    const banner = document.createElement('div');
+    banner.id = 'countdown-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#1e40af,#3b82f6);color:white;padding:1rem;text-align:center;z-index:9998;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+    banner.innerHTML = `
+      <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;">
+        <i class="fa-solid fa-hourglass-half"></i>
+        <span style="font-weight:600;">Este link expira em:</span>
+        <strong id="countdown-time" style="font-size:1.125rem;font-family:monospace;"></strong>
+      </div>
+    `;
+    
+    document.body.insertBefore(banner, document.body.firstChild);
+    document.body.style.paddingTop = banner.offsetHeight + 'px';
+
+    let remaining = secondsRemaining;
+    
+    function atualizarContador() {
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        mostrarTokenExpirado({ expires_at: new Date().toISOString() });
+        return;
+      }
+
+      const hours = Math.floor(remaining / 3600);
+      const minutes = Math.floor((remaining % 3600) / 60);
+      const seconds = remaining % 60;
+
+      const timeEl = document.getElementById('countdown-time');
+      if (timeEl) {
+        timeEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        
+        if (remaining < 600) {
+          banner.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)';
+        } else if (remaining < 1800) {
+          banner.style.background = 'linear-gradient(135deg,#f59e0b,#fbbf24)';
+        }
+      }
+
+      remaining--;
+    }
+
+    atualizarContador();
+    countdownInterval = setInterval(atualizarContador, 1000);
+  }
 
 })();
 

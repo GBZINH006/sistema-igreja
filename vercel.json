@@ -38,6 +38,19 @@
       ]
     },
     {
+      "source": "**/*.map",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/(admin|membro|relatorios|indicadores|usuarios|configuracoes).html",
       "headers": [
         {
@@ -45,6 +58,23 @@
           "value": "private, no-store, max-age=0"
         }
       ]
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/.*\\.map$",
+      "status": 404,
+      "dest": "/404.html"
+    },
+    {
+      "src": "^/\\.(env|git|htaccess|htpasswd).*$",
+      "status": 404,
+      "dest": "/404.html"
+    },
+    {
+      "src": "^/(node_modules|vendor|tests?|src)/.*$",
+      "status": 404,
+      "dest": "/404.html"
     }
   ],
   "rewrites": [

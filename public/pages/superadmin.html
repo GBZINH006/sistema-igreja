@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin - Sistema AD Bela-Vista</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #1e40af;
+      --primary-dark: #1e3a8a;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --gold: #c9a84c;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .super-badge {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, var(--gold), #d4af37);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .card-icon.primary { background: rgba(30, 64, 175, 0.1); color: var(--primary); }
+    .card-icon.success { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+    .card-icon.warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .card-icon.danger { background: rgba(220, 38, 38, 0.1); color: var(--danger); }
+
+    .card-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .tokens-list {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .token-item {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-left: 4px solid var(--primary);
+    }
+
+    .token-item.expired {
+      border-left-color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .token-item.used {
+      border-left-color: var(--success);
+    }
+
+    .token-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 0.75rem;
+    }
+
+    .token-info {
+      flex: 1;
+    }
+
+    .token-url {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      background: white;
+      padding: 0.5rem;
+      border-radius: 4px;
+      word-break: break-all;
+      margin: 0.5rem 0;
+    }
+
+    .token-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .token-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge.active { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+    .badge.expired { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
+    .badge.used { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+    .countdown {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.875rem;
+    }
+
+    .countdown.warning {
+      color: var(--warning);
+    }
+
+    .countdown.danger {
+      color: var(--danger);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+
+    #loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    #loading.hidden {
+      display: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface);
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      z-index: 10000;
+    }
+
+    .toast.show {
+      display: flex;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header-content {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-content">
+        <div class="header-title">
+          <div class="super-badge">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <div>
+            <h1>Super Admin</h1>
+            <p class="subtitle">Controle total do sistema - Acesso exclusivo</p>
+          </div>
+        </div>
+        <button class="btn btn-danger" onclick="sair()">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          Sair
+        </button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon primary">
+            <i class="fa-solid fa-link"></i>
+          </div>
+          <div>
+            <div class="card-title">Gerar Link de Cadastro</div>
+            <div class="card-subtitle">Válido por 2 horas</div>
+          </div>
+        </div>
+
+        <form id="generate-form" onsubmit="gerarToken(event)">
+          <div class="form-group">
+            <label>Nome do destinatário</label>
+            <input type="text" id="recipient-name" placeholder="Ex: João Silva" required>
+          </div>
+
+          <div class="form-group">
+            <label>Contato (E-mail ou WhatsApp)</label>
+            <input type="text" id="recipient-contact" placeholder="Ex: joao@email.com ou (48) 99999-9999" required>
+          </div>
+
+          <div class="form-group">
+            <label>Observações (opcional)</label>
+            <textarea id="notes" rows="2" placeholder="Motivo do convite, contexto, etc"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Gerar Link Temporário
+          </button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon success">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div>
+            <div class="card-title">Estatísticas</div>
+            <div class="card-subtitle">Em tempo real</div>
+          </div>
+        </div>
+
+        <div style="display: grid; gap: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg); border-radius: 6px;">
+            <span>Links ativos</span>
+            <strong id="stat-active" style="font-size: 1.25rem; color: var(--success);">0</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg); border-radius: 6px;">
+            <span>Links usados</span>
+            <strong id="stat-used" style="font-size: 1.25rem; color: var(--primary);">0</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--bg); border-radius: 6px;">
+            <span>Links expirados</span>
+            <strong id="stat-expired" style="font-size: 1.25rem; color: var(--text-muted);">0</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tokens-list">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 600;">Links Gerados</h2>
+        <button class="btn btn-sm btn-primary" onclick="carregarTokens()">
+          <i class="fa-solid fa-rotate"></i>
+          Atualizar
+        </button>
+      </div>
+
+      <div id="tokens-container">
+        <div class="empty-state">
+          <i class="fa-solid fa-inbox"></i>
+          <p>Nenhum link gerado ainda</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">
+    <i class="fa-solid fa-check-circle" style="color: var(--success); font-size: 1.25rem;"></i>
+    <span id="toast-message">Mensagem</span>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="../js/devtools-protection.js"></script>
+  <script src="../js/superadmin.js"></script>
+</body>
+</html>

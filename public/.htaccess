@@ -1,0 +1,198 @@
+# ============================================
+# Configuração de Segurança - AD Bela-Vista
+# ============================================
+
+# Bloqueia acesso a source maps
+<FilesMatch "\\.map$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Bloqueia acesso a arquivos sensíveis
+<FilesMatch "^\\.(env|git|htpasswd|htaccess|ini|log|sh|sql|bak|backup)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Bloqueia acesso a arquivos de configuração
+<FilesMatch "^(package\\.json|package-lock\\.json|composer\\.json|composer\\.lock|yarn\\.lock|gulpfile\\.js|gruntfile\\.js|webpack\\.config\\.js|tsconfig\\.json|\\.editorconfig|\\.eslintrc|\\.prettierrc)$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# Bloqueia acesso a pastas de desenvolvimento
+RedirectMatch 403 ^/\\.git
+RedirectMatch 403 ^/node_modules
+RedirectMatch 403 ^/vendor
+RedirectMatch 403 ^/tests?
+RedirectMatch 403 ^/\\.vscode
+RedirectMatch 403 ^/\\.idea
+
+# ============================================
+# Headers de Segurança
+# ============================================
+
+<IfModule mod_headers.c>
+  # Previne MIME type sniffing
+  Header set X-Content-Type-Options "nosniff"
+  
+  # Previne clickjacking
+  Header set X-Frame-Options "DENY"
+  
+  # Proteção XSS
+  Header set X-XSS-Protection "1; mode=block"
+  
+  # Política de referenciador
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  
+  # HSTS - Force HTTPS
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  
+  # Content Security Policy
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://zhixqgkmcjabbzidadeg.supabase.co wss://zhixqgkmcjabbzidadeg.supabase.co https://viacep.com.br https://servicodados.ibge.gov.br; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; manifest-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"
+  
+  # Permissions Policy
+  Header set Permissions-Policy "camera=(self), microphone=(), geolocation=(), payment=(), usb=()"
+  
+  # Remove headers que expõem informações do servidor
+  Header unset Server
+  Header unset X-Powered-By
+  
+  # Desabilita cache para páginas protegidas
+  <FilesMatch "\\.(html|htm)$">
+    Header set Cache-Control "private, no-store, max-age=0, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+  
+  # Cache para assets estáticos
+  <FilesMatch "\\.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# ============================================
+# Proteção contra Hotlinking
+# ============================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Previne hotlinking de imagens
+  RewriteCond %{HTTP_REFERER} !^$
+  RewriteCond %{HTTP_REFERER} !^https?://(www\.)?seudominio\.com [NC]
+  RewriteRule \.(jpg|jpeg|png|gif|svg|webp)$ - [F,L]
+  
+  # Bloqueia user agents suspeitos
+  RewriteCond %{HTTP_USER_AGENT} ^$ [OR]
+  RewriteCond %{HTTP_USER_AGENT} (libwww-perl|wget|python|nikto|curl|scan|java|winhttp|clshttp|loader) [NC,OR]
+  RewriteCond %{HTTP_USER_AGENT} (;|<|>|'|"|\)|\(|%0A|%0D|%27|%3C|%3E|%00) [NC,OR]
+  RewriteCond %{HTTP_USER_AGENT} (bot|spider|scraper|crawler|harvester) [NC]
+  RewriteRule .* - [F,L]
+  
+  # Bloqueia requisições suspeitas
+  RewriteCond %{QUERY_STRING} (<|%3C).*script.*(>|%3E) [NC,OR]
+  RewriteCond %{QUERY_STRING} GLOBALS(=|[|%[0-9A-Z]{0,2}) [OR]
+  RewriteCond %{QUERY_STRING} _REQUEST(=|[|%[0-9A-Z]{0,2})
+  RewriteRule .* - [F,L]
+  
+  # Bloqueia tentativas de injeção SQL
+  RewriteCond %{QUERY_STRING} (union|select|insert|drop|update|delete|cast|create|char|declare|exec|script) [NC]
+  RewriteRule .* - [F,L]
+</IfModule>
+
+# ============================================
+# Desabilita listagem de diretórios
+# ============================================
+
+Options -Indexes
+
+# ============================================
+# Proteção de arquivos específicos
+# ============================================
+
+# Protege README e documentação
+<FilesMatch "^(README|CHANGELOG|LICENSE|CONTRIBUTING|SECURITY|TODO)(\\.md|\\.txt)?$">
+  Order allow,deny
+  Deny from all
+</FilesMatch>
+
+# ============================================
+# Compressão GZIP
+# ============================================
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json application/xml
+</IfModule>
+
+# ============================================
+# Previne acesso via IP direto
+# ============================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Redireciona IP direto para domínio (substitua pelo seu domínio)
+  # RewriteCond %{HTTP_HOST} ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$
+  # RewriteRule ^(.*)$ https://seudominio.com/$1 [R=301,L]
+</IfModule>
+
+# ============================================
+# Limita tamanho de upload
+# ============================================
+
+<IfModule mod_php.c>
+  php_value upload_max_filesize 10M
+  php_value post_max_size 10M
+</IfModule>
+
+# ============================================
+# Desabilita execução de scripts em uploads
+# ============================================
+
+<Directory "uploads">
+  <FilesMatch "\\.php$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</Directory>
+
+# ============================================
+# Proteção contra CSRF
+# ============================================
+
+<IfModule mod_headers.c>
+  # SameSite Cookie
+  Header edit Set-Cookie ^(.*)$ "$1; SameSite=Strict; Secure; HttpOnly"
+</IfModule>
+
+# ============================================
+# Rate Limiting (se mod_evasive estiver instalado)
+# ============================================
+
+<IfModule mod_evasive20.c>
+  DOSHashTableSize 3097
+  DOSPageCount 10
+  DOSSiteCount 100
+  DOSPageInterval 1
+  DOSSiteInterval 1
+  DOSBlockingPeriod 10
+</IfModule>
+
+# ============================================
+# Mensagens de erro customizadas
+# ============================================
+
+ErrorDocument 403 /403.html
+ErrorDocument 404 /404.html
+ErrorDocument 500 /500.html
+
+# ============================================
+# Força HTTPS
+# ============================================
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
