@@ -3,8 +3,7 @@
 
 (function () {
   
-  const { createClient } = window.supabase;
-  const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+  const db = window._supabaseClientInstance || window.getSupabaseClient();
   const params = new URLSearchParams(window.location.search);
   const isMemberFlow = params.get('origem') === 'membro';
   const registrationToken = params.get('token');

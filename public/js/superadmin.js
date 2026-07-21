@@ -1,7 +1,6 @@
 // Super Admin - Gerenciamento de Links Temporários
 (function() {
-  const { createClient } = window.supabase;
-  const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+  const db = window._supabaseClientInstance || window.getSupabaseClient();
 
   let tokens = [];
   let updateInterval = null;

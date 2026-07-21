@@ -5,8 +5,7 @@
   const SUPABASE_URL = window.CONFIG.SUPABASE_URL;
   const SUPABASE_KEY = window.CONFIG.SUPABASE_KEY;
 
-  const { createClient } = window.supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const db = window._supabaseClientInstance || window.getSupabaseClient();
 
   let membrosCache = [], paginaAtual = 1, anivAberto = false;
   let metricChart = null;

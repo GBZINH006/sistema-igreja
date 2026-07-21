@@ -335,11 +335,18 @@
 
     try {
       if (password) {
-        const signupClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        // Cria cliente temporário apenas para signup (sem persistir sessão)
+        const { createClient } = window.supabase;
+        const signupClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
           auth: {
             persistSession: false,
             autoRefreshToken: false,
-            detectSessionInUrl: false
+            detectSessionInUrl: false,
+            storage: {
+              getItem: () => null,
+              setItem: () => {},
+              removeItem: () => {}
+            }
           }
         });
         const { error: signupError } = await signupClient.auth.signUp({
@@ -393,8 +400,8 @@
   }
 
   async function validateAccess() {
-    if (!SUPABASE_URL || !SUPABASE_KEY || !window.supabase) return false;
-    state.db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (!SUPABASE_URL || !SUPABASE_KEY || !window._supabaseClientInstance) return false;
+    state.db = window._supabaseClientInstance;
     const { data: { session } } = await state.db.auth.getSession();
     if (!session?.user?.id) {
       window.location.href = 'admin.html';

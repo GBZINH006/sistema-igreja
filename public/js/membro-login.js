@@ -1,6 +1,5 @@
 (function () {
-  const { createClient } = window.supabase;
-  const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+  const db = window._supabaseClientInstance || window.getSupabaseClient();
   const MEMBER_SESSION_KEY = "ad_bela_vista_member_session";
   const PRIVACY_POLICY_VERSION = window.CONFIG.PRIVACY_POLICY_VERSION;
 

@@ -2,8 +2,7 @@
 // Implementa verificação de sessão, controle de acesso e segurança
 
 (function () {
-  const { createClient } = window.supabase;
-  const db = createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_KEY);
+  const db = window._supabaseClientInstance || window.getSupabaseClient();
 
   // Constantes de configuração
   const MEMBER_SESSION_KEY = 'ad_bela_vista_member_session';
