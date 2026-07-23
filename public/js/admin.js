@@ -3199,3 +3199,204 @@
 
 })();
 
+
+
+  // ══════════════════════════════════════════════════════════════
+  // SISTEMA DE LINKS TEMPORÁRIOS DE CADASTRO
+  // ══════════════════════════════════════════════════════════════
+
+  let tokensAtivos = [];
+  let updateTokensInterval = null;
+
+  function abrirGeradorLinks() {
+    document.getElementById('links-overlay').classList.add('open');
+    carregarTokens();
+    
+    // Atualiza countdown a cada segundo
+    if (updateTokensInterval) clearInterval(updateTokensInterval);
+    updateTokensInterval = setInterval(() => {
+      atualizarCountdownTokens();
+    }, 1000);
+  }
+
+  window.abrirGeradorLinks = abrirGeradorLinks;
+
+  function fecharGeradorLinks() {
+    document.getElementById('links-overlay').classList.remove('open');
+    if (updateTokensInterval) {
+      clearInterval(updateTokensInterval);
+      updateTokensInterval = null;
+    }
+  }
+
+  window.fecharGeradorLinks = fecharGeradorLinks;
+
+  async function gerarNovoLink() {
+    const observacao = document.getElementById('link-observacao').value.trim();
+    
+    try {
+      const { data, error } = await db.rpc('generate_registration_token', {
+        p_observacao: observacao || null
+      });
+
+      if (error) throw error;
+
+      const token = data?.[0];
+      if (!token) throw new Error('Token não retornado');
+
+      // Monta URL completa
+      const baseUrl = window.location.origin;
+      const linkCompleto = `${baseUrl}/pages/cadastro.html?token=${token.token}`;
+
+      // Copia para clipboard
+      await navigator.clipboard.writeText(linkCompleto);
+
+      toast('✅ Link gerado e copiado!');
+      document.getElementById('link-observacao').value = '';
+      
+      // Recarrega lista
+      await carregarTokens();
+
+    } catch (error) {
+      console.error('Erro ao gerar link:', error);
+      toast('❌ Erro ao gerar link: ' + (error.message || 'Tente novamente'));
+    }
+  }
+
+  window.gerarNovoLink = gerarNovoLink;
+
+  async function carregarTokens() {
+    try {
+      const { data, error } = await db.rpc('list_registration_tokens');
+      
+      if (error) throw error;
+
+      tokensAtivos = data || [];
+      renderTokens();
+      renderStatsTokens();
+
+    } catch (error) {
+      console.error('Erro ao carregar tokens:', error);
+      toast('❌ Erro ao carregar tokens');
+    }
+  }
+
+  function renderTokens() {
+    const container = document.getElementById('links-ativos-lista');
+    
+    const ativos = tokensAtivos.filter(t => !t.used && !t.revoked && !t.expired);
+
+    if (ativos.length === 0) {
+      container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:1rem;">Nenhum link ativo no momento.</div>';
+      return;
+    }
+
+    container.innerHTML = ativos.map(token => {
+      const baseUrl = window.location.origin;
+      const linkCompleto = `${baseUrl}/pages/cadastro.html?token=${token.token}`;
+      const segundosRestantes = token.time_remaining_seconds || 0;
+      
+      return `
+        <div class="token-card" data-token-id="${escapeAttr(token.id)}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem;">
+            <div style="flex:1;">
+              <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;">Token: ${safeText(token.token.substring(0, 8))}...</div>
+              ${token.observacao ? `<div style="font-weight:600;margin-bottom:0.25rem;">${safeText(token.observacao)}</div>` : ''}
+              <div class="token-countdown" data-seconds="${segundosRestantes}" style="font-size:0.85rem;color:#dc2626;font-weight:600;">
+                ⏰ Expira em: <span class="countdown-time">${formatarTempo(segundosRestantes)}</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="revogarToken('${escapeAttr(token.id)}')">
+              <i class="fa-solid fa-ban"></i> Revogar
+            </button>
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <input type="text" readonly value="${escapeAttr(linkCompleto)}" style="flex:1;font-size:0.75rem;padding:0.5rem;border:1px solid #dee2e6;border-radius:4px;background:white;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="copiarLink('${escapeAttr(linkCompleto)}')">
+              <i class="fa-solid fa-copy"></i> Copiar
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function formatarTempo(segundos) {
+    if (segundos <= 0) return '00:00:00';
+    
+    const h = Math.floor(segundos / 3600);
+    const m = Math.floor((segundos % 3600) / 60);
+    const s = segundos % 60;
+    
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+
+  function atualizarCountdownTokens() {
+    document.querySelectorAll('.token-countdown').forEach(el => {
+      let segundos = parseInt(el.dataset.seconds);
+      
+      if (segundos > 0) {
+        segundos--;
+        el.dataset.seconds = segundos;
+        const timeEl = el.querySelector('.countdown-time');
+        if (timeEl) {
+          timeEl.textContent = formatarTempo(segundos);
+        }
+
+        // Muda cor quando < 10 minutos
+        if (segundos < 600) {
+          el.style.color = '#dc2626';
+        }
+      } else {
+        // Expirou - recarrega lista
+        carregarTokens();
+      }
+    });
+  }
+
+  function renderStatsTokens() {
+    const ativos = tokensAtivos.filter(t => !t.used && !t.revoked && !t.expired).length;
+    const usados = tokensAtivos.filter(t => t.used).length;
+    const expirados = tokensAtivos.filter(t => t.expired && !t.used).length;
+
+    document.getElementById('stat-links-ativos').textContent = ativos;
+    document.getElementById('stat-links-usados').textContent = usados;
+    document.getElementById('stat-links-expirados').textContent = expirados;
+  }
+
+  async function copiarLink(link) {
+    try {
+      await navigator.clipboard.writeText(link);
+      toast('✅ Link copiado!');
+    } catch (error) {
+      console.error('Erro ao copiar:', error);
+      toast('❌ Erro ao copiar link');
+    }
+  }
+
+  window.copiarLink = copiarLink;
+
+  async function revogarToken(tokenId) {
+    if (!confirm('Deseja mesmo revogar este link? Ele não poderá mais ser usado.')) return;
+
+    try {
+      const { error } = await db.rpc('revoke_registration_token', {
+        p_token_id: tokenId
+      });
+
+      if (error) throw error;
+
+      toast('✅ Link revogado');
+      await carregarTokens();
+
+    } catch (error) {
+      console.error('Erro ao revogar:', error);
+      toast('❌ Erro ao revogar: ' + (error.message || 'Tente novamente'));
+    }
+  }
+
+  window.revogarToken = revogarToken;
+
+  // ══════════════════════════════════════════════════════════════
+  // FIM DO SISTEMA DE LINKS TEMPORÁRIOS
+  // ══════════════════════════════════════════════════════════════
