@@ -4,66 +4,233 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AD Bela-Vista - Sistema de Gestão</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --gold: #c9a84c;
+      --gold-dark: #a88a3d;
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'DM Sans', sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      color: var(--text);
       padding: 2rem;
+      position: relative;
+      overflow: hidden;
     }
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(201, 168, 76, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    
     .container {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      max-width: 500px;
-      background: rgba(255,255,255,0.1);
-      padding: 3rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--gold));
       border-radius: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-    p {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      opacity: 0.9;
-    }
-    .links {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      box-shadow: 0 10px 40px rgba(37, 99, 235, 0.3);
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--text), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      font-weight: 400;
+    }
+    
+    .cards {
+      display: grid;
       gap: 1rem;
+      margin-bottom: 2rem;
     }
-    a {
-      display: block;
-      padding: 1rem 2rem;
-      background: white;
-      color: #667eea;
+    
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
       text-decoration: none;
-      border-radius: 10px;
-      font-weight: 600;
-      transition: all 0.3s;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
     }
-    a:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    
+    .card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    
+    .card-icon.primary {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+    }
+    
+    .card-icon.gold {
+      background: linear-gradient(135deg, #c9a84c, #a88a3d);
+      box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3);
+    }
+    
+    .card-icon.purple {
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+    }
+    
+    .card-content {
+      text-align: left;
+      flex: 1;
+    }
+    
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    
+    .card-description {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .footer {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .footer i {
+      color: var(--gold);
+    }
+    
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      .subtitle { font-size: 1rem; }
+      .card { padding: 1.25rem; gap: 1rem; }
+      .card-icon { width: 50px; height: 50px; font-size: 1.25rem; }
+      .card-title { font-size: 1.1rem; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>✝️ AD Bela-Vista</h1>
-    <p>Sistema de Gestão de Membros</p>
-    <div class="links">
-      <a href="/pages/cadastro.html">📝 Novo Cadastro</a>
-      <a href="/pages/admin.html">🔐 Área Administrativa</a>
-      <a href="/pages/membro-login.html">👤 Portal do Membro</a>
+    <div class="logo">✝️</div>
+    <h1>AD Bela-Vista</h1>
+    <p class="subtitle">Sistema de Gestão de Membros</p>
+    
+    <div class="cards">
+      <a href="pages/cadastro.html" class="card">
+        <div class="card-icon primary">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <div class="card-content">
+          <div class="card-title">Novo Cadastro</div>
+          <div class="card-description">Cadastre-se como novo membro da igreja</div>
+        </div>
+        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+      </a>
+      
+      <a href="pages/admin.html" class="card">
+        <div class="card-icon gold">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="card-content">
+          <div class="card-title">Área Administrativa</div>
+          <div class="card-description">Acesso restrito para secretários e pastores</div>
+        </div>
+        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+      </a>
+      
+      <a href="pages/membro-login.html" class="card">
+        <div class="card-icon purple">
+          <i class="fa-solid fa-user"></i>
+        </div>
+        <div class="card-content">
+          <div class="card-title">Portal do Membro</div>
+          <div class="card-description">Acesse suas informações e atualizações</div>
+        </div>
+        <i class="fa-solid fa-arrow-right" style="color: var(--text-muted);"></i>
+      </a>
+    </div>
+    
+    <div class="footer">
+      <i class="fa-solid fa-lock"></i>
+      <span>Sistema seguro e protegido</span>
     </div>
   </div>
 </body>
