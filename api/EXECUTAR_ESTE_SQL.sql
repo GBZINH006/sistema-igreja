@@ -9,11 +9,6 @@
 -- PARTE 1: LIMPEZA (DROP)
 -- =====================================
 
--- Drop políticas
-DROP POLICY IF EXISTS "Admins podem ver todos os logs" ON access_logs;
-DROP POLICY IF EXISTS "Sistema pode gerenciar rate limits" ON rate_limit_tracker;
-DROP POLICY IF EXISTS "Admins podem gerenciar tokens" ON registration_tokens;
-
 -- Drop funções de segurança
 DROP FUNCTION IF EXISTS member_validate_session(TEXT);
 DROP FUNCTION IF EXISTS admin_check_permissions(UUID, TEXT[]);
@@ -486,10 +481,17 @@ GRANT EXECUTE ON FUNCTION admin_remove_user TO authenticated;
 -- PARTE 7: POLÍTICAS RLS
 -- =====================================
 
+-- Habilita RLS
 ALTER TABLE access_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rate_limit_tracker ENABLE ROW LEVEL SECURITY;
 ALTER TABLE registration_tokens ENABLE ROW LEVEL SECURITY;
 
+-- Remove políticas antigas se existirem
+DROP POLICY IF EXISTS "Admins podem ver todos os logs" ON access_logs;
+DROP POLICY IF EXISTS "Sistema pode gerenciar rate limits" ON rate_limit_tracker;
+DROP POLICY IF EXISTS "Admins podem gerenciar tokens" ON registration_tokens;
+
+-- Cria políticas novas
 CREATE POLICY "Admins podem ver todos os logs" ON access_logs FOR SELECT
 USING (EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('admin', 'pastor', 'secretario')));
 
