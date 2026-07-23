@@ -3,49 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="refresh" content="0; url=/pages/cadastro.html">
   <title>AD Bela-Vista - Sistema de Gestão</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      font-family: system-ui, -apple-system, sans-serif;
       color: white;
+      padding: 2rem;
     }
-    .loader {
+    .container {
       text-align: center;
+      max-width: 500px;
+      background: rgba(255,255,255,0.1);
+      padding: 3rem;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
-    .spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
     }
     p {
-      font-size: 0.95rem;
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
       opacity: 0.9;
+    }
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    a {
+      display: block;
+      padding: 1rem 2rem;
+      background: white;
+      color: #667eea;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
-  <div class="loader">
-    <div class="spinner"></div>
-    <p>Carregando sistema...</p>
+  <div class="container">
+    <h1>✝️ AD Bela-Vista</h1>
+    <p>Sistema de Gestão de Membros</p>
+    <div class="links">
+      <a href="/pages/cadastro.html">📝 Novo Cadastro</a>
+      <a href="/pages/admin.html">🔐 Área Administrativa</a>
+      <a href="/pages/membro-login.html">👤 Portal do Membro</a>
+    </div>
   </div>
-  <script>
-    // Redireciona imediatamente caso o meta refresh falhe
-    window.location.href = '/pages/cadastro.html';
-  </script>
 </body>
 </html>
