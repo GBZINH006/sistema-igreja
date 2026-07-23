@@ -38,7 +38,7 @@
       ]
     },
     {
-      "source": "**/*.map",
+      "source": "/(.*)\\.map",
       "headers": [
         {
           "key": "Content-Type",
