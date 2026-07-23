@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS registration_tokens (
   expires_at TIMESTAMPTZ NOT NULL,
   used_at TIMESTAMPTZ,
   used_by_email TEXT,
-  member_id UUID REFERENCES membros(id),
+  member_id UUID,
   is_active BOOLEAN DEFAULT TRUE,
   notes TEXT,
   recipient_info JSONB DEFAULT '{}'::JSONB,
