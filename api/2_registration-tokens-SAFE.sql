@@ -81,7 +81,7 @@ BEGIN
     jsonb_build_object('name', p_recipient_name, 'contact', p_recipient_contact)
   );
 
-  v_base_url := 'https://project-8i1w1.vercel.app/pages';
+  v_base_url := 'https://sistema-igreja-5q1a.vercel.app/pages';
 
   RETURN QUERY SELECT v_token, v_expires, v_base_url || '/cadastro.html?token=' || v_token AS registration_url;
 END;
