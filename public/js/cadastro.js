@@ -1857,6 +1857,9 @@
           <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
             Entre em contato com a secretaria para solicitar um novo link.
           </p>
+          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+            <i class="fa-solid fa-home"></i> Voltar ao Início
+          </button>
         </div>
       </div>
     `;
