@@ -3295,9 +3295,11 @@
       const baseUrl = window.location.origin;
       const linkCompleto = `${baseUrl}/pages/cadastro.html?token=${token.token}`;
       const segundosRestantes = token.time_remaining_seconds || 0;
+      const tokenIdSafe = escapeAttr(token.id);
+      const linkCompletoSafe = escapeAttr(linkCompleto);
       
       return `
-        <div class="token-card" data-token-id="${escapeAttr(token.id)}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
+        <div class="token-card" data-token-id="${tokenIdSafe}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem;">
             <div style="flex:1;">
               <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;">Token: ${safeText(token.token.substring(0, 8))}...</div>
@@ -3306,13 +3308,13 @@
                 ⏰ Expira em: <span class="countdown-time">${formatarTempo(segundosRestantes)}</span>
               </div>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="revogarToken('${escapeAttr(token.id)}')">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="window.revogarTokenById('${tokenIdSafe}')">
               <i class="fa-solid fa-ban"></i> Revogar
             </button>
           </div>
           <div style="display:flex;gap:0.5rem;">
-            <input type="text" readonly value="${escapeAttr(linkCompleto)}" style="flex:1;font-size:0.75rem;padding:0.5rem;border:1px solid #dee2e6;border-radius:4px;background:white;">
-            <button type="button" class="btn btn-primary btn-sm" onclick="copiarLink('${escapeAttr(linkCompleto)}')">
+            <input type="text" readonly value="${linkCompletoSafe}" style="flex:1;font-size:0.75rem;padding:0.5rem;border:1px solid #dee2e6;border-radius:4px;background:white;">
+            <button type="button" class="btn btn-primary btn-sm" onclick="window.copiarLinkToken('${linkCompletoSafe}')">
               <i class="fa-solid fa-copy"></i> Copiar
             </button>
           </div>
@@ -3375,6 +3377,7 @@
   }
 
   window.copiarLink = copiarLink;
+  window.copiarLinkToken = copiarLink; // Alias para o onclick inline
 
   async function revogarToken(tokenId) {
     if (!confirm('Deseja mesmo revogar este link? Ele não poderá mais ser usado.')) return;
@@ -3396,6 +3399,7 @@
   }
 
   window.revogarToken = revogarToken;
+  window.revogarTokenById = revogarToken; // Alias para o onclick inline
 
   // ══════════════════════════════════════════════════════════════
   // FIM DO SISTEMA DE LINKS TEMPORÁRIOS
