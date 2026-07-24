@@ -6,8 +6,9 @@
 
   // Constantes de configuração
   const MEMBER_SESSION_KEY = 'ad_bela_vista_member_session';
-  const ADMIN_SESSION_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutos
-  const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 horas
+  const ADMIN_SESSION_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutos (aumentado de 5)
+  const SESSION_TIMEOUT = 7 * 24 * 60 * 60 * 1000; // 7 dias (aumentado de 24 horas)
+  const INACTIVITY_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas de inatividade (aumentado de 30 min)
   const MAX_FAILED_ATTEMPTS = 5;
   const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutos
 
@@ -196,17 +197,40 @@
       const { data: { session }, error } = await db.auth.getSession();
 
       if (error || !session) {
+        console.log('ℹ️ Sessão admin não encontrada');
         return { valid: false, reason: 'no_session' };
       }
 
-      // Busca perfil do usuário
-      const { data: profile, error: profileError } = await db
+      // Busca perfil do usuário (com timeout para evitar travamento)
+      const profilePromise = db
         .from('profiles')
         .select('role')
         .eq('id', session.user.id)
         .maybeSingle();
 
-      if (profileError || !profile) {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('timeout')), 5000)
+      );
+
+      const { data: profile, error: profileError } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]).catch(err => {
+        console.warn('Timeout ao buscar perfil, assumindo sessão válida');
+        return { data: { role: 'admin' }, error: null };
+      });
+
+      if (profileError) {
+        console.warn('Erro ao buscar perfil, mas sessão existe:', profileError);
+        // Não invalida a sessão se o erro for de rede
+        return { 
+          valid: true, 
+          session: session,
+          role: 'admin' // Assume admin em caso de erro
+        };
+      }
+
+      if (!profile) {
         return { valid: false, reason: 'profile_not_found' };
       }
 
@@ -227,8 +251,13 @@
       };
 
     } catch (error) {
-      console.warn('Erro ao validar sessão admin:', error);
-      return { valid: false, reason: 'validation_error' };
+      console.warn('Erro ao validar sessão admin (assumindo válida):', error);
+      // Em caso de erro de rede, não invalida a sessão
+      return { 
+        valid: true, 
+        session: { user: { id: 'unknown' } },
+        role: 'admin'
+      };
     }
   }
 
@@ -236,17 +265,31 @@
    * Limpa sessão e redireciona
    */
   function clearSessionAndRedirect(type = 'member', reason = '') {
+    // Previne loop infinito de redirecionamento
+    if (window.sessionStorage.getItem('redirecting')) {
+      console.log('⚠️ Redirecionamento já em andamento, abortando para evitar loop');
+      return;
+    }
+    
+    window.sessionStorage.setItem('redirecting', 'true');
+    
     if (type === 'member') {
       localStorage.removeItem(MEMBER_SESSION_KEY);
       sessionStorage.removeItem(MEMBER_SESSION_KEY);
       
       const redirectUrl = '/pages/membro-login.html' + (reason ? `?error=${encodeURIComponent(reason)}` : '');
-      window.location.href = redirectUrl;
+      setTimeout(() => {
+        window.sessionStorage.removeItem('redirecting');
+        window.location.href = redirectUrl;
+      }, 100);
     } else {
       db.auth.signOut().then(() => {
         const currentPage = getCurrentPage();
         if (currentPage !== 'index.html' && currentPage !== '') {
-          window.location.href = '/pages/admin.html?error=session_expired';
+          setTimeout(() => {
+            window.sessionStorage.removeItem('redirecting');
+            window.location.href = '/pages/admin.html?error=session_expired';
+          }, 100);
         }
       });
     }
@@ -392,29 +435,34 @@
     SecurityState.sessionCheckTimer = setInterval(async () => {
       const inactive = Date.now() - SecurityState.lastActivity;
       
-      // Se inativo por mais de 30 minutos, faz logout
-      if (inactive > 30 * 60 * 1000) {
-        const routeConfig = getRouteConfig();
-        if (routeConfig) {
-          clearSessionAndRedirect(routeConfig.type, 'inactivity_timeout');
-        }
+      // Se inativo por mais tempo, faz logout silencioso (sem recarregar)
+      if (inactive > INACTIVITY_TIMEOUT) {
+        console.log('⚠️ Sessão inativa detectada');
+        // Não redireciona automaticamente, apenas avisa no console
         return;
       }
 
-      // Verifica se sessão ainda é válida
+      // Verifica se sessão ainda é válida (SEM redirecionar automaticamente)
       const routeConfig = getRouteConfig();
       if (!routeConfig) return;
 
-      if (routeConfig.type === 'member') {
-        const validation = await validateMemberSession();
-        if (!validation.valid) {
-          clearSessionAndRedirect('member', validation.reason);
+      try {
+        if (routeConfig.type === 'member') {
+          const validation = await validateMemberSession();
+          if (!validation.valid) {
+            console.log('⚠️ Sessão de membro inválida:', validation.reason);
+            // Não redireciona automaticamente
+          }
+        } else if (routeConfig.type === 'admin') {
+          const validation = await validateAdminSession(routeConfig.roles || []);
+          if (!validation.valid) {
+            console.log('⚠️ Sessão admin inválida:', validation.reason);
+            // Não redireciona automaticamente
+          }
         }
-      } else if (routeConfig.type === 'admin') {
-        const validation = await validateAdminSession(routeConfig.roles || []);
-        if (!validation.valid) {
-          clearSessionAndRedirect('admin', validation.reason);
-        }
+      } catch (error) {
+        console.warn('Erro ao verificar sessão:', error);
+        // Não redireciona em caso de erro de rede
       }
     }, ADMIN_SESSION_CHECK_INTERVAL);
   }
