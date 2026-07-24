@@ -3211,22 +3211,12 @@
   function abrirGeradorLinks() {
     document.getElementById('links-overlay').classList.add('open');
     carregarTokens();
-    
-    // Atualiza countdown a cada segundo
-    if (updateTokensInterval) clearInterval(updateTokensInterval);
-    updateTokensInterval = setInterval(() => {
-      atualizarCountdownTokens();
-    }, 1000);
   }
 
   window.abrirGeradorLinks = abrirGeradorLinks;
 
   function fecharGeradorLinks() {
     document.getElementById('links-overlay').classList.remove('open');
-    if (updateTokensInterval) {
-      clearInterval(updateTokensInterval);
-      updateTokensInterval = null;
-    }
   }
 
   window.fecharGeradorLinks = fecharGeradorLinks;
@@ -3416,3 +3406,8 @@
   // ══════════════════════════════════════════════════════════════
   // FIM DO SISTEMA DE LINKS TEMPORÁRIOS
   // ══════════════════════════════════════════════════════════════
+
+  // Inicia o contador de tokens (sempre ativo em background)
+  updateTokensInterval = setInterval(() => {
+    atualizarCountdownTokens();
+  }, 1000);
