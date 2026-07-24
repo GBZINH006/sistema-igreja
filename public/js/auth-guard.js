@@ -240,13 +240,13 @@
       localStorage.removeItem(MEMBER_SESSION_KEY);
       sessionStorage.removeItem(MEMBER_SESSION_KEY);
       
-      const redirectUrl = 'membro-login.html' + (reason ? `?error=${encodeURIComponent(reason)}` : '');
-      window.location.replace(redirectUrl);
+      const redirectUrl = '/pages/membro-login.html' + (reason ? `?error=${encodeURIComponent(reason)}` : '');
+      window.location.href = redirectUrl;
     } else {
       db.auth.signOut().then(() => {
         const currentPage = getCurrentPage();
         if (currentPage !== 'index.html' && currentPage !== '') {
-          window.location.replace('admin.html?error=session_expired');
+          window.location.href = '/pages/admin.html?error=session_expired';
         }
       });
     }
@@ -322,10 +322,10 @@
             <span style="color: #78350f;">${validation.requiredRoles?.join(', ') || 'Não especificado'}</span>
           </div>
           <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
-            <button onclick="window.history.back()" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <button onclick="window.location.href='/'" style="padding: 0.75rem 1.5rem; background: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
               <i class="fa-solid fa-arrow-left"></i> Voltar
             </button>
-            <button onclick="window.location.href='admin.html'" style="padding: 0.75rem 1.5rem; background: #c9a84c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <button onclick="window.location.href='/pages/admin.html'" style="padding: 0.75rem 1.5rem; background: #c9a84c; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
               <i class="fa-solid fa-home"></i> Início
             </button>
           </div>

@@ -591,7 +591,7 @@
       }).catch(() => {});
     }
 
-    window.location.replace("membro-login.html");
+    window.location.href = "/pages/membro-login.html";
   }
 
   function bindEvents() {
@@ -644,7 +644,7 @@
     }
 
     if (!state.session?.token) {
-      window.location.replace("membro-login.html");
+      window.location.href = "/pages/membro-login.html";
       return;
     }
 
@@ -657,7 +657,7 @@
     } catch (error) {
       localStorage.removeItem(MEMBER_SESSION_KEY);
       sessionStorage.removeItem(MEMBER_SESSION_KEY);
-      window.location.replace("membro-login.html");
+      window.location.href = "/pages/membro-login.html";
       return;
     }
 

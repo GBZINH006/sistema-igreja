@@ -25,7 +25,7 @@
     }
 
     if (isMemberFlow && !currentSession?.token) {
-      window.location.replace('membro-login.html');
+      window.location.href = '/pages/membro-login.html';
     }
   }
 
@@ -1387,7 +1387,7 @@
       }
 
       if (isMemberFlow) {
-        window.location.href = 'membro.html?cadastro=ok';
+        window.location.href = '/pages/membro.html?cadastro=ok';
         return;
       }
 

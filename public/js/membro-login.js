@@ -101,7 +101,7 @@
   async function redirectIfLogged() {
     try {
       const saved = JSON.parse(sessionStorage.getItem(MEMBER_SESSION_KEY) || localStorage.getItem(MEMBER_SESSION_KEY) || "null");
-      if (saved?.token) window.location.replace("membro.html");
+      if (saved?.token) window.location.href = "/pages/membro.html";
     } catch (error) {
       localStorage.removeItem(MEMBER_SESSION_KEY);
       sessionStorage.removeItem(MEMBER_SESSION_KEY);
@@ -196,7 +196,7 @@
       if (error) throw error;
       saveMemberSession(data?.[0]);
       showAlert("Conta criada com segurança. Redirecionando para o portal do membro...", "success");
-      window.location.href = "cadastro.html?origem=membro&primeiro_acesso=1";
+      window.location.href = "/pages/cadastro.html?origem=membro&primeiro_acesso=1";
     } catch (error) {
       showAlert(friendlyError(error, "Não foi possível solicitar o cadastro agora. Revise os dados ou tente novamente."), "error");
     } finally {
@@ -226,7 +226,7 @@
       if (error) throw error;
       saveMemberSession(data?.[0]);
       showAlert("Acesso confirmado. Redirecionando...", "success");
-      window.location.href = "membro.html";
+      window.location.href = "/pages/membro.html";
     } catch (error) {
       showAlert(friendlyError(error, "Não foi possível entrar. Verifique seus dados e tente novamente."), "error");
     } finally {
