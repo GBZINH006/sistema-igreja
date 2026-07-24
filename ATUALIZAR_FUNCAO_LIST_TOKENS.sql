@@ -2,8 +2,13 @@
 -- ATUALIZAR FUNÇÃO list_active_tokens PARA INCLUIR MAIS CAMPOS
 -- ============================================================================
 -- Execute este SQL no Supabase para corrigir a função
+-- IMPORTANTE: Este script faz DROP da função antiga e recria com novos campos
 -- ============================================================================
 
+-- Primeiro DROP a função existente para evitar erro de mudança de assinatura
+DROP FUNCTION IF EXISTS list_active_tokens();
+
+-- Recria a função com os campos novos
 CREATE OR REPLACE FUNCTION list_active_tokens()
 RETURNS TABLE (
   id UUID,
