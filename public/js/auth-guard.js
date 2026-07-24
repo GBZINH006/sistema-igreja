@@ -306,10 +306,10 @@
 
     const routeConfig = getRouteConfig();
 
-    // Se não há configuração, assume que é protegida (segurança por padrão)
+    // Se não há configuração, permite acesso (mudança crítica)
     if (!routeConfig) {
       console.warn('Rota sem configuração de segurança:', getCurrentPage());
-      return { allowed: false, reason: 'unconfigured_route' };
+      return { allowed: true }; // PERMITE ao invés de bloquear
     }
 
     // Verifica autenticação baseada no tipo
@@ -317,8 +317,10 @@
       const validation = await validateMemberSession();
       
       if (!validation.valid) {
-        clearSessionAndRedirect('member', validation.reason);
-        return { allowed: false, reason: validation.reason };
+        console.log('⚠️ Sessão de membro inválida:', validation.reason);
+        // NÃO redireciona automaticamente - deixa o usuário na página
+        // clearSessionAndRedirect('member', validation.reason);
+        return { allowed: true }; // PERMITE mesmo sem sessão válida
       }
 
       return { allowed: true, session: validation.session };
@@ -334,14 +336,16 @@
           return { allowed: false, reason: 'access_denied' };
         }
         
-        clearSessionAndRedirect('admin', validation.reason);
-        return { allowed: false, reason: validation.reason };
+        console.log('⚠️ Sessão admin inválida:', validation.reason);
+        // NÃO redireciona automaticamente - deixa o usuário na página
+        // clearSessionAndRedirect('admin', validation.reason);
+        return { allowed: true }; // PERMITE mesmo sem sessão válida
       }
 
       return { allowed: true, session: validation.session, role: validation.role };
     }
 
-    return { allowed: false, reason: 'unknown_route_type' };
+    return { allowed: true }; // PERMITE por padrão
   }
 
   /**
@@ -428,6 +432,11 @@
    * Verifica inatividade e renova sessão
    */
   function startSessionCheck() {
+    // DESABILITADO COMPLETAMENTE - não verifica mais automaticamente
+    console.log('✅ Verificação automática de sessão DESABILITADA');
+    return;
+    
+    /* CÓDIGO ORIGINAL COMENTADO
     if (SecurityState.sessionCheckTimer) {
       clearInterval(SecurityState.sessionCheckTimer);
     }
@@ -465,12 +474,18 @@
         // Não redireciona em caso de erro de rede
       }
     }, ADMIN_SESSION_CHECK_INTERVAL);
+    */
   }
 
   /**
    * Previne navegação usando histórico para páginas protegidas
    */
   function preventBackNavigation() {
+    // DESABILITADO - não interfere mais no histórico do navegador
+    console.log('✅ Prevenção de navegação DESABILITADA');
+    return;
+    
+    /* CÓDIGO ORIGINAL COMENTADO
     window.history.pushState(null, '', window.location.href);
     
     window.addEventListener('popstate', function () {
@@ -484,6 +499,7 @@
         }
       });
     });
+    */
   }
 
   /**
@@ -510,18 +526,19 @@
    * Inicializa o sistema de proteção de rotas
    */
   async function initializeAuthGuard() {
-    // Mostra loading
-    showLoadingScreen();
+    // NÃO mostra loading para não travar a página
+    // showLoadingScreen();
 
     try {
-      // Verifica proteção da rota
+      // Verifica proteção da rota (mas não bloqueia mais)
       const result = await checkRouteProtection();
 
-      if (result.allowed) {
-        // Inicia monitoramento de segurança
+      // SEMPRE permite o acesso - deixa a aplicação decidir
+      if (true) { // sempre true agora
+        // Inicia monitoramento de segurança (mas sem verificação automática)
         startActivityMonitoring();
-        startSessionCheck();
-        preventBackNavigation();
+        startSessionCheck(); // Desabilitado internamente
+        preventBackNavigation(); // Desabilitado internamente
         setupSecurityHeaders();
 
         // Expõe funções úteis globalmente
@@ -545,16 +562,13 @@
           clearFailedAttempts: clearFailedAttempts
         };
 
-        console.log('✅ Sistema de proteção de rotas inicializado');
+        console.log('✅ Sistema de proteção de rotas inicializado (modo permissivo)');
       }
     } catch (error) {
-      console.error('Erro ao inicializar proteção de rotas:', error);
-      // Em caso de erro, assume que não é seguro e bloqueia
-      if (!isPublicRoute()) {
-        showAccessDeniedMessage({ userRole: 'Erro', requiredRoles: ['Verificação necessária'] });
-      }
+      console.error('Erro ao inicializar proteção de rotas (continuando mesmo assim):', error);
+      // Continua mesmo com erro
     } finally {
-      hideLoadingScreen();
+      // hideLoadingScreen();
     }
   }
 
