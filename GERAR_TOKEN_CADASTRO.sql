@@ -30,10 +30,15 @@ CREATE INDEX IF NOT EXISTS idx_registration_tokens_expires ON registration_token
 CREATE INDEX IF NOT EXISTS idx_registration_tokens_used ON registration_tokens(used);
 CREATE INDEX IF NOT EXISTS idx_registration_tokens_created_by ON registration_tokens(created_by);
 
--- 3. Habilitar RLS (Row Level Security)
+-- 4. Habilitar RLS (Row Level Security)
 ALTER TABLE registration_tokens ENABLE ROW LEVEL SECURITY;
 
--- 4. Políticas de acesso
+-- 5. Remover políticas antigas se existirem
+DROP POLICY IF EXISTS "Admins podem ver tokens" ON registration_tokens;
+DROP POLICY IF EXISTS "Admins podem criar tokens" ON registration_tokens;
+DROP POLICY IF EXISTS "Admins podem atualizar tokens" ON registration_tokens;
+
+-- 6. Políticas de acesso
 -- Admins podem ver todos os tokens
 CREATE POLICY "Admins podem ver tokens" ON registration_tokens
   FOR SELECT
