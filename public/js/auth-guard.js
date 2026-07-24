@@ -299,35 +299,9 @@
    * Verifica proteção da rota atual
    */
   async function checkRouteProtection() {
-    // Se for rota pública, permite acesso
-    if (isPublicRoute()) {
-      return { allowed: true };
-    }
-
-    const routeConfig = getRouteConfig();
-
-    // Se não há configuração, permite acesso (mudança crítica)
-    if (!routeConfig) {
-      console.warn('Rota sem configuração de segurança:', getCurrentPage());
-      return { allowed: true }; // PERMITE ao invés de bloquear
-    }
-
-    // Verifica autenticação baseada no tipo
-    if (routeConfig.type === 'member') {
-      const validation = await validateMemberSession();
-      
-      if (!validation.valid) {
-        console.log('⚠️ Sessão de membro inválida:', validation.reason);
-        // NÃO redireciona automaticamente - deixa o usuário na página
-        // clearSessionAndRedirect('member', validation.reason);
-        return { allowed: true }; // PERMITE mesmo sem sessão válida
-      }
-
-      return { allowed: true, session: validation.session };
-    }
-
-    if (routeConfig.type === 'admin') {
-      const validation = await validateAdminSession(routeConfig.roles || []);
+    // DESABILITADO COMPLETAMENTE - SEMPRE PERMITE ACESSO
+    return { allowed: true };
+  }
       
       if (!validation.valid) {
         if (validation.reason === 'insufficient_permissions') {
