@@ -433,7 +433,6 @@
    */
   function startSessionCheck() {
     // DESABILITADO COMPLETAMENTE - não verifica mais automaticamente
-    console.log('✅ Verificação automática de sessão DESABILITADA');
     return;
     
     /* CÓDIGO ORIGINAL COMENTADO
@@ -482,7 +481,6 @@
    */
   function preventBackNavigation() {
     // DESABILITADO - não interfere mais no histórico do navegador
-    console.log('✅ Prevenção de navegação DESABILITADA');
     return;
     
     /* CÓDIGO ORIGINAL COMENTADO
@@ -562,7 +560,7 @@
           clearFailedAttempts: clearFailedAttempts
         };
 
-        console.log('✅ Sistema de proteção de rotas inicializado (modo permissivo)');
+        // Sistema de proteção inicializado
       }
     } catch (error) {
       console.error('Erro ao inicializar proteção de rotas (continuando mesmo assim):', error);

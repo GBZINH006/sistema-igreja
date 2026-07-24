@@ -94,7 +94,7 @@ DECLARE
   v_token TEXT;
   v_expires_at TIMESTAMPTZ;
   v_creator_name TEXT;
-  v_base_url TEXT := 'https://seu-dominio.vercel.app'; -- ALTERE PARA SEU DOMÍNIO
+  v_base_url TEXT := 'https://sistema-igreja-git-main-gbzinh006s-projects.vercel.app'; -- Domínio do projeto
 BEGIN
   -- Verificar permissões
   IF NOT EXISTS (
@@ -266,7 +266,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  v_base_url TEXT := 'https://seu-dominio.vercel.app'; -- ALTERE PARA SEU DOMÍNIO
+  v_base_url TEXT := 'https://sistema-igreja-git-main-gbzinh006s-projects.vercel.app'; -- Domínio do projeto
 BEGIN
   -- Verificar permissões
   IF NOT EXISTS (

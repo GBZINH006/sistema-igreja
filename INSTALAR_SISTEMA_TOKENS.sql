@@ -58,7 +58,7 @@ DECLARE
   v_token TEXT;
   v_expires_at TIMESTAMPTZ;
   v_creator_name TEXT;
-  v_base_url TEXT := 'https://seu-dominio.vercel.app'; -- ⚠️ ALTERE AQUI
+  v_base_url TEXT := 'https://sistema-igreja-git-main-gbzinh006s-projects.vercel.app'; -- Domínio do projeto
 BEGIN
   -- Buscar nome do criador (se autenticado)
   SELECT 
@@ -169,7 +169,7 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
-  v_base_url TEXT := 'https://seu-dominio.vercel.app'; -- ⚠️ ALTERE AQUI
+  v_base_url TEXT := 'https://sistema-igreja-git-main-gbzinh006s-projects.vercel.app'; -- Domínio do projeto
 BEGIN
   RETURN QUERY
   SELECT 
