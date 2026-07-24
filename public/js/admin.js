@@ -3304,13 +3304,13 @@
       const segundosRestantes = token.time_remaining_seconds || 0;
       
       // Escapar valores antes de usar no HTML
-      const tokenId = escapeHtml(String(token.id || ''));
+      const tokenString = escapeHtml(String(token.token || ''));
       const tokenPreview = escapeHtml(String(token.token || '').substring(0, 8));
       const obs = escapeHtml(token.observacao || '');
       const linkEscapado = escapeHtml(linkCompleto);
       
       return `
-        <div class="token-card" data-token-id="${tokenId}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
+        <div class="token-card" data-token="${tokenString}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem;">
             <div style="flex:1;">
               <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;">Token: ${tokenPreview}...</div>
@@ -3319,7 +3319,7 @@
                 ⏰ Expira em: <span class="countdown-time">${formatarTempo(segundosRestantes)}</span>
               </div>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="window.revogarTokenById('${tokenId}')">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="window.revogarTokenByString('${tokenString}')">
               <i class="fa-solid fa-ban"></i> Revogar
             </button>
           </div>
@@ -3390,12 +3390,12 @@
   window.copiarLink = copiarLink;
   window.copiarLinkToken = copiarLink; // Alias para o onclick inline
 
-  async function revogarToken(tokenId) {
+  async function revogarToken(tokenString) {
     if (!confirm('Deseja mesmo revogar este link? Ele não poderá mais ser usado.')) return;
 
     try {
       const { error } = await db.rpc('revoke_registration_token', {
-        p_token_id: tokenId
+        p_token: tokenString
       });
 
       if (error) throw error;
@@ -3410,7 +3410,8 @@
   }
 
   window.revogarToken = revogarToken;
-  window.revogarTokenById = revogarToken; // Alias para o onclick inline
+  window.revogarTokenById = revogarToken; // Alias antigo (compatibilidade)
+  window.revogarTokenByString = revogarToken; // Alias correto
 
   // ══════════════════════════════════════════════════════════════
   // FIM DO SISTEMA DE LINKS TEMPORÁRIOS
