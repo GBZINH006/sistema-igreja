@@ -1,60 +1,98 @@
 -- =====================================
 -- CONFIGURAÇÃO DE ACESSO URGENTE
 -- =====================================
--- Execute este script se estiver bloqueado
+-- ⚠️ SUBSTITUA 'SEU_EMAIL@AQUI.COM' pelo seu email de login
 -- =====================================
 
--- 1. Ver seu usuário atual
-SELECT 
-  auth.uid() as meu_id,
-  (SELECT email FROM auth.users WHERE id = auth.uid()) as meu_email,
-  'Este é o seu ID de usuário' as info;
-
--- 2. Verificar se você tem perfil
+-- 1. Ver todos os usuários cadastrados
 SELECT 
   id,
-  role,
+  email,
   created_at,
-  CASE 
-    WHEN role = 'secretario' THEN '✅ Você já é secretário!'
-    WHEN role IN ('admin', 'pastor') THEN '✅ Você já tem acesso!'
-    ELSE '❌ Seu role atual não tem permissão'
-  END as status
-FROM profiles 
-WHERE id = auth.uid();
+  '👆 Encontre seu email nesta lista' as info
+FROM auth.users
+ORDER BY created_at DESC
+LIMIT 10;
 
--- 3. CONFIGURAR SEU USUÁRIO COMO SECRETÁRIO
--- (agora secretário tem todos os poderes)
+-- 2. Ver quem já tem perfil
+SELECT 
+  p.id,
+  u.email,
+  p.role,
+  CASE 
+    WHEN p.role = 'secretario' THEN '✅ Já é secretário!'
+    WHEN p.role IN ('admin', 'pastor') THEN '✅ Já tem acesso!'
+    ELSE '❌ Role sem permissão'
+  END as status
+FROM profiles p
+LEFT JOIN auth.users u ON u.id = p.id
+ORDER BY p.created_at DESC;
+
+-- =====================================
+-- 3. CONFIGURAR ACESSO POR EMAIL
+-- ⚠️ TROQUE 'SEU_EMAIL@AQUI.COM' pelo seu email!
+-- =====================================
+
+DO $$
+DECLARE
+  v_user_id UUID;
+  v_email TEXT := 'SEU_EMAIL@AQUI.COM'; -- 👈 TROQUE AQUI!
+BEGIN
+  -- Buscar ID do usuário pelo email
+  SELECT id INTO v_user_id
+  FROM auth.users
+  WHERE email = v_email;
+
+  -- Verificar se encontrou
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION '❌ Email % não encontrado! Verifique se está correto.', v_email;
+  END IF;
+
+  -- Inserir ou atualizar perfil
+  INSERT INTO profiles (id, role, created_at, updated_at)
+  VALUES (v_user_id, 'secretario', NOW(), NOW())
+  ON CONFLICT (id)
+  DO UPDATE SET 
+    role = 'secretario',
+    updated_at = NOW();
+
+  RAISE NOTICE '✅ Usuário % configurado como secretario!', v_email;
+END $$;
+
+-- 4. Confirmar que foi configurado
+-- ⚠️ TROQUE 'SEU_EMAIL@AQUI.COM' aqui também!
+SELECT 
+  p.id,
+  u.email,
+  p.role,
+  p.updated_at,
+  '✅ Perfil configurado com sucesso!' as resultado
+FROM profiles p
+JOIN auth.users u ON u.id = p.id
+WHERE u.email = 'SEU_EMAIL@AQUI.COM'; -- 👈 TROQUE AQUI!
+
+-- =====================================
+-- ALTERNATIVA: Configurar TODOS os usuários como secretario
+-- (use apenas se tiver certeza!)
+-- =====================================
+/*
 INSERT INTO profiles (id, role, created_at, updated_at)
-VALUES (auth.uid(), 'secretario', NOW(), NOW())
+SELECT 
+  id,
+  'secretario',
+  NOW(),
+  NOW()
+FROM auth.users
 ON CONFLICT (id)
 DO UPDATE SET 
   role = 'secretario',
   updated_at = NOW();
 
--- 4. Confirmar que foi configurado
 SELECT 
-  id,
-  role,
-  created_at,
-  updated_at,
-  '✅ Agora você é secretário e tem acesso total!' as resultado
-FROM profiles 
-WHERE id = auth.uid();
-
--- 5. ALTERNATIVA: Se você quiser ser ADMIN
--- Descomente as linhas abaixo e execute apenas esta parte:
-
-/*
-UPDATE profiles 
-SET role = 'admin', updated_at = NOW()
-WHERE id = auth.uid();
-
-SELECT 
-  role,
-  '✅ Agora você é admin!' as resultado
-FROM profiles 
-WHERE id = auth.uid();
+  COUNT(*) as total_usuarios,
+  '✅ Todos configurados como secretario!' as resultado
+FROM profiles
+WHERE role = 'secretario';
 */
 
 -- =====================================
