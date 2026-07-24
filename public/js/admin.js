@@ -3236,7 +3236,8 @@
     
     try {
       const { data, error } = await db.rpc('generate_registration_token', {
-        p_observacao: observacao || null
+        p_duration_hours: 2,
+        p_notes: observacao || null
       });
 
       if (error) throw error;
@@ -3244,9 +3245,8 @@
       const token = data?.[0];
       if (!token) throw new Error('Token não retornado');
 
-      // Monta URL completa
-      const baseUrl = window.location.origin;
-      const linkCompleto = `${baseUrl}/pages/cadastro.html?token=${token.token}`;
+      // Usa a URL retornada pela função ou monta manualmente
+      const linkCompleto = token.registration_url || `${window.location.origin}/pages/cadastro.html?token=${token.token}`;
 
       // Copia para clipboard
       await navigator.clipboard.writeText(linkCompleto);
@@ -3267,7 +3267,7 @@
 
   async function carregarTokens() {
     try {
-      const { data, error } = await db.rpc('list_registration_tokens');
+      const { data, error } = await db.rpc('list_active_tokens');
       
       if (error) throw error;
 
