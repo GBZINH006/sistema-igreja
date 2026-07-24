@@ -102,8 +102,7 @@ CREATE POLICY "Público pode validar token"
 ON registration_tokens FOR SELECT
 TO anon
 USING (
-  is_active = true 
-  AND expires_at > NOW()
+  expires_at > NOW()
   AND used = false
 );
 
@@ -221,7 +220,6 @@ BEGIN
     u.email as creator_email
   FROM registration_tokens rt
   LEFT JOIN auth.users u ON u.id = rt.created_by
-  WHERE rt.is_active = true
   ORDER BY rt.created_at DESC;
 END;
 $$;
