@@ -1857,9 +1857,6 @@
           <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
             Entre em contato com a secretaria para solicitar um novo link.
           </p>
-          <a href="/pages/cadastro.html" style="display:inline-block;padding:0.75rem 1.5rem;background:#c9a84c;color:white;text-decoration:none;border-radius:8px;font-weight:600;margin-top:1rem;">
-            <i class="fa-solid fa-clipboard-list"></i> Ir para ficha de cadastro
-          </a>
         </div>
       </div>
     `;
