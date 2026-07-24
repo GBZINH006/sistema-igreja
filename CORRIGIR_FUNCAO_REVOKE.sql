@@ -43,9 +43,7 @@ BEGIN
 
   -- Marca como expirado (revogado) alterando a data de expiração para o passado
   UPDATE registration_tokens
-  SET 
-    expires_at = NOW() - INTERVAL '1 second',
-    updated_at = NOW()
+  SET expires_at = NOW() - INTERVAL '1 second'
   WHERE token = p_token;
 
   RETURN TRUE;
