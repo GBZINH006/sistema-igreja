@@ -266,31 +266,39 @@
    */
   function clearSessionAndRedirect(type = 'member', reason = '') {
     // Previne loop infinito de redirecionamento
-    if (window.sessionStorage.getItem('redirecting')) {
-      console.log('⚠️ Redirecionamento já em andamento, abortando para evitar loop');
+    const redirectKey = 'auth_redirect_in_progress';
+    if (sessionStorage.getItem(redirectKey)) {
+      console.log('⚠️ Redirecionamento já em andamento, abortando');
       return;
     }
     
-    window.sessionStorage.setItem('redirecting', 'true');
+    sessionStorage.setItem(redirectKey, Date.now().toString());
     
     if (type === 'member') {
       localStorage.removeItem(MEMBER_SESSION_KEY);
       sessionStorage.removeItem(MEMBER_SESSION_KEY);
       
       const redirectUrl = '/pages/membro-login.html' + (reason ? `?error=${encodeURIComponent(reason)}` : '');
-      setTimeout(() => {
-        window.sessionStorage.removeItem('redirecting');
-        window.location.href = redirectUrl;
-      }, 100);
+      
+      // Usa replace para evitar voltar com botão back
+      window.location.replace(redirectUrl);
+      
     } else {
+      // Admin: faz logout do Supabase primeiro
       db.auth.signOut().then(() => {
         const currentPage = getCurrentPage();
-        if (currentPage !== 'index.html' && currentPage !== '') {
-          setTimeout(() => {
-            window.sessionStorage.removeItem('redirecting');
-            window.location.href = '/pages/admin.html?error=session_expired';
-          }, 100);
+        
+        // Só redireciona se estiver em página protegida
+        const routeConfig = PROTECTED_ROUTES[currentPage];
+        if (routeConfig) {
+          window.location.replace('/pages/admin.html?sessao=expirada');
         }
+      }).catch(err => {
+        console.warn('Erro ao fazer logout:', err);
+        // Mesmo com erro, redireciona
+        window.location.replace('/pages/admin.html?sessao=expirada');
+      }).finally(() => {
+        sessionStorage.removeItem(redirectKey);
       });
     }
   }
@@ -299,27 +307,52 @@
    * Verifica proteção da rota atual
    */
   async function checkRouteProtection() {
-    // DESABILITADO COMPLETAMENTE - SEMPRE PERMITE ACESSO
-    return { allowed: true };
-  }
+    const currentPage = getCurrentPage();
+    
+    // Permite rotas públicas sem verificação
+    if (isPublicRoute()) {
+      return { allowed: true, reason: 'public_route' };
+    }
+
+    const routeConfig = getRouteConfig();
+    
+    // Se não há configuração, permite acesso (página não mapeada)
+    if (!routeConfig) {
+      return { allowed: true, reason: 'not_configured' };
+    }
+
+    // Verifica sessão de membro
+    if (routeConfig.type === 'member') {
+      const validation = await validateMemberSession();
+      
+      if (!validation.valid) {
+        console.log('⚠️ Sessão de membro inválida:', validation.reason);
+        clearSessionAndRedirect('member', validation.reason);
+        return { allowed: false, reason: validation.reason };
+      }
+
+      return { allowed: true, session: validation.session };
+    }
+
+    // Verifica sessão de admin
+    if (routeConfig.type === 'admin') {
+      const validation = await validateAdminSession(routeConfig.roles || []);
       
       if (!validation.valid) {
         if (validation.reason === 'insufficient_permissions') {
-          // Usuário autenticado mas sem permissão
           showAccessDeniedMessage(validation);
           return { allowed: false, reason: 'access_denied' };
         }
         
         console.log('⚠️ Sessão admin inválida:', validation.reason);
-        // NÃO redireciona automaticamente - deixa o usuário na página
-        // clearSessionAndRedirect('admin', validation.reason);
-        return { allowed: true }; // PERMITE mesmo sem sessão válida
+        clearSessionAndRedirect('admin', validation.reason);
+        return { allowed: false, reason: validation.reason };
       }
 
       return { allowed: true, session: validation.session, role: validation.role };
     }
 
-    return { allowed: true }; // PERMITE por padrão
+    return { allowed: true };
   }
 
   /**
@@ -406,25 +439,21 @@
    * Verifica inatividade e renova sessão
    */
   function startSessionCheck() {
-    // DESABILITADO COMPLETAMENTE - não verifica mais automaticamente
-    return;
-    
-    /* CÓDIGO ORIGINAL COMENTADO
     if (SecurityState.sessionCheckTimer) {
       clearInterval(SecurityState.sessionCheckTimer);
     }
 
+    // Verifica a cada 30 minutos
     SecurityState.sessionCheckTimer = setInterval(async () => {
       const inactive = Date.now() - SecurityState.lastActivity;
       
-      // Se inativo por mais tempo, faz logout silencioso (sem recarregar)
+      // Se inativo por mais de 2 horas, avisa no console
       if (inactive > INACTIVITY_TIMEOUT) {
-        console.log('⚠️ Sessão inativa detectada');
-        // Não redireciona automaticamente, apenas avisa no console
+        console.log('⚠️ Sessão inativa detectada (mais de 2 horas)');
         return;
       }
 
-      // Verifica se sessão ainda é válida (SEM redirecionar automaticamente)
+      // Verifica se sessão ainda é válida
       const routeConfig = getRouteConfig();
       if (!routeConfig) return;
 
@@ -432,46 +461,34 @@
         if (routeConfig.type === 'member') {
           const validation = await validateMemberSession();
           if (!validation.valid) {
-            console.log('⚠️ Sessão de membro inválida:', validation.reason);
-            // Não redireciona automaticamente
+            console.log('⚠️ Sessão de membro expirou');
           }
         } else if (routeConfig.type === 'admin') {
           const validation = await validateAdminSession(routeConfig.roles || []);
           if (!validation.valid) {
-            console.log('⚠️ Sessão admin inválida:', validation.reason);
-            // Não redireciona automaticamente
+            console.log('⚠️ Sessão admin expirou');
           }
         }
       } catch (error) {
         console.warn('Erro ao verificar sessão:', error);
-        // Não redireciona em caso de erro de rede
       }
     }, ADMIN_SESSION_CHECK_INTERVAL);
-    */
   }
 
   /**
    * Previne navegação usando histórico para páginas protegidas
    */
   function preventBackNavigation() {
-    // DESABILITADO - não interfere mais no histórico do navegador
-    return;
+    const routeConfig = getRouteConfig();
     
-    /* CÓDIGO ORIGINAL COMENTADO
+    // Só ativa para páginas protegidas
+    if (!routeConfig) return;
+    
     window.history.pushState(null, '', window.location.href);
     
     window.addEventListener('popstate', function () {
       window.history.pushState(null, '', window.location.href);
-      
-      // Verifica se ainda está autenticado
-      checkRouteProtection().then(result => {
-        if (!result.allowed) {
-          // Se não, será redirecionado automaticamente
-          return;
-        }
-      });
     });
-    */
   }
 
   /**
@@ -498,19 +515,22 @@
    * Inicializa o sistema de proteção de rotas
    */
   async function initializeAuthGuard() {
-    // NÃO mostra loading para não travar a página
-    // showLoadingScreen();
+    const routeConfig = getRouteConfig();
+    
+    // Só mostra loading se for página protegida
+    if (routeConfig && routeConfig.requireAuth) {
+      showLoadingScreen();
+    }
 
     try {
-      // Verifica proteção da rota (mas não bloqueia mais)
+      // Verifica proteção da rota
       const result = await checkRouteProtection();
 
-      // SEMPRE permite o acesso - deixa a aplicação decidir
-      if (true) { // sempre true agora
-        // Inicia monitoramento de segurança (mas sem verificação automática)
+      if (result.allowed) {
+        // Inicia monitoramento de segurança
         startActivityMonitoring();
-        startSessionCheck(); // Desabilitado internamente
-        preventBackNavigation(); // Desabilitado internamente
+        startSessionCheck();
+        preventBackNavigation();
         setupSecurityHeaders();
 
         // Expõe funções úteis globalmente
@@ -533,14 +553,18 @@
           recordFailedAttempt: recordFailedAttempt,
           clearFailedAttempts: clearFailedAttempts
         };
-
-        // Sistema de proteção inicializado
       }
     } catch (error) {
-      console.error('Erro ao inicializar proteção de rotas (continuando mesmo assim):', error);
-      // Continua mesmo com erro
+      console.error('Erro ao inicializar proteção de rotas:', error);
+      hideLoadingScreen();
+      // Em caso de erro crítico, redireciona para home
+      if (routeConfig && routeConfig.requireAuth) {
+        setTimeout(() => {
+          window.location.replace('/');
+        }, 2000);
+      }
     } finally {
-      // hideLoadingScreen();
+      hideLoadingScreen();
     }
   }
 
