@@ -1,48 +1,63 @@
 -- =====================================
 -- CONFIGURAR SEU PERFIL DE ADMIN
 -- =====================================
--- Execute PASSO A PASSO no Supabase SQL Editor
+-- Execute este SQL no Supabase SQL Editor
+-- =====================================
 
--- PASSO 1: Ver a estrutura da tabela profiles
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_name = 'profiles' 
-ORDER BY ordinal_position;
+-- PASSO 1: Ver seu usuário atual (para confirmar que você está logado)
+DO $$
+DECLARE
+  v_user_id UUID;
+  v_email TEXT;
+BEGIN
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Você não está logado! Faça login primeiro no Supabase.';
+  END IF;
+  
+  SELECT email INTO v_email FROM auth.users WHERE id = v_user_id;
+  
+  RAISE NOTICE '✅ Você está logado como: % (ID: %)', v_email, v_user_id;
+END $$;
 
--- PASSO 2: Ver seu usuário atual
+-- PASSO 2: Inserir seu perfil como admin (com proteção contra erros)
+DO $$
+DECLARE
+  v_user_id UUID;
+  v_exists BOOLEAN;
+BEGIN
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RAISE EXCEPTION 'Você não está logado! Faça login primeiro.';
+  END IF;
+  
+  -- Verifica se já existe
+  SELECT EXISTS(SELECT 1 FROM profiles WHERE id = v_user_id) INTO v_exists;
+  
+  IF v_exists THEN
+    -- Atualiza se já existe
+    UPDATE profiles SET role = 'admin', updated_at = NOW() WHERE id = v_user_id;
+    RAISE NOTICE '✅ Perfil atualizado para admin';
+  ELSE
+    -- Insere se não existe
+    INSERT INTO profiles (id, role, created_at, updated_at)
+    VALUES (v_user_id, 'admin', NOW(), NOW());
+    RAISE NOTICE '✅ Perfil criado como admin';
+  END IF;
+END $$;
+
+-- PASSO 3: Confirmar que funcionou
 SELECT 
-  auth.uid() as meu_id,
-  (SELECT email FROM auth.users WHERE id = auth.uid()) as meu_email;
-
--- PASSO 3: Ver se você já tem perfil
-SELECT * FROM profiles WHERE id = auth.uid();
-
--- PASSO 4: Inserir seu perfil como admin
--- (ajuste conforme as colunas que existem na sua tabela)
-
--- OPÇÃO A: Se a tabela tem apenas id e role
-INSERT INTO profiles (id, role)
-VALUES (auth.uid(), 'admin')
-ON CONFLICT (id)
-DO UPDATE SET role = 'admin';
-
--- OPÇÃO B: Se a tabela tem created_at mas NÃO tem updated_at
--- INSERT INTO profiles (id, role, created_at)
--- VALUES (auth.uid(), 'admin', NOW())
--- ON CONFLICT (id)
--- DO UPDATE SET role = 'admin';
-
--- OPÇÃO C: Se a tabela tem updated_at
--- INSERT INTO profiles (id, role, created_at, updated_at)
--- VALUES (auth.uid(), 'admin', NOW(), NOW())
--- ON CONFLICT (id)
--- DO UPDATE SET role = 'admin', updated_at = NOW();
-
--- PASSO 5: Confirmar que foi criado
-SELECT * FROM profiles WHERE id = auth.uid();
+  id,
+  role,
+  created_at,
+  updated_at
+FROM profiles 
+WHERE id = auth.uid();
 
 -- =====================================
--- IMPORTANTE: 
--- Execute apenas a OPÇÃO que corresponde
--- às colunas que existem na sua tabela
+-- RESULTADO ESPERADO:
+-- Você deve ver uma linha com seu ID e role = 'admin'
 -- =====================================
