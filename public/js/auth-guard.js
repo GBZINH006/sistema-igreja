@@ -310,6 +310,13 @@
       return { allowed: true, reason: 'not_configured' };
     }
 
+    // WORKAROUND: Permite admin.html sem verificação pois tem login próprio
+    // Evita loop infinito de redirecionamento
+    if (currentPage === 'admin.html') {
+      console.log('ℹ️ admin.html tem login próprio, pulando verificação');
+      return { allowed: true, reason: 'has_own_login' };
+    }
+
     // Verifica sessão de membro
     if (routeConfig.type === 'member') {
       const validation = await validateMemberSession();
@@ -323,7 +330,7 @@
       return { allowed: true, session: validation.session };
     }
 
-    // Verifica sessão de admin
+    // Verifica sessão de admin (outras páginas protegidas)
     if (routeConfig.type === 'admin') {
       const validation = await validateAdminSession(routeConfig.roles || []);
       
