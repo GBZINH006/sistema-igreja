@@ -23,8 +23,8 @@ ORDER BY created_at DESC;
 
 INSERT INTO profiles (id, role, created_at, updated_at)
 VALUES 
-  -- Copie o UUID do usuário e cole aqui:
-  ('SEU-UUID-AQUI', 'admin', NOW(), NOW())
+  -- Copie o UUID do usuário e cole aqui (ATENÇÃO: remova a vírgula se for só 1):
+  ('SEU-UUID-AQUI', 'admin', NOW(), NOW())  -- <- SEM VÍRGULA no último
 ON CONFLICT (id)
 DO UPDATE SET 
   role = EXCLUDED.role,
