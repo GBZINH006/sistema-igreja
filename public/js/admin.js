@@ -3295,6 +3295,11 @@
   function renderTokens() {
     const container = document.getElementById('links-ativos-lista');
     
+    // Define filtro padrão se não existir
+    if (typeof filtroAtivo === 'undefined') {
+      filtroAtivo = 'todos';
+    }
+    
     // Filtrar com base no filtro ativo
     let tokensFiltrados;
     if (filtroAtivo === 'ativos') {
