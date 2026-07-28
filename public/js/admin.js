@@ -63,7 +63,8 @@
   }
 
   function mostrarTela(id) {
-    document.getElementById('tela-carregando').classList.remove('ativa');
+    const carregando = document.getElementById('tela-carregando');
+    if (carregando) carregando.classList.remove('ativa');
     ['tela-login', 'tela-principal'].forEach(t => {
       const el = document.getElementById(t);
       el.classList.remove('ativa');
