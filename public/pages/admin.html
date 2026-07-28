@@ -19,22 +19,6 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="../css/admin.css">
   <script src="../js/config.js?v=2"></script>
-  
-  <!-- LIMPAR CACHE E RECARREGAR -->
-  <script>
-    // Força limpeza de cache antigo que pode estar bloqueando
-    if (performance.navigation.type !== 1) { // Só na primeira carga, não no refresh
-      console.log('🔄 Limpando cache antigo do auth-guard...');
-      sessionStorage.removeItem('auth_redirect_in_progress');
-      sessionStorage.removeItem('redirecting');
-      
-      // Se detectar que está sendo bloqueado, recarrega
-      const urlParams = new URLSearchParams(window.location.search);
-      if (!urlParams.has('_cleared')) {
-        window.location.href = window.location.pathname + '?_cleared=1';
-      }
-    }
-  </script>
 </head>
 
 <body>
