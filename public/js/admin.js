@@ -3207,6 +3207,10 @@
 
   let tokensAtivos = [];
   let updateTokensInterval = null;
+  let filtroAtivo = 'todos'; // 'todos', 'ativos', 'usados', 'expirados'
+  let tokensCache = null;
+  let ultimaAtualizacao = 0;
+  const CACHE_TIMEOUT = 30000; // 30 segundos
 
   function abrirGeradorLinks() {
     document.getElementById('links-overlay').classList.add('open');
@@ -3244,24 +3248,41 @@
       toast('✅ Link gerado e copiado!');
       document.getElementById('link-observacao').value = '';
       
-      // Recarrega lista
-      await carregarTokens();
+      // Recarrega lista forçando reload (invalida cache)
+      await carregarTokens(true);
 
     } catch (error) {
       console.error('Erro ao gerar link:', error);
       toast('❌ Erro ao gerar link: ' + (error.message || 'Tente novamente'));
     }
   }
+      toast('❌ Erro ao gerar link: ' + (error.message || 'Tente novamente'));
+    }
+  }
 
   window.gerarNovoLink = gerarNovoLink;
 
-  async function carregarTokens() {
+  async function carregarTokens(forcarReload = false) {
     try {
+      // Usar cache se disponível e não expirado
+      const agora = Date.now();
+      if (!forcarReload && tokensCache && (agora - ultimaAtualizacao < CACHE_TIMEOUT)) {
+        console.log('📦 Usando cache de tokens');
+        tokensAtivos = tokensCache;
+        renderTokens();
+        renderStatsTokens();
+        return;
+      }
+
+      console.log('🔄 Buscando tokens do servidor...');
       const { data, error } = await db.rpc('list_active_tokens');
       
       if (error) throw error;
 
       tokensAtivos = data || [];
+      tokensCache = tokensAtivos;
+      ultimaAtualizacao = agora;
+      
       renderTokens();
       renderStatsTokens();
 
@@ -3274,10 +3295,26 @@
   function renderTokens() {
     const container = document.getElementById('links-ativos-lista');
     
-    const ativos = tokensAtivos.filter(t => !t.used && !t.revoked && !t.expired);
+    // Filtrar com base no filtro ativo
+    let tokensFiltrados;
+    if (filtroAtivo === 'ativos') {
+      tokensFiltrados = tokensAtivos.filter(t => !t.used && !t.revoked && !t.expired);
+    } else if (filtroAtivo === 'usados') {
+      tokensFiltrados = tokensAtivos.filter(t => t.used);
+    } else if (filtroAtivo === 'expirados') {
+      tokensFiltrados = tokensAtivos.filter(t => t.expired && !t.used);
+    } else {
+      tokensFiltrados = tokensAtivos;
+    }
 
-    if (ativos.length === 0) {
-      container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:1rem;">Nenhum link ativo no momento.</div>';
+    if (tokensFiltrados.length === 0) {
+      const mensagens = {
+        ativos: 'Nenhum link ativo no momento.',
+        usados: 'Nenhum link foi usado ainda.',
+        expirados: 'Nenhum link expirado.',
+        todos: 'Nenhum token encontrado.'
+      };
+      container.innerHTML = `<div style="color:var(--muted);text-align:center;padding:1rem;">${mensagens[filtroAtivo]}</div>`;
       return;
     }
 
@@ -3288,7 +3325,7 @@
       return div.innerHTML;
     };
 
-    container.innerHTML = ativos.map(token => {
+    container.innerHTML = tokensFiltrados.map(token => {
       const baseUrl = window.location.origin;
       const linkCompleto = `${baseUrl}/pages/cadastro.html?token=${token.token}`;
       const segundosRestantes = token.time_remaining_seconds || 0;
@@ -3300,23 +3337,23 @@
       const linkEscapado = escapeHtml(linkCompleto);
       
       return `
-        <div class="token-card" data-token="${tokenString}" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;padding:1rem;">
-          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:0.5rem;">
-            <div style="flex:1;">
-              <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;">Token: ${tokenPreview}...</div>
-              ${obs ? `<div style="font-weight:600;margin-bottom:0.25rem;">${obs}</div>` : ''}
-              <div class="token-countdown" data-seconds="${segundosRestantes}" style="font-size:0.85rem;color:#dc2626;font-weight:600;">
-                ⏰ Expira em: <span class="countdown-time">${formatarTempo(segundosRestantes)}</span>
+        <div class="token-card" data-token="${tokenString}">
+          <div class="token-card-header">
+            <div class="token-card-info">
+              <div class="token-id">🎫 Token: ${tokenPreview}...</div>
+              ${obs ? `<div class="token-obs">${obs}</div>` : ''}
+              <div class="token-countdown" data-seconds="${segundosRestantes}">
+                <i class="fa-solid fa-clock"></i> Expira em: <span class="countdown-time">${formatarTempo(segundosRestantes)}</span>
               </div>
             </div>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="window.revogarTokenByString('${tokenString}')">
-              <i class="fa-solid fa-ban"></i> Revogar
+            <button type="button" class="btn-revoke" onclick="window.revogarTokenByString('${tokenString}')" title="Revogar link">
+              <i class="fa-solid fa-ban"></i>
             </button>
           </div>
-          <div style="display:flex;gap:0.5rem;">
-            <input type="text" readonly value="${linkEscapado}" style="flex:1;font-size:0.75rem;padding:0.5rem;border:1px solid #dee2e6;border-radius:4px;background:white;">
-            <button type="button" class="btn btn-primary btn-sm" onclick="window.copiarLinkToken('${linkEscapado}')">
-              <i class="fa-solid fa-copy"></i> Copiar
+          <div class="token-card-actions">
+            <input type="text" readonly value="${linkEscapado}" class="token-link-input">
+            <button type="button" class="btn-copy" onclick="window.copiarLinkToken('${linkEscapado}')" title="Copiar link">
+              <i class="fa-solid fa-copy"></i>
             </button>
           </div>
         </div>
@@ -3351,8 +3388,8 @@
           el.style.color = '#dc2626';
         }
       } else {
-        // Expirou - recarrega lista
-        carregarTokens();
+        // Expirou - recarrega lista (forçando reload)
+        carregarTokens(true);
       }
     });
   }
@@ -3362,10 +3399,29 @@
     const usados = tokensAtivos.filter(t => t.used).length;
     const expirados = tokensAtivos.filter(t => t.expired && !t.used).length;
 
-    document.getElementById('stat-links-ativos').textContent = ativos;
-    document.getElementById('stat-links-usados').textContent = usados;
-    document.getElementById('stat-links-expirados').textContent = expirados;
+    const statAtivosEl = document.getElementById('stat-links-ativos');
+    const statUsadosEl = document.getElementById('stat-links-usados');
+    const statExpiradosEl = document.getElementById('stat-links-expirados');
+
+    if (statAtivosEl) statAtivosEl.textContent = ativos;
+    if (statUsadosEl) statUsadosEl.textContent = usados;
+    if (statExpiradosEl) statExpiradosEl.textContent = expirados;
+
+    // Adiciona classes active aos cards clicados
+    document.querySelectorAll('.stat-card-tokens').forEach(card => {
+      card.classList.remove('active');
+    });
+    const ativoCard = document.querySelector(`[data-filtro="${filtroAtivo}"]`);
+    if (ativoCard) ativoCard.classList.add('active');
   }
+
+  function filtrarTokens(tipo) {
+    filtroAtivo = tipo;
+    renderTokens();
+    renderStatsTokens();
+  }
+
+  window.filtrarTokens = filtrarTokens;
 
   async function copiarLink(link) {
     try {
@@ -3391,7 +3447,9 @@
       if (error) throw error;
 
       toast('✅ Link revogado');
-      await carregarTokens();
+      
+      // Invalida cache e recarrega
+      await carregarTokens(true);
 
     } catch (error) {
       console.error('Erro ao revogar:', error);
