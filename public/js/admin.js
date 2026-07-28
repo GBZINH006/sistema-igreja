@@ -3256,9 +3256,6 @@
       toast('❌ Erro ao gerar link: ' + (error.message || 'Tente novamente'));
     }
   }
-      toast('❌ Erro ao gerar link: ' + (error.message || 'Tente novamente'));
-    }
-  }
 
   window.gerarNovoLink = gerarNovoLink;
 
