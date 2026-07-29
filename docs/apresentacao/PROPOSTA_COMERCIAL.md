@@ -2,9 +2,9 @@
 ## Sistema de Gestão Eclesiástica AD Bela Vista
 
 **Desenvolvedor**: Gabriel Dutra  
-**Data**: Julho de 2026  
+**Data**: Setembro de 2026  
 **Validade**: 30 dias  
-**Versão**: 2.0.0
+**Versão**: v0.1.0
 
 ---
 
