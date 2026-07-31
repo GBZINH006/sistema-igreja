@@ -3285,6 +3285,23 @@
       renderStatsTokens();
 
     } catch (error) {
+      // Detecta erro de rede e para o intervalo
+      if (error.message && error.message.includes('Failed to fetch')) {
+        console.warn('⚠️ Sem conexão com internet. Parando atualizações automáticas.');
+        if (updateTokensInterval) {
+          clearInterval(updateTokensInterval);
+          updateTokensInterval = null;
+        }
+        // Usar cache se disponível
+        if (tokensCache) {
+          tokensAtivos = tokensCache;
+          renderTokens();
+          renderStatsTokens();
+        }
+        // Não exibe toast repetidamente
+        return;
+      }
+      
       console.error('Erro ao carregar tokens:', error);
       toast('❌ Erro ao carregar tokens');
     }
