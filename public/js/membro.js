@@ -488,7 +488,7 @@
     const pastorSignature = await getPastorSignature();
     const declaracao = "Declaro que as informações fornecidas neste cadastro são verdadeiras e completas. Comprometo-me a comunicar qualquer alteração ao secretariado da igreja.";
     const declaracaoLines = doc.splitTextToSize(declaracao, contentW);
-    ensureSpace(declaracaoLines.length * 4 + 42);
+    ensureSpace(declaracaoLines.length * 4 + 50);
     doc.setTextColor(15, 23, 42);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -498,16 +498,25 @@
     const membroX = margin;
     const pastorX = margin + assinaturaW + 18;
 
+    // Adicionar assinatura do membro (se houver)
+    if (item.assinatura_url) {
+      try {
+        doc.addImage(item.assinatura_url, "PNG", membroX, y, 74, 26);
+      } catch (error) {
+        console.warn("Não foi possível inserir assinatura do membro:", error);
+      }
+    }
+
+    // Adicionar assinatura do pastor (se houver)
     if (pastorSignature.signature_url) {
       try {
         doc.addImage(pastorSignature.signature_url, "PNG", pastorX, y, 74, 26);
       } catch (error) {
         console.warn("Não foi possível inserir assinatura do pastor:", error);
       }
-      y += 32;
-    } else {
-      y += 20;
     }
+    
+    y += 32;
 
     doc.setDrawColor(15, 23, 42);
     doc.line(membroX, y, membroX + assinaturaW, y);

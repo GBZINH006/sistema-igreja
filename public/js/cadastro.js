@@ -1382,8 +1382,22 @@
         });
         if (error) throw error;
       } else {
-        const { error } = await db.from('membros').insert([dados]);
+        // Insere e retorna o ID do membro cadastrado
+        const { data: membroInserido, error } = await db.from('membros')
+          .insert([dados])
+          .select('id, nome_completo')
+          .single();
         if (error) throw error;
+
+        // Se veio do admin, redireciona de volta com sucesso
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('admin') === '1' && membroInserido) {
+          toast('✅ Cadastro salvo! Redirecionando...', 'sucesso', 2000);
+          setTimeout(() => {
+            window.location.href = `/pages/admin.html?novo_membro=${membroInserido.id}&nome=${encodeURIComponent(membroInserido.nome_completo)}`;
+          }, 2000);
+          return;
+        }
       }
 
       if (isMemberFlow) {
@@ -1828,9 +1842,6 @@
             <strong style="color:#92400e;">💡 Como funciona:</strong><br>
             <span style="color:#78350f;">A secretaria gerará um link temporário válido por 2 horas exclusivamente para você.</span>
           </div>
-          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
-            <i class="fa-solid fa-home"></i> Voltar ao Início
-          </button>
         </div>
       </div>
     `;
@@ -1857,9 +1868,6 @@
           <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
             Entre em contato com a secretaria para solicitar um novo link.
           </p>
-          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
-            <i class="fa-solid fa-home"></i> Voltar ao Início
-          </button>
         </div>
       </div>
     `;
@@ -1880,9 +1888,6 @@
           <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
             Se você ainda não completou seu cadastro, entre em contato com a secretaria.
           </p>
-          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
-            <i class="fa-solid fa-home"></i> Voltar ao Início
-          </button>
         </div>
       </div>
     `;
@@ -1902,9 +1907,6 @@
           <p style="color:#666;font-size:0.875rem;margin:1rem 0;">
             Entre em contato com a secretaria para obter um novo link.
           </p>
-          <button onclick="window.location.href='/'" style="padding:0.75rem 1.5rem;background:#c9a84c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
-            <i class="fa-solid fa-home"></i> Voltar ao Início
-          </button>
         </div>
       </div>
     `;

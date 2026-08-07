@@ -722,6 +722,25 @@
     mostrarTela('tela-principal');
     carregarLista();
     iniciarRealtime();
+
+    // Detecta retorno do cadastro feito pelo admin
+    const urlParams = new URLSearchParams(window.location.search);
+    const novoMembroId = urlParams.get('novo_membro');
+    const novoMembroNome = urlParams.get('nome');
+    
+    if (novoMembroId && novoMembroNome) {
+      // Remove os parâmetros da URL sem recarregar
+      window.history.replaceState({}, '', '/pages/admin.html');
+      
+      // Mostra notificação de sucesso
+      toast(`✅ ${decodeURIComponent(novoMembroNome)} cadastrado(a) com sucesso!`, 'sucesso', 4000);
+      
+      // Aguarda um pouco e abre a ficha do membro
+      setTimeout(() => {
+        abrirFicha(novoMembroId);
+      }, 1000);
+    }
+
     return true;
   }
 
@@ -774,8 +793,33 @@
 
   window.sair = sair;
 
-  function abrirCadastro() {
-    window.open('cadastro.html', '_blank', 'noopener,noreferrer');
+  async function abrirCadastro() {
+    try {
+      // Gera token de cadastro automaticamente
+      const { data, error } = await db.rpc('generate_registration_token', {
+        p_duration_hours: 2,
+        p_notes: 'Link direto do admin'
+      });
+
+      if (error) throw error;
+
+      const token = data?.[0];
+      if (!token) throw new Error('Token não retornado');
+
+      // Monta URL com token e flag indicando origem admin
+      const linkCompleto = `${window.location.origin}/pages/cadastro.html?token=${token.token}&admin=1`;
+
+      // Abre em nova aba
+      window.open(linkCompleto, '_blank', 'noopener,noreferrer');
+      
+      toast('✅ Ficha aberta com link automático');
+
+    } catch (error) {
+      console.error('Erro ao gerar link:', error);
+      toast('❌ Erro ao abrir ficha: ' + (error.message || 'Tente novamente'));
+      // Fallback: abre sem token
+      window.open('cadastro.html', '_blank', 'noopener,noreferrer');
+    }
   }
 
   window.abrirCadastro = abrirCadastro;
@@ -2936,30 +2980,56 @@
     section('Declaração e Assinatura');
     const declaracao = 'Declaro que as informações fornecidas neste cadastro são verdadeiras e completas. Comprometo-me a comunicar qualquer alteração ao secretariado da igreja.';
     const declaracaoLines = doc.splitTextToSize(declaracao, contentW);
-    ensureSpace(declaracaoLines.length * 4 + 42);
+    ensureSpace(declaracaoLines.length * 4 + 50);
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.text(declaracaoLines, margin, y);
     y += declaracaoLines.length * 4 + 8;
 
-    const assinaturaData = await imageToDataUrl(safeUrl(m.assinatura_url));
-    const configAdmin = obterConfiguracoesAdmin();
-    const pastorNome = String(configAdmin.pastorName || '').trim() || 'Pastor responsável';
-    const pastorCargo = String(configAdmin.pastorRole || '').trim() || 'Pastor responsável';
+    // Buscar assinatura do membro
+    const assinaturaMembroData = await imageToDataUrl(safeUrl(m.assinatura_url));
+    
+    // Buscar assinatura do pastor do banco de dados
+    let pastorSignatureData = null;
+    let pastorNome = 'Pastor responsável';
+    let pastorCargo = 'Pastor responsável';
+    try {
+      const { data: pastorSig } = await db.rpc('get_pastor_signature');
+      if (pastorSig) {
+        pastorNome = pastorSig.pastor_name || 'Pastor responsável';
+        pastorCargo = pastorSig.pastor_role || 'Pastor responsável';
+        if (pastorSig.signature_url) {
+          pastorSignatureData = await imageToDataUrl(pastorSig.signature_url);
+        }
+      }
+    } catch (error) {
+      console.warn('Não foi possível carregar assinatura do pastor:', error);
+    }
+
     const assinaturaW = (contentW - 18) / 2;
     const membroX = margin;
     const pastorX = margin + assinaturaW + 18;
-    if (assinaturaData) {
+    
+    // Adicionar assinatura do membro
+    if (assinaturaMembroData) {
       try {
-        doc.addImage(assinaturaData, imageFormat(assinaturaData), membroX, y, 74, 26);
+        doc.addImage(assinaturaMembroData, imageFormat(assinaturaMembroData), membroX, y, 74, 26);
       } catch (error) {
-        console.warn('Não foi possível inserir assinatura no PDF:', error);
+        console.warn('Não foi possível inserir assinatura do membro no PDF:', error);
       }
-      y += 32;
-    } else {
-      y += 20;
     }
+    
+    // Adicionar assinatura do pastor
+    if (pastorSignatureData) {
+      try {
+        doc.addImage(pastorSignatureData, imageFormat(pastorSignatureData), pastorX, y, 74, 26);
+      } catch (error) {
+        console.warn('Não foi possível inserir assinatura do pastor no PDF:', error);
+      }
+    }
+    
+    y += 32;
 
     doc.setDrawColor(15, 23, 42);
     doc.line(membroX, y, membroX + assinaturaW, y);
