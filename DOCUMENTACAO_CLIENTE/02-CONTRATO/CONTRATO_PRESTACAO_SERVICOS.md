@@ -1,4 +1,5 @@
-# CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE DESENVOLVIMENTO E MANUTENÇÃO DE SISTEMA DE GESTÃO ECLESIÁSTICA
+# TERMO DE PRESTAÇÃO DE SERVIÇO VOLUNTÁRIO E ACORDO DE MANUTENÇÃO
+## Sistema de Gestão Eclesiástica
 
 ---
 
@@ -14,21 +15,23 @@
 
 ---
 
-## CONTRATADO
+## PRESTADOR VOLUNTÁRIO
 
-**Razão Social**: [NOME DA EMPRESA PRESTADORA]  
-**CNPJ**: [___.___.___/____-__]  
-**Endereço**: [Rua/Av], [Número], [Bairro], [Cidade]-[UF], CEP: [_____-___]  
-**Representante Legal**: [Nome Completo]  
+**Nome Completo**: [Nome Completo]  
 **CPF**: [___.___.___-__]  
-**Email**: [contato@empresa.com.br]  
-**Telefone**: [(__)____-____]
+**RG**: [__.___.___-__]  
+**Endereço**: [Rua/Av], [Número], [Bairro], [Cidade]-[UF], CEP: [_____-___]  
+**Email**: [email@pessoal.com]  
+**Telefone**: [(__)_____-____]  
+**Qualificação**: Desenvolvedor de Sistemas
 
 ---
 
-## CLÁUSULA 1ª - DO OBJETO
+## CLÁUSULA 1ª - DA NATUREZA DO SERVIÇO
 
-1.1. O presente contrato tem por objeto a prestação de serviços de desenvolvimento, implantação, hospedagem, manutenção e suporte técnico do **Sistema de Gestão Eclesiástica AD Bela Vista**, conforme especificações técnicas descritas no **Anexo I - Especificações Técnicas**.
+1.1. O presente termo tem por objeto a **prestação de serviço voluntário**, sem fins lucrativos, para desenvolvimento, implantação e disponibilização do **Sistema de Gestão Eclesiástica**, conforme especificações técnicas descritas no **Anexo I - Especificações Técnicas**.
+
+1.2. O PRESTADOR VOLUNTÁRIO, por livre e espontânea vontade, e em espírito de colaboração com a obra do CONTRATANTE, compromete-se a desenvolver e implantar o sistema **SEM QUALQUER ÔNUS** para a igreja.
 
 1.2. O sistema contempla as seguintes funcionalidades principais:
 
@@ -58,9 +61,9 @@ c) **Infraestrutura e Segurança**:
 
 ---
 
-## CLÁUSULA 2ª - DAS RESPONSABILIDADES DO CONTRATADO
+## CLÁUSULA 2ª - DAS RESPONSABILIDADES DO PRESTADOR VOLUNTÁRIO
 
-2.1. Constituem obrigações do CONTRATADO:
+2.1. Constituem obrigações do PRESTADOR VOLUNTÁRIO, em caráter voluntário e gratuito:
 
 a) Disponibilizar o sistema em ambiente de produção, totalmente funcional, no prazo estabelecido na Cláusula 5ª;
 
@@ -74,11 +77,11 @@ d) Disponibilizar documentação técnica completa do sistema, incluindo:
    - Guias de implantação e configuração
    - Procedimentos de backup e recuperação
 
-e) Garantir disponibilidade mínima de 99,5% (noventa e nove vírgula cinco por cento) do sistema, excluindo-se janelas de manutenção programadas;
+e) Envidar esforços para garantir boa disponibilidade do sistema, limitado às capacidades das plataformas gratuitas utilizadas;
 
 f) Realizar backup automático diário dos dados, com retenção mínima de 30 (trinta) dias;
 
-g) Prestar suporte técnico conforme SLA (Service Level Agreement) definido na Cláusula 8ª;
+g) Prestar suporte técnico durante o período de garantia de 90 dias após implantação;
 
 h) Implementar atualizações de segurança críticas em até 48 (quarenta e oito) horas após identificação de vulnerabilidades;
 
@@ -116,55 +119,76 @@ j) Não realizar engenharia reversa, cópia ou distribuição não autorizada do
 
 ---
 
-## CLÁUSULA 4ª - DOS VALORES E FORMA DE PAGAMENTO
+## CLÁUSULA 4ª - DA GRATUIDADE E CUSTOS
 
-4.1. **IMPLANTAÇÃO** (Pagamento Único):
+4.1. **SERVIÇO VOLUNTÁRIO GRATUITO**:
 
-| Item | Descrição | Valor (R$) |
-|------|-----------|------------|
-| 1 | Desenvolvimento e customização do sistema | _____,__ |
-| 2 | Migração de dados existentes | _____,__ |
-| 3 | Treinamento (8 horas) | _____,__ |
-| 4 | Documentação completa | _____,__ |
-| **TOTAL IMPLANTAÇÃO** | | **R$ _____,__** |
+O PRESTADOR VOLUNTÁRIO desenvolverá e implantará o sistema **SEM QUALQUER CUSTO** para o CONTRATANTE, incluindo:
 
-**Forma de Pagamento da Implantação**:
-- 40% na assinatura do contrato
-- 30% na entrega do sistema em ambiente de testes
-- 30% na homologação final e entrada em produção
+| Item | Descrição | Valor |
+|------|-----------|-------|
+| 1 | Desenvolvimento completo do sistema | GRATUITO |
+| 2 | Migração de dados existentes | GRATUITO |
+| 3 | Treinamento inicial (até 8 horas) | GRATUITO |
+| 4 | Documentação completa | GRATUITO |
+| 5 | Implantação e Go-Live | GRATUITO |
+| **TOTAL IMPLANTAÇÃO** | | **R$ 0,00** |
 
-4.2. **MENSALIDADE** (Pagamento Recorrente):
+4.2. **CUSTOS DE INFRAESTRUTURA** (Responsabilidade do CONTRATANTE):
 
-| Item | Descrição | Valor Mensal (R$) |
-|------|-----------|-------------------|
-| 1 | Hospedagem em servidor cloud | _____,__ |
-| 2 | Manutenção corretiva e evolutiva | _____,__ |
-| 3 | Suporte técnico (horário comercial) | _____,__ |
-| 4 | Backup automatizado | _____,__ |
-| 5 | Monitoramento 24/7 | _____,__ |
-| 6 | Atualizações de segurança | _____,__ |
-| **TOTAL MENSAL** | | **R$ _____,__** |
+O CONTRATANTE será responsável pelos seguintes custos mensais de infraestrutura:
 
-**Forma de Pagamento da Mensalidade**:
-- Vencimento: Todo dia 10 (dez) de cada mês
-- Método: Boleto bancário, PIX ou débito automático
-- Reajuste anual: IGPM-FGV ou índice que vier a substituí-lo
+| Item | Descrição | Valor Estimado Mensal |
+|------|-----------|----------------------|
+| 1 | Hospedagem Vercel (gratuito até limite) | R$ 0,00 |
+| 2 | Supabase Database (gratuito até limite) | R$ 0,00 |
+| 3 | Domínio personalizado (.com.br) | R$ 40,00 |
+| 4 | WhatsApp Business API (opcional) | R$ 0,10 / mensagem |
+| **TOTAL ESTIMADO** | | **R$ 40,00/mês** |
 
-4.3. **SERVIÇOS ADICIONAIS** (Sob demanda):
+**Observações**:
+- Os serviços de hospedagem (Vercel e Supabase) possuem planos gratuitos robustos
+- Custos podem aumentar conforme uso e crescimento da igreja
+- WhatsApp Business API é opcional e cobrado por mensagem enviada
 
-| Item | Descrição | Valor (R$) |
-|------|-----------|------------|
-| 1 | Hora técnica para customizações | _____,__ / hora |
-| 2 | Treinamento adicional | _____,__ / hora |
-| 3 | Suporte fora do horário comercial | _____,__ / hora |
-| 4 | Desenvolvimento de integrações | A orçar |
-| 5 | Consultoria especializada | _____,__ / hora |
+4.3. **MANUTENÇÃO FUTURA** (Opcional - Sob Demanda):
 
-4.4. Os valores não incluem:
-- Custos de SMS/WhatsApp para envio de mensagens (cobrado separadamente conforme uso)
+Após implantação, o CONTRATANTE poderá solicitar **serviços de manutenção**, que serão cobrados conforme tabela abaixo:
+
+| Tipo de Serviço | Valor por Hora |
+|-----------------|----------------|
+| **Manutenção Corretiva** (correção de bugs) | R$ 30,00 |
+| **Manutenção Evolutiva** (novas funcionalidades) | R$ 30,00 |
+| **Customizações** (alterações específicas) | R$ 30,00 |
+| **Treinamento Adicional** (além das 8 horas iniciais) | R$ 30,00 |
+| **Suporte Técnico** (após período de garantia) | R$ 30,00 |
+| **Consultoria** (melhorias e otimizações) | R$ 30,00 |
+
+**Forma de Cobrança da Manutenção**:
+- Orçamento prévio será apresentado antes de qualquer serviço
+- Aprovação expressa do CONTRATANTE é obrigatória
+- Pagamento via PIX após conclusão do serviço
+- Prazo de pagamento: 7 dias úteis após emissão do recibo
+
+4.4. **PERÍODO DE GARANTIA GRATUITA**:
+
+O PRESTADOR VOLUNTÁRIO oferecerá **garantia gratuita de 90 dias** após o Go-Live para:
+- Correção de bugs identificados no sistema desenvolvido
+- Suporte para dúvidas de uso básico
+- Ajustes de configuração
+
+**Não incluso na garantia**:
+- Novas funcionalidades não previstas
+- Customizações solicitadas após homologação
+- Problemas causados por uso inadequado
+- Alterações em infraestrutura de terceiros (Vercel, Supabase)
+
+4.5. **SERVIÇOS NÃO INCLUSOS**:
+- Custos de mensagens SMS/WhatsApp (pago direto aos provedores)
 - Certificados digitais adicionais
 - Integrações com sistemas de terceiros não previstos
-- Customizações solicitadas após homologação
+- Hardware ou equipamentos
+- Treinamento presencial em outras cidades (despesas de viagem)
 
 ---
 
@@ -192,63 +216,70 @@ j) Não realizar engenharia reversa, cópia ou distribuição não autorizada do
 
 ## CLÁUSULA 6ª - DA VIGÊNCIA
 
-6.1. O presente contrato terá vigência de **12 (doze) meses**, contados a partir da data de assinatura, renovável automaticamente por iguais períodos, salvo manifestação contrária de qualquer das partes com antecedência mínima de 60 (sessenta) dias do término da vigência.
+6.1. O presente termo terá vigência **indeterminada**, a partir da data de assinatura, podendo ser rescindido por qualquer das partes a qualquer momento, mediante comunicação prévia de 30 (trinta) dias.
 
-6.2. Em caso de não renovação:
-- O CONTRATANTE terá 30 (trinta) dias para realizar download completo de todos os dados
-- O CONTRATADO fornecerá os dados em formato estruturado (SQL, CSV ou JSON)
-- Após 30 dias, os dados serão permanentemente excluídos dos servidores
+6.2. Em caso de rescisão:
+- O CONTRATANTE manterá total acesso e propriedade dos dados
+- O sistema continuará funcionando normalmente (hospedado nos servidores contratados pela igreja)
+- O PRESTADOR VOLUNTÁRIO fornecerá orientações para continuidade por terceiros
+- Todos os dados poderão ser exportados em formato estruturado (SQL, CSV ou JSON)
 
 ---
 
-## CLÁUSULA 7ª - DA DISPONIBILIDADE E SLA (SERVICE LEVEL AGREEMENT)
+## CLÁUSULA 7ª - DO SUPORTE E GARANTIA
 
-7.1. **Garantia de Disponibilidade**:
-- Disponibilidade mínima garantida: **99,5%** ao mês
-- Janelas de manutenção programada: Domingos das 02h às 05h (não computadas na disponibilidade)
-- Notificação de manutenção: Mínimo 72 horas de antecedência
+7.1. **Período de Garantia Gratuita**:
+- **Duração**: 90 dias corridos após o Go-Live
+- **Cobertura**: Correção de bugs e suporte básico
+- **Horário**: Melhor esforço, sem garantia de horário fixo (serviço voluntário)
+- **Canais**: Email e WhatsApp
 
-7.2. **Tempo de Resposta por Severidade**:
+7.2. **Após o Período de Garantia**:
+Após 90 dias, o suporte será prestado mediante cobrança de **R$ 30,00/hora**, conforme Cláusula 4ª.
 
-| Severidade | Descrição | Tempo de Resposta | Tempo de Solução |
-|------------|-----------|-------------------|------------------|
-| CRÍTICA | Sistema totalmente indisponível | 2 horas | 8 horas |
-| ALTA | Funcionalidade crítica indisponível | 4 horas | 24 horas |
-| MÉDIA | Funcionalidade secundária com problema | 8 horas | 48 horas |
-| BAIXA | Dúvidas, melhorias, ajustes menores | 24 horas | 120 horas |
+7.3. **Disponibilidade do Sistema**:
+O sistema utiliza infraestrutura de terceiros (Vercel e Supabase) com planos gratuitos. A disponibilidade dependerá dos SLAs desses provedores:
+- Vercel: ~99,5% (plano gratuito)
+- Supabase: ~99,9% (plano gratuito)
 
-7.3. **Horário de Suporte**:
-- Suporte técnico: Segunda a Sexta, 9h às 18h
-- Monitoramento: 24 horas por dia, 7 dias por semana
-- Emergências críticas: Atendimento 24/7 (com acréscimo de custo)
+7.4. **Limitações do Serviço Voluntário**:
+Por se tratar de serviço voluntário, o PRESTADOR:
+- Não garante tempo de resposta fixo
+- Não oferece suporte 24/7
+- Não garante correção imediata de problemas
+- Prestará melhor esforço dentro de sua disponibilidade
 
-7.4. **Canais de Suporte**:
-- Email: suporte@empresa.com.br
-- Telefone/WhatsApp: (XX) XXXXX-XXXX
-- Portal de Suporte: https://suporte.empresa.com.br
-- Sistema de tickets online
+## CLÁUSULA 7ª-A - DO SUPORTE PAGO (OPCIONAL)
 
-7.5. **Penalidades por Indisponibilidade**:
-Caso a disponibilidade mensal fique abaixo de 99,5%, o CONTRATANTE terá direito a créditos proporcionais na mensalidade seguinte:
+7.5. O CONTRATANTE poderá, a qualquer momento, solicitar **suporte pago** mediante:
+- Abertura de solicitação por email ou WhatsApp
+- Orçamento prévio de horas estimadas
+- Aprovação formal do CONTRATANTE
+- Execução do serviço
+- Pagamento de R$ 30,00 por hora trabalhada
 
-| Disponibilidade | Crédito na Mensalidade |
-|-----------------|------------------------|
-| 99,0% - 99,4% | 10% |
-| 98,0% - 98,9% | 20% |
-| 97,0% - 97,9% | 30% |
-| < 97,0% | 50% |
+
 
 ---
 
 ## CLÁUSULA 8ª - DA PROPRIEDADE INTELECTUAL
 
-8.1. O código-fonte do sistema é de propriedade exclusiva do CONTRATADO, sendo concedida ao CONTRATANTE apenas licença de uso não exclusiva, intransferível e não sublicenciável.
+8.1. O **código-fonte do sistema** desenvolvido pelo PRESTADOR VOLUNTÁRIO é de sua propriedade intelectual, sendo concedida ao CONTRATANTE **licença de uso perpétua, gratuita e intransferível**.
 
-8.2. O CONTRATANTE é proprietário de todos os dados inseridos no sistema, tendo direito a exportação completa a qualquer momento.
+8.2. O CONTRATANTE é **proprietário integral** de todos os dados inseridos no sistema, tendo direito a:
+- Exportação completa a qualquer momento
+- Utilização em outros sistemas
+- Backup e armazenamento independente
 
-8.3. Customizações específicas desenvolvidas exclusivamente para o CONTRATANTE, mediante pagamento adicional, poderão ter propriedade compartilhada, mediante acordo em separado.
+8.3. Em caso de descontinuidade do serviço voluntário, o PRESTADOR VOLUNTÁRIO poderá, a seu critério:
+- **Opção 1**: Disponibilizar código-fonte completo para o CONTRATANTE (open source)
+- **Opção 2**: Orientar migração para outro desenvolvedor
+- **Opção 3**: Licenciar o código para terceiros darem continuidade
 
-8.4. O CONTRATANTE autoriza o CONTRATADO a utilizar o nome e logotipo da instituição em portfólio e materiais de marketing, desde que preservada a privacidade dos dados.
+8.4. O CONTRATANTE autoriza o PRESTADOR VOLUNTÁRIO a:
+- Utilizar o nome da instituição em portfólio pessoal
+- Compartilhar prints do sistema (sem dados sensíveis) como exemplo de trabalho
+- Mencionar o projeto em currículos e apresentações profissionais
 
 ---
 
@@ -320,20 +351,19 @@ Caso a disponibilidade mensal fique abaixo de 99,5%, o CONTRATANTE terá direito
 
 ## CLÁUSULA 12ª - DAS PENALIDADES
 
-12.1. **Atraso no Pagamento pelo CONTRATANTE**:
-- Multa de 2% sobre o valor em atraso
-- Juros de mora de 1% ao mês
-- Suspensão do acesso ao sistema após 15 dias de atraso
-- Rescisão contratual após 30 dias de atraso
+12.1. **Por se tratar de serviço voluntário gratuito**, não há penalidades financeiras para nenhuma das partes relacionadas ao desenvolvimento e implantação.
 
-12.2. **Descumprimento de SLA pelo CONTRATADO**:
-- Créditos conforme tabela da Cláusula 7ª
-- Rescisão sem ônus para o CONTRATANTE se disponibilidade < 95% por 2 meses consecutivos
+12.2. **Violação de Confidencialidade**:
+A parte que violar o dever de confidencialidade ficará sujeita a:
+- Reparação de danos materiais comprovados
+- Rescisão imediata do termo
+- Medidas judiciais cabíveis
 
-12.3. **Violação de Confidencialidade**:
-- Multa de 10 vezes o valor da mensalidade vigente
-- Indenização por danos comprovados
-- Rescisão imediata do contrato
+12.3. **Atraso no Pagamento de Manutenção** (quando aplicável):
+Caso o CONTRATANTE contrate serviços de manutenção e atrase o pagamento:
+- Juros de 1% ao mês
+- Suspensão de novos serviços até regularização
+- Sem multa adicional (considerando natureza beneficente)
 
 ---
 
